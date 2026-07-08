@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local dev / agent tooling artifacts
+/logs
+/.playwright-mcp
+.claude/scheduled_tasks.lock
+
+# root-level debug screenshots (not app assets)
+/*.png

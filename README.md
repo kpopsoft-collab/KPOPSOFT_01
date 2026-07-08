@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KPOPSOFT
 
-## Getting Started
+소프트웨어 개발 · AI 솔루션 · 실무 교육을 제공하는 기술 기업 **KPOPSOFT**의 공식 랜딩페이지.
 
-First, run the development server:
+/ [기획서](docs/기획서.md) · [디자인](docs/디자인.md) · [스펙](docs/스펙.md) · [개발상태](docs/개발상태.md)
+
+## 기술 스택
+
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS v4** + **shadcn/ui** (base-ui)
+- 폰트: Pretendard(국문) + 시스템 그로테스크
+- 반응형 웹앱 + PWA(manifest/아이콘/viewport) — 모바일·태블릿·데스크톱 하이브리드 지향
+
+> 데이터베이스/인증(Supabase)은 아직 연결하지 않았습니다. 모든 콘텐츠는 `src/lib/site.ts`의 정적 데이터이며, 문의 CTA는 `mailto:` 링크입니다.
+
+## 실행
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install      # 최초 1회
+npm run dev      # 개발 서버 (http://localhost:3000)
+npm run build    # 프로덕션 빌드 (Webpack)
+npm run build:turbopack # Next.js 16 기본 Turbopack 빌드
+npm run start    # 프로덕션 서버
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 구조
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+  app/
+    layout.tsx          # 폰트 로드, 메타데이터, viewport
+    page.tsx            # 16개 섹션 조립 (기획서 순서)
+    globals.css         # 디자인 토큰(@theme), 타이포 유틸, 스크롤 리빌 모션
+    manifest.ts         # PWA manifest
+    icon.svg            # 파비콘
+  components/
+    layout/             # Header(모바일 Sheet 메뉴), Footer, Section 래퍼
+    sections/           # 섹션별 컴포넌트 14개 (hero, business-overview, ...)
+    shapes/             # 재사용 기하 도형 시스템 (circle/arch/star/wave/capsule ...)
+    ui/                 # CtaButton, Tag, Eyebrow + shadcn 프리미티브
+  lib/
+    site.ts             # 전 섹션 정적 콘텐츠/설정 + accent 컬러 맵
+    utils.ts            # cn()
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 디자인 시스템 요약
 
-## Learn More
+- 배경 Warm Ivory `#F6F1EA` / 텍스트 Ink `#292522`
+- 액센트 8종: Blue `#315BDB`, Red `#F04B32`, Yellow `#FFC85C`, Coral `#FF9A95`, Mint `#63C7B2`, Sky `#72A3E8`, Navy `#243562`
+- flat 컬러 + 강한 대비 (그라데이션·글래스모피즘·과한 그림자 금지)
+- 색 비율 ≈ 60% 배경 / 25% 뉴트럴 면 / 15% 강한 액센트
+- 에디토리얼 비대칭 레이아웃, 기하 도형을 재사용 시각 언어로 사용
+- 접근성 WCAG AA, 모바일 본문 ≥16px, 탭 타겟 ≥44px, `prefers-reduced-motion` 존중
 
-To learn more about Next.js, take a look at the following resources:
+토큰·컨벤션 상세와 개발 워크플로우(`/dev`, 팀 서브에이전트, MCP)는 [CLAUDE.md](CLAUDE.md) 참고.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 다음 단계 (DB 연결 시)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Supabase Auth 회원가입/로그인
+- 문의 폼 실제 저장(`inquiries` 테이블 + RLS)
+- 프로그램/전문가/후기/사례/인사이트 데이터의 DB화 (현재 `site.ts` 더미)
