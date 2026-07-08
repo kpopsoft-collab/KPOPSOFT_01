@@ -10,6 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { BrandMark } from "@/components/layout/brand-mark";
 import { AdminNavList } from "./admin-sidebar";
 
 /**
@@ -30,8 +31,9 @@ export function AdminTopbar({ email }: { email: string }) {
           <Menu className="size-5" />
         </SheetTrigger>
         <SheetContent side="left" className="w-72 bg-ivory p-4">
-          <SheetTitle className="px-3 pb-4 text-lg font-extrabold tracking-tight text-ink">
-            KPOPSOFT <span className="text-brand-blue">ADMIN</span>
+          <SheetTitle className="flex items-center px-3 pb-4 text-lg font-extrabold tracking-tight text-ink">
+            <BrandMark className="mr-2" />
+            KPOPSOFT <span className="ml-1 text-brand-blue">ADMIN</span>
           </SheetTitle>
           <AdminNavList onNavigate={() => setOpen(false)} />
         </SheetContent>

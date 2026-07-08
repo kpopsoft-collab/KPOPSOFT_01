@@ -6,6 +6,7 @@ import { Menu } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { navItems, sectionId, site } from "@/lib/site";
+import { BrandMark } from "@/components/layout/brand-mark";
 import {
   Sheet,
   SheetClose,
@@ -42,8 +43,9 @@ export function Header() {
       <div className="container-editorial flex h-16 items-center justify-between md:h-[76px]">
         <Link
           href={`#${sectionId.hero}`}
-          className="text-lg font-extrabold tracking-tight text-ink"
+          className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-ink"
         >
+          <BrandMark />
           {site.name}
         </Link>
 
@@ -78,7 +80,8 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-ivory">
               <SheetHeader>
-                <SheetTitle className="text-left text-lg font-extrabold">
+                <SheetTitle className="flex items-center gap-2 text-left text-lg font-extrabold">
+                  <BrandMark />
                   {site.name}
                 </SheetTitle>
               </SheetHeader>
