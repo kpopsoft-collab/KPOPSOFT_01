@@ -1,7 +1,8 @@
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Tag } from "@/components/ui/tag";
-import { accentBg, accentOnDark, sectionId, testimonials, type Accent } from "@/lib/site";
+import { accentBg, accentOnDark, sectionId, type Accent } from "@/lib/site";
+import type { PublicTestimonial } from "@/lib/public-content";
 import { cn } from "@/lib/utils";
 
 /** One accent per strip so each row reads as a distinct voice, not a repeated card. */
@@ -23,7 +24,11 @@ const rows: { accent: Accent }[] = [
  * the other two are lighter tints read fine with ink, keeping the section's
  * accent budget in check even though every row is a solid color.
  */
-export function Testimonials() {
+export function Testimonials({
+  testimonials,
+}: {
+  testimonials: PublicTestimonial[];
+}) {
   return (
     <Section id={sectionId.testimonials} className="relative overflow-hidden">
       <div className="max-w-2xl">

@@ -17,8 +17,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { AccentVisual } from "@/components/ui/accent-visual";
-import { accentBg, selectedWork, sectionId } from "@/lib/site";
+import { CoverVisual } from "@/components/ui/cover-visual";
+import { accentBg, sectionId } from "@/lib/site";
+import type { PublicWork } from "@/lib/public-content";
 import { cn } from "@/lib/utils";
 
 /**
@@ -35,7 +36,7 @@ import { cn } from "@/lib/utils";
  * ends with the contact CTA — the site has no per-project detail routes yet, so
  * an overlay keeps the landing-page flow intact instead of navigating away.
  */
-export function SelectedWork() {
+export function SelectedWork({ items }: { items: PublicWork[] }) {
   return (
     <Section id={sectionId.work}>
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -54,7 +55,7 @@ export function SelectedWork() {
       </div>
 
       <div className="mt-14 border-t border-ink/10 lg:mt-20">
-        {selectedWork.map((item, index) => (
+        {items.map((item, index) => (
           <WorkRow key={item.title} item={item} index={index} />
         ))}
       </div>
@@ -66,7 +67,7 @@ function WorkRow({
   item,
   index,
 }: {
-  item: (typeof selectedWork)[number];
+  item: PublicWork;
   index: number;
 }) {
   const categories = item.category.split(" · ");
@@ -74,7 +75,12 @@ function WorkRow({
   return (
     <Sheet>
       <SheetTrigger className="group -mx-3 grid w-full grid-cols-1 items-center gap-6 rounded-2xl border-b border-ink/10 px-3 py-8 text-left transition-colors hover:bg-ink/[0.03] focus-visible:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50 md:grid-cols-12 md:gap-8 md:py-10">
-        <AccentVisual accent={item.accent} className="md:col-span-2" />
+        <CoverVisual
+          accent={item.accent}
+          imageUrl={item.imageUrl}
+          alt={item.title}
+          className="md:col-span-2"
+        />
 
         <div className="flex items-center gap-3 md:col-span-2 md:flex-col md:items-start md:gap-1.5">
           <span className="text-sm font-semibold text-ink/35" aria-hidden>
@@ -109,7 +115,7 @@ function WorkDetail({
   item,
   categories,
 }: {
-  item: (typeof selectedWork)[number];
+  item: PublicWork;
   categories: string[];
 }) {
   // Focus the top of the panel on open (instead of base-ui's default of the
@@ -129,7 +135,12 @@ function WorkDetail({
           tabIndex={-1}
           className="flex flex-col gap-5 outline-none"
         >
-          <AccentVisual accent={item.accent} className="h-44 md:h-52" />
+          <CoverVisual
+            accent={item.accent}
+            imageUrl={item.imageUrl}
+            alt={item.title}
+            className="h-44 md:h-52"
+          />
           <div className="flex flex-col gap-3">
             <span className="text-eyebrow text-ink/60">{item.client}</span>
             <SheetTitle className="text-2xl leading-tight font-extrabold tracking-tight text-ink md:text-3xl">

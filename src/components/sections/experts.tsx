@@ -3,13 +3,8 @@ import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { TagList } from "@/components/ui/tag";
 import { Arch, Circle, Star } from "@/components/shapes";
-import {
-  accentBg,
-  accentOnDark,
-  accentText,
-  experts,
-  sectionId,
-} from "@/lib/site";
+import { accentBg, accentOnDark, accentText, sectionId } from "@/lib/site";
+import type { PublicExpert } from "@/lib/public-content";
 import { cn } from "@/lib/utils";
 
 /** Rotating shape per row so each expert reads as a distinct person, not a repeated card. */
@@ -28,7 +23,7 @@ const portraitShapes = [Arch, Circle, Star] as const;
  * faint index numerals used in Business Overview. Rows alternate portrait
  * left/right to read as an editorial list rather than a 3-up card grid.
  */
-export function Experts() {
+export function Experts({ experts }: { experts: PublicExpert[] }) {
   return (
     <Section id={sectionId.experts} className="relative overflow-hidden">
       <div className="max-w-2xl">

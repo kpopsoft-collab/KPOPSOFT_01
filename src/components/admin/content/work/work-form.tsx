@@ -72,7 +72,12 @@ export function WorkForm({
         <AccentPicker value={accent} onChange={setAccent} />
       </div>
 
-      <ImageUpload value={imageUrl} onChange={setImageUrl} label="커버 이미지" />
+      <ImageUpload
+        value={imageUrl}
+        onChange={setImageUrl}
+        bucket="work"
+        label="커버 이미지"
+      />
 
       <TextAreaField label="요약" value={summary} onChange={setSummary} placeholder="프로젝트 한두 문장 요약" />
       <TextAreaField label="문제 (Challenge)" value={challenge} onChange={setChallenge} />

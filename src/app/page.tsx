@@ -17,8 +17,32 @@ import { CompanyNumbers } from "@/components/sections/company-numbers";
 import { Testimonials } from "@/components/sections/testimonials";
 import { FinalCta } from "@/components/sections/final-cta";
 import { sectionId } from "@/lib/site";
+import {
+  getPublicExperts,
+  getPublicWork,
+  getPublicInsights,
+  getPublicTestimonials,
+  getPublicStats,
+  getPublicInquiryOptions,
+} from "@/lib/public-content";
 
-export default function Home() {
+// Render per request so admin content edits (DB) reflect immediately, instead
+// of being frozen into a build-time static page.
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  // Fetch all DB-backed public content server-side (falls back to site.ts seed
+  // on empty/error) and pass it down — client sections can't fetch themselves.
+  const [experts, work, insights, testimonials, stats, inquiryOptions] =
+    await Promise.all([
+      getPublicExperts(),
+      getPublicWork(),
+      getPublicInsights(),
+      getPublicTestimonials(),
+      getPublicStats(),
+      getPublicInquiryOptions(),
+    ]);
+
   return (
     <>
       <Header />
@@ -29,15 +53,15 @@ export default function Home() {
         <Software />
         <AiSolutions />
         <Education />
-        <Experts />
-        <SelectedWork />
+        <Experts experts={experts} />
+        <SelectedWork items={work} />
         <Process />
         <B2bEducation />
-        <Insights />
-        <CompanyNumbers />
-        <Testimonials />
+        <Insights insights={insights} />
+        <CompanyNumbers stats={stats} />
+        <Testimonials testimonials={testimonials} />
         <Suspense>
-          <FinalCta />
+          <FinalCta inquiryOptions={inquiryOptions} />
         </Suspense>
       </main>
       <Footer />

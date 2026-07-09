@@ -7,7 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Tag } from "@/components/ui/tag";
-import { AccentVisual } from "@/components/ui/accent-visual";
+import { CoverVisual } from "@/components/ui/cover-visual";
 import {
   Sheet,
   SheetClose,
@@ -19,7 +19,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Cube, Star, Wave } from "@/components/shapes";
-import { accentText, insights, sectionId } from "@/lib/site";
+import { accentText, sectionId } from "@/lib/site";
+import type { PublicInsight } from "@/lib/public-content";
 import { cn } from "@/lib/utils";
 
 /**
@@ -35,7 +36,7 @@ import { cn } from "@/lib/utils";
  * contact CTA that deep-links to the form with this article's topic preselected
  * — mirrors Selected Work / Education so all three surfaces behave the same.
  */
-export function Insights() {
+export function Insights({ insights }: { insights: PublicInsight[] }) {
   return (
     <Section id={sectionId.insights}>
       <div>
@@ -63,7 +64,7 @@ function ArticleCard({
   item,
   index,
 }: {
-  item: (typeof insights)[number];
+  item: PublicInsight;
   index: number;
 }) {
   const Icon = motifs[index % motifs.length];
@@ -102,7 +103,7 @@ function ArticleCard({
   );
 }
 
-function ArticleDetail({ item }: { item: (typeof insights)[number] }) {
+function ArticleDetail({ item }: { item: PublicInsight }) {
   // Focus the top of the panel on open (not base-ui's default first tabbable,
   // the footer CTA far down the scroll container) so every article opens
   // scrolled to its top. Matches Selected Work / Education.
@@ -125,7 +126,12 @@ function ArticleDetail({ item }: { item: (typeof insights)[number] }) {
           tabIndex={-1}
           className="flex flex-col gap-5 outline-none"
         >
-          <AccentVisual accent={item.accent} className="h-44 md:h-52" />
+          <CoverVisual
+            accent={item.accent}
+            imageUrl={item.imageUrl}
+            alt={item.title.replace(/\n/g, " ")}
+            className="h-44 md:h-52"
+          />
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <Tag>{item.tag}</Tag>
@@ -162,6 +168,12 @@ function ArticleDetail({ item }: { item: (typeof insights)[number] }) {
           이 주제로 문의하기
           <ArrowUpRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </SheetClose>
+        <Link
+          href={`/insights/${item.slug}`}
+          className="inline-flex h-13 items-center justify-center gap-2 rounded-full border border-ink/15 px-7 text-[0.95rem] font-semibold whitespace-nowrap text-ink/70 transition-colors hover:border-ink/35 hover:text-ink"
+        >
+          전체 페이지로 보기
+        </Link>
       </SheetFooter>
     </SheetContent>
   );

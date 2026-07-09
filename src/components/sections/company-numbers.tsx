@@ -14,7 +14,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { accentText, sectionId, stats, type Accent } from "@/lib/site";
+import { accentText, sectionId, type Accent } from "@/lib/site";
+import type { PublicStat } from "@/lib/public-content";
 import { cn } from "@/lib/utils";
 
 const accents: Accent[] = ["blue", "red", "yellow", "mint"];
@@ -86,7 +87,7 @@ function Stat({
   );
 }
 
-export function CompanyNumbers() {
+export function CompanyNumbers({ stats }: { stats: PublicStat[] }) {
   const [active, setActive] = useState(false);
   const observedRef = useRef<HTMLDivElement>(null);
 
