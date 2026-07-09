@@ -89,7 +89,18 @@ const data: ContentData = {
   stats: new MockRepo(mockStats, "stat"),
 };
 
-/** Single accessor. Swap the repos here for Supabase-backed ones on wiring day. */
+/**
+ * Single accessor. Uses Supabase-backed repos when the project is configured,
+ * else the in-memory mock so the app still runs without a DB.
+ */
 export function getContentData(): ContentData {
+  if (
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require("./supabase-content") as typeof import("./supabase-content"))
+      .supabaseContentData;
+  }
   return data;
 }

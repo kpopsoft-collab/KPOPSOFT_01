@@ -81,7 +81,12 @@ export function ExpertForm({
         <AccentPicker value={accent} onChange={setAccent} />
       </div>
 
-      <ImageUpload value={imageUrl} onChange={setImageUrl} label="강사 사진" />
+      <ImageUpload
+        value={imageUrl}
+        onChange={setImageUrl}
+        bucket="experts"
+        label="강사 사진"
+      />
 
       <CheckboxField label="공개 노출" checked={isPublished} onChange={setIsPublished} />
 

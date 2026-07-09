@@ -13,6 +13,7 @@ import {
   Users,
   BarChart3,
   ListChecks,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 
@@ -46,5 +47,9 @@ export const adminNav: AdminNavGroup[] = [
       { label: "수치", href: "/admin/content/stats", icon: BarChart3 },
       { label: "문의 옵션", href: "/admin/content/inquiry-options", icon: ListChecks },
     ],
+  },
+  {
+    heading: "계정",
+    items: [{ label: "설정", href: "/admin/settings", icon: Settings }],
   },
 ];

@@ -22,27 +22,32 @@ import {
 } from "@/components/ui/select";
 import { Ring, Star } from "@/components/shapes";
 import { submitInquiry } from "@/lib/inquiry-actions";
-import { inquiryOptions, sectionId, type InquiryType } from "@/lib/site";
+import { sectionId } from "@/lib/site";
+import type { PublicInquiryOption } from "@/lib/public-content";
 import { cn } from "@/lib/utils";
 
-/** 문의 유형/세부 유형은 site.ts의 inquiryOptions(어드민 관리 예정 단일 소스)에서 온다. */
-const defaultOption = inquiryOptions[0];
-
-function optionFor(type: InquiryType) {
-  return inquiryOptions.find((option) => option.type === type) ?? defaultOption;
-}
-
-function subtypesFor(type: InquiryType) {
-  return optionFor(type).subtypes;
+/**
+ * 문의 유형/세부 유형은 DB(inquiry_types/inquiry_subtypes)에서 오며, 서버에서
+ * 읽어 props로 내려온다(getPublicInquiryOptions, site.ts 폴백).
+ */
+function subtypesFor(options: PublicInquiryOption[], type: string) {
+  const found = options.find((option) => option.type === type) ?? options[0];
+  return found ? found.subtypes : [];
 }
 
 /** 유형/세부 유형 미선택 시(폼 진입 직후) 보여줄 중립 예시. */
 const NEUTRAL_PLACEHOLDER = "문의하실 내용을 자유롭게 적어 주세요.";
 
 /** 선택된 세부 유형(label)에 맞는 문의 내용 예시. 미선택이면 중립 문구. */
-function placeholderFor(type: InquiryType | "", subtype: string): string {
+function placeholderFor(
+  options: PublicInquiryOption[],
+  type: string,
+  subtype: string,
+): string {
   if (!type || !subtype) return NEUTRAL_PLACEHOLDER;
-  const matched = subtypesFor(type).find((item) => item.label === subtype);
+  const matched = subtypesFor(options, type).find(
+    (item) => item.label === subtype,
+  );
   return matched?.placeholder ?? NEUTRAL_PLACEHOLDER;
 }
 
@@ -174,9 +179,13 @@ function SubtypeField({
  * dark-panel treatment — this section is the large graphic statement that
  * precedes it, not a restatement of it.
  */
-export function FinalCta() {
+export function FinalCta({
+  inquiryOptions,
+}: {
+  inquiryOptions: PublicInquiryOption[];
+}) {
   // 폼 진입 직후엔 유형·세부 유형 모두 미선택 — 사용자가 능동적으로 고르게 한다.
-  const [type, setType] = useState<InquiryType | "">("");
+  const [type, setType] = useState<string>("");
   const [subtype, setSubtype] = useState<string>("");
   const [sender, setSender] = useState("");
   const [email, setEmail] = useState("");
@@ -207,7 +216,7 @@ export function FinalCta() {
     }
   }
 
-  const handleTypeChange = (nextType: InquiryType) => {
+  const handleTypeChange = (nextType: string) => {
     setType(nextType);
     setSubtype(""); // 유형을 바꾸면 세부 유형은 다시 고르게 한다.
   };
@@ -336,7 +345,9 @@ export function FinalCta() {
 
               {type && (
                 <SubtypeField
-                  subtypes={subtypesFor(type).map((item) => item.label)}
+                  subtypes={subtypesFor(inquiryOptions, type).map(
+                    (item) => item.label,
+                  )}
                   value={subtype}
                   onChange={setSubtype}
                 />
@@ -370,7 +381,7 @@ export function FinalCta() {
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   className="min-h-36 resize-y rounded-2xl border border-ink/15 bg-ivory/60 px-4 py-3 text-base font-medium text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-brand-blue focus:bg-white"
-                  placeholder={placeholderFor(type, subtype)}
+                  placeholder={placeholderFor(inquiryOptions, type, subtype)}
                 />
               </label>
 

@@ -147,7 +147,18 @@ class MockInquiryOptions implements InquiryOptionsData {
 
 const data = new MockInquiryOptions();
 
-/** Single accessor. Swap for the Supabase-backed impl on wiring day. */
+/**
+ * Single accessor. Uses the Supabase-backed impl when the project is
+ * configured, else the in-memory mock so the app still runs without a DB.
+ */
 export function getInquiryOptionsData(): InquiryOptionsData {
+  if (
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./supabase-inquiry-options") as typeof import("./supabase-inquiry-options");
+    return mod.supabaseInquiryOptions;
+  }
   return data;
 }

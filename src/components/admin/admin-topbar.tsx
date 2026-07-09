@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Menu, LogOut } from "lucide-react";
+
+import { signOutAdmin } from "@/lib/admin/auth-actions";
 
 import {
   Sheet,
@@ -49,13 +50,15 @@ export function AdminTopbar({ email }: { email: string }) {
         <span className="hidden text-sm font-medium text-ink/60 sm:inline">
           {email}
         </span>
-        <Link
-          href="/admin/login"
-          className="inline-flex min-h-9 items-center gap-2 rounded-full border border-ink/15 px-4 text-sm font-semibold text-ink/70 transition-colors hover:bg-ink/5"
-        >
-          <LogOut className="size-4" />
-          로그아웃
-        </Link>
+        <form action={signOutAdmin}>
+          <button
+            type="submit"
+            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-ink/15 px-4 text-sm font-semibold text-ink/70 transition-colors hover:bg-ink/5"
+          >
+            <LogOut className="size-4" />
+            로그아웃
+          </button>
+        </form>
       </div>
     </header>
   );

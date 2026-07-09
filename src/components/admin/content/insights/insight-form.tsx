@@ -94,7 +94,12 @@ export function InsightForm({
         <AccentPicker value={accent} onChange={setAccent} />
       </div>
 
-      <ImageUpload value={imageUrl} onChange={setImageUrl} label="커버 이미지" />
+      <ImageUpload
+        value={imageUrl}
+        onChange={setImageUrl}
+        bucket="insights"
+        label="커버 이미지"
+      />
 
       <TextAreaField label="요약 (Excerpt)" value={excerpt} onChange={setExcerpt} />
 
