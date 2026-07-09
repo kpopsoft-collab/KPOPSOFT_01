@@ -21,7 +21,7 @@ export default async function InquiryOptionsListPage() {
         </div>
         <Link
           href="/admin/content/inquiry-options/new"
-          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-brand-navy"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-brand-navy"
         >
           <Plus className="size-4" aria-hidden />
           유형 추가
