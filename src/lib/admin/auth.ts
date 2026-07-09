@@ -10,6 +10,8 @@
 
 import { redirect } from "next/navigation";
 
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
 export type AdminSession = { email: string } | null;
 
 /** Dev bypass is ON unless explicitly disabled — flips off once auth is real. */
@@ -19,8 +21,18 @@ export async function getAdminSession(): Promise<AdminSession> {
   if (DEV_BYPASS) {
     return { email: "dev@kpopsoft.local" };
   }
-  // TODO(wiring day): read @supabase/ssr session, verify against admin_users / is_admin().
-  return null;
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // admin_users membership via the is_admin() SQL gate (docs §4.3/§5).
+  const { data: isAdmin, error } = await supabase.rpc("is_admin");
+  if (error || !isAdmin) return null;
+
+  return { email: user.email ?? "" };
 }
 
 /** Guard for the admin shell layout — redirects to /admin/login when unauthenticated. */

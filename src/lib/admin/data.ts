@@ -97,7 +97,20 @@ class MockAdminData implements AdminDataSource {
 
 const mock = new MockAdminData();
 
-/** Single accessor. Swap the return here for the Supabase adapter on wiring day. */
+/**
+ * Single accessor. Uses the Supabase adapter when the project is configured
+ * (env present), else falls back to the in-memory mock — so the app still runs
+ * without a DB. The Supabase module is imported lazily to keep `server-only`
+ * out of any accidental client path.
+ */
 export function getAdminData(): AdminDataSource {
+  if (
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require("./supabase-data") as typeof import("./supabase-data"))
+      .supabaseAdminData;
+  }
   return mock;
 }
