@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '\"[\\(now|strflocaltime(\"%F %T\"))] \\(.tool_input.command)\"' >> /Users/lena/Documents/GitHub/kpopsoft/logs/commands.log 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '\"[\\(now|strflocaltime(\"%F %T\"))] \\(.tool_name) \\(.tool_input.file_path // .tool_response.filePath // \"?\")\"' >> /Users/lena/Documents/GitHub/kpopsoft/logs/edits.log 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
