@@ -54,7 +54,7 @@ export function SelectedWork({ items }: { items: PublicWork[] }) {
         </p>
       </div>
 
-      <div className="mt-14 border-t border-ink/10 lg:mt-20">
+      <div className="mt-14 lg:mt-20">
         {items.map((item, index) => (
           <WorkRow key={item.title} item={item} index={index} />
         ))}
@@ -74,7 +74,7 @@ function WorkRow({
 
   return (
     <Sheet>
-      <SheetTrigger className="group -mx-3 grid w-full grid-cols-1 items-center gap-6 rounded-2xl border-b border-ink/10 px-3 py-8 text-left transition-colors hover:bg-ink/[0.03] focus-visible:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50 md:grid-cols-12 md:gap-8 md:py-10">
+      <SheetTrigger className="group -mx-3 grid w-[calc(100%+1.5rem)] grid-cols-1 items-center gap-6 rounded-2xl border-b border-ink/10 px-3 py-8 text-left transition-colors hover:bg-ink/[0.03] focus-visible:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50 md:grid-cols-12 md:gap-8 md:py-10">
         <CoverVisual
           accent={item.accent}
           imageUrl={item.imageUrl}
