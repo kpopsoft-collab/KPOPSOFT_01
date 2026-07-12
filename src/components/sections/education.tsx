@@ -11,8 +11,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { EditorialPhoto } from "@/components/ui/editorial-photo";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { TagList } from "@/components/ui/tag";
+import { photography } from "@/lib/photography";
 import { accentBg, educationTracks, sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -37,13 +39,26 @@ export function Education() {
         </p>
       </div>
 
+      <div className="mt-14 grid gap-4 lg:mt-20 lg:grid-cols-12">
+        <EditorialPhoto
+          asset={photography.education.workshop}
+          sizes="(min-width: 1024px) 66vw, 100vw"
+          className="aspect-video lg:col-span-8"
+        />
+        <EditorialPhoto
+          asset={photography.education.classroom}
+          sizes="(min-width: 1024px) 34vw, 100vw"
+          className="aspect-[4/3] lg:col-span-4"
+        />
+      </div>
+
       <Accordion
         value={openTrackId ? [openTrackId] : []}
         onValueChange={(value) => {
           const next = value[value.length - 1];
           setOpenTrackId(typeof next === "string" ? next : null);
         }}
-        className="mt-14 border-t border-ink/10 lg:mt-20"
+        className="mt-8 border-t border-ink/10 lg:mt-10"
       >
         {educationTracks.map((track) => (
           <AccordionItem

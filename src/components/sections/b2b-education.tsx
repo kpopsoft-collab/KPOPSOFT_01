@@ -1,6 +1,8 @@
 import { Section } from "@/components/layout/section";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { CtaButton } from "@/components/ui/cta-button";
+import { EditorialPhoto } from "@/components/ui/editorial-photo";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { photography } from "@/lib/photography";
 import { sectionId } from "@/lib/site";
 
 /**
@@ -17,32 +19,47 @@ export function B2bEducation() {
   return (
     <Section id={sectionId.b2b}>
       <div className="relative overflow-hidden rounded-3xl bg-brand-navy px-6 py-16 text-ivory sm:px-10 md:px-16 md:py-24">
-        <div className="relative mx-auto max-w-2xl text-left md:text-left">
-          <Eyebrow className="text-ivory/70" dotClassName="bg-brand-yellow">
-            기업 맞춤형 교육
-          </Eyebrow>
+        <div className="relative grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-10">
+          <div className="text-left lg:col-span-7">
+            <Eyebrow className="text-ivory/70" dotClassName="bg-brand-yellow">
+              기업 맞춤형 교육
+            </Eyebrow>
 
-          <h2 className="text-section mt-6 text-ivory">
-            조직에 필요한 AI 활용 방식을
-            <br />
-            함께 설계합니다.
-          </h2>
+            <h2 className="text-section mt-6 text-ivory">
+              조직에 필요한 AI 활용 방식을
+              <br />
+              함께 설계합니다.
+            </h2>
 
-          <p className="mt-6 max-w-xl text-body-lg text-ivory/80">
-            팀의 업무와 목표에 맞춘 커리큘럼으로, 이론이 아닌 실무에 바로
-            적용되는 AI 활용 교육을 설계합니다.
-          </p>
+            <p className="mt-6 max-w-xl text-body-lg text-ivory/80">
+              팀의 업무와 목표에 맞춘 커리큘럼으로, 이론이 아닌 실무에 바로
+              적용되는 AI 활용 교육을 설계합니다.
+            </p>
 
-          <div className="mt-10">
-            <CtaButton
-              href={`/?ct=${encodeURIComponent("교육 문의")}&cs=${encodeURIComponent(
-                "기업 맞춤·프로젝트",
-              )}#${sectionId.contact}`}
-              variant="ivory"
-              arrow
-            >
-              기업 교육 상담
-            </CtaButton>
+            <div className="mt-10">
+              <CtaButton
+                href={`/?ct=${encodeURIComponent("교육 문의")}&cs=${encodeURIComponent(
+                  "기업 맞춤·프로젝트",
+                )}#${sectionId.contact}`}
+                variant="ivory"
+                arrow
+              >
+                기업 교육 상담
+              </CtaButton>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:col-span-5">
+            <EditorialPhoto
+              asset={photography.b2b.lounge}
+              sizes="(min-width: 1024px) 34vw, 100vw"
+              className="aspect-[16/10]"
+            />
+            <EditorialPhoto
+              asset={photography.b2b.meetingRoom}
+              sizes="(min-width: 1024px) 34vw, 100vw"
+              className="aspect-video"
+            />
           </div>
         </div>
       </div>

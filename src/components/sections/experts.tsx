@@ -56,7 +56,7 @@ export function Experts({ experts }: { experts: PublicExpert[] }) {
                   block with a monogram initial. */}
               <div
                 className={cn(
-                  "relative flex aspect-square w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl sm:w-36 lg:w-48",
+                  "relative flex aspect-[4/5] w-full max-w-64 shrink-0 items-center justify-center overflow-hidden rounded-3xl sm:max-w-72 lg:w-72",
                   accentBg[expert.accent],
                   accentOnDark[expert.accent] ? "text-ivory" : "text-ink",
                 )}
@@ -66,7 +66,7 @@ export function Experts({ experts }: { experts: PublicExpert[] }) {
                     src={expert.image}
                     alt={expert.name}
                     fill
-                    sizes="(min-width: 1024px) 12rem, (min-width: 640px) 9rem, 7rem"
+                    sizes="(min-width: 1024px) 18rem, (min-width: 640px) 18rem, 16rem"
                     className="object-cover"
                   />
                 ) : (

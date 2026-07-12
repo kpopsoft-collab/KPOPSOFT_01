@@ -467,7 +467,7 @@ export const experts: Expert[] = [
     quote: "좋은 소프트웨어는 설명이 필요 없습니다. 그냥 작동합니다.",
     tags: ["Software Development", "Digital Product"],
     accent: "blue",
-    image: "/experts/an-younggeun.jpg",
+    image: "/experts/안영근02.png",
   },
   {
     name: "김상혁",
@@ -475,7 +475,7 @@ export const experts: Expert[] = [
     quote: "AI는 도구입니다. 중요한 건 업무에 어떻게 녹이느냐입니다.",
     tags: ["AI Automation", "AI 활용"],
     accent: "red",
-    image: "/experts/kim-sanghyuk.jpg",
+    image: "/experts/김상혁.png",
   },
   {
     name: "이동준",

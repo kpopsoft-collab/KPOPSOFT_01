@@ -18,3 +18,18 @@ test("software uses all four approved making-process images", () => {
     assert.match(source, new RegExp(`photography\\.software\\.${key}`));
   }
 });
+
+test("education and B2B use all approved photography", () => {
+  const education = read("education.tsx");
+  const b2b = read("b2b-education.tsx");
+  assert.match(education, /photography\.education\.workshop/);
+  assert.match(education, /photography\.education\.classroom/);
+  assert.match(b2b, /photography\.b2b\.lounge/);
+  assert.match(b2b, /photography\.b2b\.meetingRoom/);
+});
+
+test("experts use the approved high-resolution portraits", () => {
+  const site = readFileSync(join(process.cwd(), "src/lib/site.ts"), "utf8");
+  assert.match(site, /\/experts\/안영근02\.png/);
+  assert.match(site, /\/experts\/김상혁\.png/);
+});
