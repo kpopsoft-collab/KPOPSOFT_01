@@ -3,7 +3,9 @@ import { ArrowUpRight } from "lucide-react";
 
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
+import { EditorialPhoto } from "@/components/ui/editorial-photo";
 import { Circle, Plus } from "@/components/shapes";
+import { photography } from "@/lib/photography";
 import {
   accentText,
   sectionId,
@@ -159,6 +161,32 @@ export function Software() {
               </Link>
             );
           })}
+        </div>
+      </div>
+
+      <div className="mt-14 lg:mt-20">
+        <p className="text-eyebrow text-ink/50">현장에서 만드는 과정</p>
+        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <EditorialPhoto
+            asset={photography.software.collaboration}
+            sizes="(min-width: 1024px) 58vw, 100vw"
+            className="aspect-[16/10] lg:col-span-7 lg:row-span-2 lg:aspect-auto"
+          />
+          <EditorialPhoto
+            asset={photography.software.dashboard}
+            sizes="(min-width: 1024px) 42vw, 100vw"
+            className="aspect-[4/3] lg:col-span-5 lg:col-start-8"
+          />
+          <EditorialPhoto
+            asset={photography.software.workstation}
+            sizes="(min-width: 1024px) 42vw, 100vw"
+            className="aspect-[4/3] lg:col-span-5 lg:col-start-8"
+          />
+          <EditorialPhoto
+            asset={photography.software.sketch}
+            sizes="(min-width: 1024px) 42vw, 100vw"
+            className="aspect-[4/3] lg:col-span-5 lg:col-start-8"
+          />
         </div>
       </div>
     </Section>

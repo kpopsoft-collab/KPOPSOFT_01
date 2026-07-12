@@ -1,6 +1,8 @@
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
+import { EditorialPhoto } from "@/components/ui/editorial-photo";
 import { Arch, Circle, Star, Wave } from "@/components/shapes";
+import { photography } from "@/lib/photography";
 import { sectionId } from "@/lib/site";
 
 /**
@@ -55,6 +57,19 @@ export function CompanyIntroduction() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-14 grid gap-4 lg:mt-20 lg:grid-cols-12">
+        <EditorialPhoto
+          asset={photography.about.brandWall}
+          sizes="(min-width: 1024px) 58vw, 100vw"
+          className="aspect-[16/10] lg:col-span-7"
+        />
+        <EditorialPhoto
+          asset={photography.about.headquarters}
+          sizes="(min-width: 1024px) 42vw, 100vw"
+          className="aspect-[4/3] lg:col-span-5 lg:aspect-auto"
+        />
       </div>
     </Section>
   );
