@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdminAction } from "@/lib/admin/auth";
 import { getContentData } from "@/lib/admin/content-data";
 import type { Testimonial } from "@/lib/admin/content-types";
 
@@ -11,12 +12,14 @@ type TestimonialInput = Omit<Testimonial, "id" | "sortOrder">;
 const LIST = "/admin/content/testimonials";
 
 export async function createTestimonial(input: TestimonialInput) {
+  await requireAdminAction();
   await getContentData().testimonials.create(input);
   revalidatePath(LIST);
   redirect(LIST);
 }
 
 export async function updateTestimonial(id: string, input: TestimonialInput) {
+  await requireAdminAction();
   await getContentData().testimonials.update(id, input);
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
@@ -24,11 +27,13 @@ export async function updateTestimonial(id: string, input: TestimonialInput) {
 }
 
 export async function deleteTestimonial(id: string) {
+  await requireAdminAction();
   await getContentData().testimonials.remove(id);
   revalidatePath(LIST);
 }
 
 export async function setTestimonialPublished(id: string, next: boolean) {
+  await requireAdminAction();
   await getContentData().testimonials.update(id, { isPublished: next });
   revalidatePath(LIST);
 }

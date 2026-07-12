@@ -7,7 +7,8 @@
     "build": "next build --webpack",
     "build:turbopack": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.test.mts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

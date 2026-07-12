@@ -80,44 +80,34 @@ export const inquiryOptions = [
     type: "교육 문의",
     subtypes: [
       {
-        label: "AI 활용 입문",
+        label: "AI 기초교육",
         placeholder:
-          "예) AI를 처음 접하는 팀원 대상 입문 교육을 찾습니다. 인원 △명, 희망 일정은 ○월입니다.",
+          "예) AI를 처음 배우는 구성원 △명을 대상으로 기초교육을 원합니다. 목표와 희망 일정은 ○○입니다.",
       },
       {
-        label: "AI 업무 활용",
+        label: "업무용 AI",
         placeholder:
-          "예) 실무에 AI를 바로 활용하는 교육을 원합니다. 대상은 ○○팀 △명, 목표는 업무 효율화입니다.",
+          "예) ○○팀 △명의 문서·회의·리서치 업무에 AI를 적용하고 싶습니다. 희망 일정은 ○○입니다.",
       },
       {
-        label: "Vibe Coding",
+        label: "바이브 코딩",
         placeholder:
-          "예) 비개발자도 AI로 직접 만들어보는 실습 교육을 원합니다. 인원 △명, 희망 일정은 ○월입니다.",
+          "예) 비개발자 △명이 AI로 웹페이지나 업무 도구를 만드는 교육을 원합니다. 목표와 희망 일정은 ○○입니다.",
       },
       {
-        label: "Software Development",
+        label: "AI 자동화",
         placeholder:
-          "예) 개발 실무 역량을 키우는 교육이 필요합니다. 대상 수준은 ○○, 인원 △명입니다.",
+          "예) ○○팀 △명이 반복 업무 자동화 워크플로를 직접 구축하는 교육을 원합니다. 희망 일정은 ○○입니다.",
       },
       {
-        label: "Web & App Development",
+        label: "콘텐츠·동영상 제작",
         placeholder:
-          "예) 웹·앱 개발 실무 교육을 찾습니다. 대상 수준은 ○○, 인원 △명입니다.",
+          "예) 구성원 △명이 AI로 기획·대본·이미지·동영상을 제작하는 교육을 원합니다. 제작 목표는 ○○입니다.",
       },
       {
-        label: "AI Automation",
+        label: "기업 맞춤·프로젝트",
         placeholder:
-          "예) 업무 자동화를 직접 구축해보는 교육을 원합니다. 대상은 ○○팀 △명입니다.",
-      },
-      {
-        label: "AI Prototype Lab",
-        placeholder:
-          "예) 아이디어를 AI 프로토타입으로 만들어보는 실습 과정을 찾습니다. 인원 △명입니다.",
-      },
-      {
-        label: "기업 맞춤형 교육",
-        placeholder:
-          "예) 우리 회사 상황에 맞춘 커리큘럼이 필요합니다. 대상·목표·희망 일정은 ○○입니다.",
+          "예) 우리 조직의 실제 과제로 진행하는 맞춤 커리큘럼이 필요합니다. 대상 △명, 목표와 희망 일정은 ○○입니다.",
       },
       {
         label: "기타",
@@ -209,193 +199,205 @@ export const businesses = [
     summary:
       "AI와 디지털 기술을 실제 프로젝트를 통해 학습하는 실무 중심의 교육 프로그램을 운영합니다.",
     items: [
-      "AI 활용 입문",
-      "AI 업무 활용",
-      "Vibe Coding",
-      "웹 제작 실습",
-      "AI Prototype Lab",
-      "기업 맞춤형",
+      "AI 기초교육",
+      "업무용 AI",
+      "바이브 코딩",
+      "AI 자동화",
+      "콘텐츠·동영상 제작",
+      "기업 맞춤·프로젝트",
     ],
   },
 ] as const;
 
-/**
- * Education programs (docs/디자인.md §Program Cards).
- *
- * summary/audience/curriculum/outcome 는 프로그램 상세 모달용 콘텐츠 —
- * 실제 커리큘럼 확정 시 교체할 초안이다. 목록(education) 카드는 name/desc/tags만,
- * 모달(ProgramDetail)은 나머지 필드까지 읽는다.
- */
-export const programs = [
+export type EducationStage = {
+  level: "입문" | "실무" | "프로젝트";
+  title: string;
+  modules: readonly string[];
+};
+
+export type EducationTrack = {
+  id:
+    | "ai-foundations"
+    | "work-ai"
+    | "vibe-coding"
+    | "ai-automation"
+    | "content-video"
+    | "custom-project";
+  index: string;
+  title: string;
+  description: string;
+  tags: readonly string[];
+  accent: Accent;
+  stages: readonly [EducationStage, EducationStage, EducationStage];
+  outcome: string;
+  inquirySubtype: string;
+};
+
+/** Six purpose-led tracks, each following 입문 → 실무 → 프로젝트. */
+export const educationTracks = [
   {
+    id: "ai-foundations",
     index: "01",
-    name: "AI 활용 입문",
-    desc: "AI를 처음 접하는 분을 위한 가벼운 시작.",
-    tags: ["AI 활용", "입문"],
+    title: "AI 기초교육",
+    description: "생성형 AI의 기본 원리와 안전한 사용법부터 시작합니다.",
+    tags: ["입문", "AI 리터러시"],
     accent: "mint",
-    summary:
-      "AI가 무엇이고 어떻게 쓰는지, 부담 없이 처음부터 익혀보는 입문 과정입니다.",
-    audience: [
-      "AI를 이제 막 시작해보려는 분",
-      "용어와 도구가 낯설게 느껴지는 분",
-      "기초부터 편하게 배우고 싶은 분",
+    stages: [
+      {
+        level: "입문",
+        title: "AI 이해하기",
+        modules: ["생성형 AI의 원리와 활용 사례", "AI 결과를 확인하고 질문하는 법"],
+      },
+      {
+        level: "실무",
+        title: "기본 도구 익히기",
+        modules: ["프롬프트 기초와 대화 설계", "ChatGPT와 주요 AI 도구 실습"],
+      },
+      {
+        level: "프로젝트",
+        title: "나의 활용 가이드",
+        modules: ["개인 업무 적용 시나리오", "보안·저작권·결과 검증 체크리스트"],
+      },
     ],
-    curriculum: [
-      "AI로 무엇을 할 수 있는지 살펴보기",
-      "AI와 대화하는 기본 감 익히기",
-      "많이 쓰이는 AI 도구 둘러보기",
-      "간단한 실습으로 직접 써보기",
-    ],
-    outcome: "수료 후 AI를 일상과 업무에 부담 없이 써볼 수 있습니다.",
+    outcome: "AI 도구를 스스로 선택하고 기본 업무에 안전하게 적용할 수 있습니다.",
+    inquirySubtype: "AI 기초교육",
   },
   {
+    id: "work-ai",
     index: "02",
-    name: "AI 업무 활용",
-    desc: "실무에서 바로 쓰는 AI 활용법을 익힙니다.",
-    tags: ["AI 활용", "생산성"],
+    title: "업무용 AI",
+    description: "문서·회의·리서치·데이터 업무의 생산성을 높입니다.",
+    tags: ["업무 활용", "생산성"],
     accent: "blue",
-    summary:
-      "문서 작성·정리·분석처럼 매일 반복하는 업무에 생성형 AI를 붙여 시간을 줄이는 실무 활용 과정입니다.",
-    audience: [
-      "반복적인 문서·자료 업무에 시간을 많이 쓰는 실무자",
-      "AI를 써보고 싶지만 어디서 시작할지 막막한 분",
-      "팀 생산성을 끌어올리고 싶은 리더",
+    stages: [
+      {
+        level: "입문",
+        title: "업무 분해",
+        modules: ["직무별 AI 활용 사례", "내 업무에서 AI가 맡을 단계 찾기"],
+      },
+      {
+        level: "실무",
+        title: "업무 적용",
+        modules: ["문서 작성·요약·번역", "회의록·보고서·리서치·데이터 정리"],
+      },
+      {
+        level: "프로젝트",
+        title: "표준 템플릿",
+        modules: ["직무별 재사용 프롬프트", "검토 기준과 팀 사용 가이드"],
+      },
     ],
-    curriculum: [
-      "업무별 프롬프트 설계와 재사용 템플릿",
-      "문서 초안·요약·번역·검토 자동화",
-      "회의록·리서치·데이터 정리 실습",
-      "내 업무에 맞는 AI 도구 조합",
-    ],
-    outcome: "수료 후 자신의 반복 업무를 AI로 절반 이하의 시간에 처리할 수 있습니다.",
+    outcome: "반복적인 지식 업무에 사용할 표준 AI 작업 절차를 만들 수 있습니다.",
+    inquirySubtype: "업무용 AI",
   },
   {
+    id: "vibe-coding",
     index: "03",
-    name: "Vibe Coding",
-    desc: "AI와 함께 코드를 작성하고 제품을 만듭니다.",
-    tags: ["Vibe Coding", "AI 활용"],
+    title: "바이브 코딩",
+    description: "AI와 함께 웹페이지와 업무 도구를 직접 만듭니다.",
+    tags: ["Vibe Coding", "프로토타입"],
     accent: "red",
-    summary:
-      "코드를 직접 몰라도 AI와 대화하며 실제로 동작하는 제품을 만들어보는 과정입니다.",
-    audience: [
-      "기획·디자인 등 비개발 직군",
-      "아이디어를 직접 만들어보고 싶은 창업가",
-      "AI로 개발 생산성을 높이려는 개발자",
+    stages: [
+      {
+        level: "입문",
+        title: "AI 코딩 시작",
+        modules: ["AI 코딩 도구 설정", "요구사항 작성과 작업 단위 나누기"],
+      },
+      {
+        level: "실무",
+        title: "작동하는 화면",
+        modules: ["웹페이지·폼·업무 도구 제작", "오류를 설명하고 수정하는 방법"],
+      },
+      {
+        level: "프로젝트",
+        title: "프로토타입 배포",
+        modules: ["사용 가능한 기능 완성", "배포와 사용자 피드백 반영"],
+      },
     ],
-    curriculum: [
-      "AI 코딩 도구 세팅과 작업 흐름",
-      "요구사항을 프롬프트로 옮기는 법",
-      "작은 웹앱을 처음부터 완성하기",
-      "디버깅·배포까지 AI와 함께",
-    ],
-    outcome: "수료 후 아이디어를 스스로 작동하는 프로토타입으로 만들 수 있습니다.",
+    outcome: "아이디어를 직접 테스트 가능한 디지털 프로토타입으로 구현할 수 있습니다.",
+    inquirySubtype: "바이브 코딩",
   },
   {
+    id: "ai-automation",
     index: "04",
-    name: "Software Development",
-    desc: "실제 서비스를 설계하고 개발하는 과정.",
-    tags: ["Software Development"],
-    accent: "navy",
-    summary:
-      "실제 서비스를 기준으로 설계부터 개발까지 소프트웨어 개발의 전 과정을 다루는 심화 과정입니다.",
-    audience: [
-      "개발 기초를 갖추고 실전 역량을 키우려는 분",
-      "사이드 프로젝트를 제품 수준으로 올리고 싶은 분",
-      "팀의 개발 표준을 잡고 싶은 실무자",
-    ],
-    curriculum: [
-      "요구사항 정의와 아키텍처 설계",
-      "프론트엔드·백엔드·DB 연동",
-      "인증·배포·운영 기초",
-      "실제 서비스 단위 프로젝트 완성",
-    ],
-    outcome: "수료 후 하나의 서비스를 설계에서 배포까지 스스로 끌고 갈 수 있습니다.",
-  },
-  {
-    index: "05",
-    name: "Web & App Development",
-    desc: "웹과 모바일 앱을 처음부터 끝까지.",
-    tags: ["Digital Product"],
-    accent: "sky",
-    summary:
-      "반응형 웹과 모바일 앱을 기획부터 배포까지 직접 만들어보는 실습 중심 과정입니다.",
-    audience: [
-      "웹·앱을 직접 만들어보고 싶은 입문자",
-      "자사 서비스를 만들려는 소규모 팀",
-      "프론트엔드 전반을 익히려는 분",
-    ],
-    curriculum: [
-      "반응형 UI 구현과 컴포넌트 설계",
-      "모바일 앱 화면·네비게이션 구성",
-      "API 연동과 상태 관리",
-      "앱스토어·웹 배포",
-    ],
-    outcome: "수료 후 웹과 앱을 하나씩 직접 만들어 배포할 수 있습니다.",
-  },
-  {
-    index: "06",
-    name: "AI Automation",
-    desc: "반복 업무를 자동화 워크플로우로 전환합니다.",
-    tags: ["AI Automation"],
+    title: "AI 자동화",
+    description: "반복 업무를 AI와 노코드 도구로 연결해 자동화합니다.",
+    tags: ["AI Automation", "Workflow"],
     accent: "yellow",
-    summary:
-      "사람이 반복하던 업무를 AI와 자동화 도구로 이어붙여 워크플로우로 바꾸는 과정입니다.",
-    audience: [
-      "매일 같은 작업을 반복하는 운영·CS·마케팅 실무자",
-      "사내 업무를 자동화하고 싶은 팀",
-      "노코드 자동화를 배우려는 분",
+    stages: [
+      {
+        level: "입문",
+        title: "자동화 진단",
+        modules: ["반복 업무와 병목 찾기", "현재 흐름과 예외 상황 정리"],
+      },
+      {
+        level: "실무",
+        title: "도구 연결",
+        modules: ["노코드 자동화 도구 연결", "문서·메일·데이터와 AI 처리"],
+      },
+      {
+        level: "프로젝트",
+        title: "워크플로 구축",
+        modules: ["실제 업무 자동화 1건 구현", "실패 알림·검수·운영 기준 설정"],
+      },
     ],
-    curriculum: [
-      "자동화할 업무 진단과 설계",
-      "노코드 자동화 도구 연결",
-      "AI를 붙인 문서·데이터 처리 파이프라인",
-      "실제 업무 자동화 1건 구축",
-    ],
-    outcome: "수료 후 팀의 반복 업무 하나를 자동으로 도는 워크플로우로 만들 수 있습니다.",
+    outcome: "팀의 반복 업무 하나를 안정적으로 실행되는 자동화 흐름으로 전환할 수 있습니다.",
+    inquirySubtype: "AI 자동화",
   },
   {
-    index: "07",
-    name: "AI Prototype Lab",
-    desc: "아이디어를 빠르게 프로토타입으로 검증합니다.",
-    tags: ["Prototype Development", "AI 활용"],
+    id: "content-video",
+    index: "05",
+    title: "콘텐츠·동영상 제작",
+    description: "기획부터 이미지·음성·자막·영상 편집까지 완성합니다.",
+    tags: ["콘텐츠 제작", "AI Video"],
     accent: "coral",
-    summary:
-      "아이디어를 짧은 사이클로 프로토타입으로 만들어 시장·사용자 반응을 검증하는 랩 형식 과정입니다.",
-    audience: [
-      "신규 아이디어를 빠르게 검증하려는 창업가·기획자",
-      "사내 신사업을 실험하는 팀",
-      "프로토타이핑 역량을 갖추려는 분",
+    stages: [
+      {
+        level: "입문",
+        title: "콘텐츠 기획",
+        modules: ["목적과 대상 설정", "아이디어·대본·스토리보드 작성"],
+      },
+      {
+        level: "실무",
+        title: "AI 제작 실습",
+        modules: ["이미지·AI 음성·자막 제작", "장면 구성·편집·품질 검수"],
+      },
+      {
+        level: "프로젝트",
+        title: "영상 1편 완성",
+        modules: ["숏폼 또는 교육용 영상 제작", "게시 규격과 반복 제작 템플릿"],
+      },
     ],
-    curriculum: [
-      "문제 정의와 가설 세우기 (Idea)",
-      "빠른 프로토타입 제작 (Prototype)",
-      "사용자 테스트와 피드백 반영 (Test)",
-      "다음 단계 판단과 빌드 계획 (Build)",
-    ],
-    outcome: "수료 후 아이디어를 2주 안에 검증 가능한 프로토타입으로 만들 수 있습니다.",
+    outcome: "반복 가능한 AI 콘텐츠 제작 흐름과 게시 가능한 영상 결과물을 만들 수 있습니다.",
+    inquirySubtype: "콘텐츠·동영상 제작",
   },
   {
-    index: "08",
-    name: "기업 맞춤형 교육",
-    desc: "조직에 필요한 커리큘럼을 함께 설계합니다.",
-    tags: ["Software Development", "AI Automation"],
-    accent: "mint",
-    summary:
-      "조직의 목표와 현업 과제에 맞춰 커리큘럼을 함께 설계하고 진행하는 기업 전용 과정입니다.",
-    audience: [
-      "팀 전체의 AI·디지털 역량을 끌어올리려는 기업",
-      "직무별 맞춤 교육이 필요한 조직",
-      "교육을 실제 성과로 잇고 싶은 담당자",
+    id: "custom-project",
+    index: "06",
+    title: "기업 맞춤·프로젝트",
+    description: "조직의 실제 과제로 커리큘럼과 결과물을 함께 설계합니다.",
+    tags: ["기업 교육", "맞춤 프로젝트"],
+    accent: "navy",
+    stages: [
+      {
+        level: "입문",
+        title: "조직 진단",
+        modules: ["직무별 역량과 현업 과제 진단", "교육 목표와 성과 기준 설정"],
+      },
+      {
+        level: "실무",
+        title: "맞춤 워크숍",
+        modules: ["부서별 커리큘럼 운영", "실제 업무 데이터와 사례 실습"],
+      },
+      {
+        level: "프로젝트",
+        title: "현업 결과물",
+        modules: ["사내 과제 결과물 제작", "성과 점검과 팀 확산 가이드"],
+      },
     ],
-    curriculum: [
-      "현업 과제 진단과 목표 설정",
-      "직무·수준별 커리큘럼 설계",
-      "실제 업무 데이터로 진행하는 실습",
-      "교육 후 성과 점검과 사내 확산",
-    ],
-    outcome: "수료 후 조직이 배운 것을 실제 업무와 사내 도구로 이어갈 수 있습니다.",
+    outcome: "교육 내용을 실제 업무 개선 과제와 팀 표준으로 연결할 수 있습니다.",
+    inquirySubtype: "기업 맞춤·프로젝트",
   },
-] as const;
+] as const satisfies readonly EducationTrack[];
 
 /** Software work categories (docs/디자인.md §Software Development). */
 /**

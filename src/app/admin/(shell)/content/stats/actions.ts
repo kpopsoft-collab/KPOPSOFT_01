@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdminAction } from "@/lib/admin/auth";
 import { getContentData } from "@/lib/admin/content-data";
 import type { Stat } from "@/lib/admin/content-types";
 
@@ -11,12 +12,14 @@ type StatInput = Omit<Stat, "id" | "sortOrder">;
 const LIST = "/admin/content/stats";
 
 export async function createStat(input: StatInput) {
+  await requireAdminAction();
   await getContentData().stats.create(input);
   revalidatePath(LIST);
   redirect(LIST);
 }
 
 export async function updateStat(id: string, input: StatInput) {
+  await requireAdminAction();
   await getContentData().stats.update(id, input);
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
@@ -24,11 +27,13 @@ export async function updateStat(id: string, input: StatInput) {
 }
 
 export async function deleteStat(id: string) {
+  await requireAdminAction();
   await getContentData().stats.remove(id);
   revalidatePath(LIST);
 }
 
 export async function setStatPublished(id: string, next: boolean) {
+  await requireAdminAction();
   await getContentData().stats.update(id, { isPublished: next });
   revalidatePath(LIST);
 }

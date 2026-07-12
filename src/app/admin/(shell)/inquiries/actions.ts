@@ -10,16 +10,19 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdminAction } from "@/lib/admin/auth";
 import { getAdminData } from "@/lib/admin/data";
 import type { InquiryStatus } from "@/lib/admin/types";
 
 export async function updateInquiryStatus(id: string, status: InquiryStatus) {
+  await requireAdminAction();
   await getAdminData().updateInquiry(id, { status });
   revalidatePath("/admin/inquiries");
   revalidatePath(`/admin/inquiries/${id}`);
 }
 
 export async function updateInquiryMemo(id: string, memo: string) {
+  await requireAdminAction();
   await getAdminData().updateInquiry(id, { memo });
   revalidatePath("/admin/inquiries");
   revalidatePath(`/admin/inquiries/${id}`);

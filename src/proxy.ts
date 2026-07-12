@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { isAdminDevBypassEnabled } from "@/lib/admin/runtime-mode";
+
 /**
  * Next.js 16 proxy (formerly `middleware.ts`). Runs on `/admin/*` to keep the
  * Supabase auth session fresh and bounce unauthenticated visitors to the login
@@ -42,7 +44,7 @@ export async function proxy(request: NextRequest) {
 
   // Mirror the auth seam's DEV bypass: while it's on, don't gate /admin so the
   // shell stays reachable before login/first-admin exist (src/lib/admin/auth.ts).
-  const devBypass = process.env.ADMIN_DEV_BYPASS !== "false";
+  const devBypass = isAdminDevBypassEnabled();
 
   if (!devBypass && !user && !isLogin) {
     const url = request.nextUrl.clone();

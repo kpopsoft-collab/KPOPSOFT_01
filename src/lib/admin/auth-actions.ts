@@ -2,15 +2,14 @@
 
 /**
  * Admin auth Server Actions (docs/어드민기획.md §6). Real Supabase Auth, but the
- * ADMIN_DEV_BYPASS flag still short-circuits so screens work before a first
- * admin exists — mirrors getAdminSession() in auth.ts.
+ * ADMIN_DEV_BYPASS=true may short-circuit only outside production so local
+ * screens can be developed before a first admin exists.
  */
 
 import { redirect } from "next/navigation";
 
+import { isAdminDevBypassEnabled } from "@/lib/admin/runtime-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-const DEV_BYPASS = process.env.ADMIN_DEV_BYPASS !== "false";
 
 export type SignInState = { error: string } | null;
 
@@ -18,7 +17,7 @@ export async function signInAdmin(
   _prev: SignInState,
   formData: FormData,
 ): Promise<SignInState> {
-  if (DEV_BYPASS) {
+  if (isAdminDevBypassEnabled()) {
     redirect("/admin");
   }
 

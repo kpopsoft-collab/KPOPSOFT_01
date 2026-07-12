@@ -36,7 +36,7 @@ export function B2bEducation() {
           <div className="mt-10">
             <CtaButton
               href={`/?ct=${encodeURIComponent("교육 문의")}&cs=${encodeURIComponent(
-                "기업 맞춤형 교육",
+                "기업 맞춤·프로젝트",
               )}#${sectionId.contact}`}
               variant="ivory"
               arrow

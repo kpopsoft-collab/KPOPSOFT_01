@@ -6,6 +6,7 @@
  */
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminAction } from "@/lib/admin/auth";
 
 export type ChangePasswordState = {
   ok?: boolean;
@@ -16,6 +17,7 @@ export async function changePassword(
   _prev: ChangePasswordState,
   formData: FormData,
 ): Promise<ChangePasswordState> {
+  await requireAdminAction();
   const current = String(formData.get("current") ?? "");
   const next = String(formData.get("next") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
