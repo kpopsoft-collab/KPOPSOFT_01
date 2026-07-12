@@ -1,6 +1,6 @@
 # KPOPSOFT 교육 트랙형 커리큘럼 설계
 
-작성일: 2026-07-12  
+작성일: 2026-07-12
 대상 브랜치: `codex/kpopsoft-maxonomy-concept-wind`
 
 ## 1. 목표
@@ -177,4 +177,3 @@ type EducationTrack = {
 - 수강 신청·결제·회원·진도 관리
 - 운영 Supabase 데이터의 자동 마이그레이션
 - 강의별 상세 라우트
-

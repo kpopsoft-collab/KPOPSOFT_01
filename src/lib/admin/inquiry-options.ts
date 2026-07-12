@@ -9,6 +9,7 @@
  */
 
 import { inquiryOptions } from "@/lib/site";
+import { resolveAdminDataMode } from "./runtime-mode";
 
 export type InquirySubtypeOption = {
   id: string;
@@ -148,17 +149,16 @@ class MockInquiryOptions implements InquiryOptionsData {
 const data = new MockInquiryOptions();
 
 /**
- * Single accessor. Uses the Supabase-backed impl when the project is
- * configured, else the in-memory mock so the app still runs without a DB.
+ * Single accessor. Supabase is the default; the in-memory mock is available
+ * only through the explicit non-production ADMIN_DEV_BYPASS=true mode.
  */
 export function getInquiryOptionsData(): InquiryOptionsData {
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  const mode = resolveAdminDataMode();
+  if (mode === "supabase") {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require("./supabase-inquiry-options") as typeof import("./supabase-inquiry-options");
     return mod.supabaseInquiryOptions;
   }
-  return data;
+  if (mode === "mock") return data;
+  throw new Error("Admin data source is not configured");
 }

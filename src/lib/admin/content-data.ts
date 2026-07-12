@@ -15,6 +15,7 @@ import {
   mockTestimonials,
   mockWork,
 } from "./mock-content";
+import { resolveAdminDataMode } from "./runtime-mode";
 import type {
   ContentBase,
   Expert,
@@ -90,17 +91,16 @@ const data: ContentData = {
 };
 
 /**
- * Single accessor. Uses Supabase-backed repos when the project is configured,
- * else the in-memory mock so the app still runs without a DB.
+ * Single accessor. Supabase is the default; the in-memory mock is available
+ * only through the explicit non-production ADMIN_DEV_BYPASS=true mode.
  */
 export function getContentData(): ContentData {
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  const mode = resolveAdminDataMode();
+  if (mode === "supabase") {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     return (require("./supabase-content") as typeof import("./supabase-content"))
       .supabaseContentData;
   }
-  return data;
+  if (mode === "mock") return data;
+  throw new Error("Admin data source is not configured");
 }

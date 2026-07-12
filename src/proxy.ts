@@ -12,6 +12,12 @@ import { isAdminDevBypassEnabled } from "@/lib/admin/runtime-mode";
  * Do not insert logic between `createServerClient` and `getUser()`.
  */
 export async function proxy(request: NextRequest) {
+  // Keep the documented Supabase-free local workflow truly Supabase-free.
+  // The shared policy makes this branch impossible in production.
+  if (isAdminDevBypassEnabled()) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -42,11 +48,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLogin = pathname.startsWith("/admin/login");
 
-  // Mirror the auth seam's DEV bypass: while it's on, don't gate /admin so the
-  // shell stays reachable before login/first-admin exist (src/lib/admin/auth.ts).
-  const devBypass = isAdminDevBypassEnabled();
-
-  if (!devBypass && !user && !isLogin) {
+  if (!user && !isLogin) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);

@@ -323,6 +323,17 @@ The migration must drop `inquiries_insert_anon`, revoke INSERT from `anon, authe
 
 Verify: anon INSERT denied; unauthenticated SELECT denied; non-admin authenticated SELECT/UPDATE denied; admin SELECT/UPDATE allowed; server service-role INSERT allowed.
 
+### Task 6: Durable public-intake abuse control — external HOLD
+
+The repository currently has no shared/durable limiter, quota store, or challenge provider. A module-level `Map`, timer, or other process-local counter is explicitly forbidden because it cannot coordinate serverless instances and resets on deploy. Production release remains HOLD until all steps below are complete:
+
+- [ ] Provision a challenge provider for the production hostname and register its public site key and server-only secret in the deployment environment.
+- [ ] Add the challenge token to the inquiry form and verify it server-side before `getAdminData().createInquiry()` or `notifyNewInquiry()` can run. Provider timeout/error/invalid responses must fail closed without storing or emailing the inquiry.
+- [ ] Provision one atomic shared quota boundary using either Supabase PostgreSQL (table + transaction/RPC) or a managed rate-limit store. Product/operations must first approve the request identity, privacy retention, time window, allowance, and retry response; the implementation must consume quota before insert/email.
+- [ ] Verify concurrency and multi-instance behavior, challenge replay rejection, quota expiry, provider outage behavior, and that logs contain no raw contact/message, challenge secret/token, IP address, or service-role key.
+
+Deployment acceptance remains: challenge verification + durable quota pass before storage/email, direct Data API INSERT is denied by RLS/grants, and only the server-side service-role adapter can create an inquiry.
+
 ---
 
 ### Follow-up subsystem: Linear adapter
