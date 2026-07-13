@@ -169,24 +169,26 @@ export function Software() {
         <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-12">
           <EditorialPhoto
             asset={photography.software.collaboration}
-            sizes="(min-width: 1024px) 58vw, 100vw"
-            className="aspect-[16/10] lg:col-span-7 lg:row-span-2 lg:aspect-auto"
+            sizes="(min-width: 1440px) 860px, (min-width: 1024px) 66vw, 100vw"
+            className="aspect-video lg:col-span-8"
           />
-          <EditorialPhoto
-            asset={photography.software.dashboard}
-            sizes="(min-width: 1024px) 42vw, 100vw"
-            className="aspect-[4/3] lg:col-span-5 lg:col-start-8"
-          />
-          <EditorialPhoto
-            asset={photography.software.workstation}
-            sizes="(min-width: 1024px) 42vw, 100vw"
-            className="aspect-[4/3] lg:col-span-5 lg:col-start-8"
-          />
-          <EditorialPhoto
-            asset={photography.software.sketch}
-            sizes="(min-width: 1024px) 42vw, 100vw"
-            className="aspect-[4/3] lg:col-span-5 lg:col-start-8"
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-4">
+            <EditorialPhoto
+              asset={photography.software.dashboard}
+              sizes="(min-width: 1440px) 420px, (min-width: 1024px) 33vw, 100vw"
+              className="aspect-[4/3] sm:col-span-2"
+            />
+            <EditorialPhoto
+              asset={photography.software.workstation}
+              sizes="(min-width: 1440px) 205px, (min-width: 1024px) 16vw, (min-width: 640px) 50vw, 100vw"
+              className="aspect-[4/3]"
+            />
+            <EditorialPhoto
+              asset={photography.software.sketch}
+              sizes="(min-width: 1440px) 205px, (min-width: 1024px) 16vw, (min-width: 640px) 50vw, 100vw"
+              className="aspect-[4/3]"
+            />
+          </div>
         </div>
       </div>
     </Section>

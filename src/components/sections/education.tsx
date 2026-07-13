@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { EditorialPhoto } from "@/components/ui/editorial-photo";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { TagList } from "@/components/ui/tag";
+import { Tag } from "@/components/ui/tag";
 import { photography } from "@/lib/photography";
 import { accentBg, educationTracks, sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -42,12 +42,12 @@ export function Education() {
       <div className="mt-14 grid gap-4 lg:mt-20 lg:grid-cols-12">
         <EditorialPhoto
           asset={photography.education.classroom}
-          sizes="(min-width: 1024px) 66vw, 100vw"
+          sizes="(min-width: 1440px) 860px, (min-width: 1024px) 66vw, 100vw"
           className="aspect-video lg:col-span-8"
         />
         <EditorialPhoto
           asset={photography.education.workshop}
-          sizes="(min-width: 1024px) 34vw, 100vw"
+          sizes="(min-width: 1440px) 420px, (min-width: 1024px) 34vw, 100vw"
           className="aspect-[4/3] lg:col-span-4"
         />
       </div>
@@ -89,8 +89,10 @@ export function Education() {
                 </span>
               </span>
 
-              <span className="hidden shrink-0 lg:block">
-                <TagList tags={[...track.tags]} />
+              <span className="hidden shrink-0 flex-wrap gap-2 lg:flex">
+                {track.tags.map((tag) => (
+                  <Tag key={tag}>{tag}</Tag>
+                ))}
               </span>
             </AccordionTrigger>
 
@@ -141,6 +143,7 @@ export function Education() {
                   </div>
                   <Link
                     href={`/?ct=${encodeURIComponent("교육 문의")}&cs=${encodeURIComponent(track.inquirySubtype)}#${sectionId.contact}`}
+                    data-accordion-link-style="custom"
                     className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-brand-blue px-6 text-[0.95rem] font-semibold whitespace-nowrap text-white no-underline transition-colors outline-none hover:bg-brand-navy hover:text-white focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:self-auto"
                   >
                     이 교육 상담하기
