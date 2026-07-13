@@ -108,10 +108,11 @@ git commit -m "test: define nine-photo refresh contract"
 - Delete: `public/images/kpopsoft/about-brand-wall.jpg`
 - Delete: `public/images/kpopsoft/about-headquarters.jpg`
 - Modify: `src/lib/photography.ts:7-65`
+- Modify: `src/components/sections/company-introduction.tsx:62-73`
 
 **Interfaces:**
 - Consumes: 9개 PNG 원본과 `PhotographyAsset` 타입
-- Produces: `photography.about.officeCulture` 및 기존 Software/Education/B2B 키를 포함하는 9개 자산 매니페스트
+- Produces: `photography.about.officeCulture` 및 기존 Software/Education/B2B 키를 포함하는 9개 자산 매니페스트와 빌드 가능한 회사 대표 사진 레이아웃
 
 - [ ] **Step 1: 원본을 JPEG 품질 92로 충실하게 변환**
 
@@ -192,49 +193,7 @@ export const photography = {
 } as const satisfies Record<string, Record<string, PhotographyAsset>>;
 ```
 
-- [ ] **Step 3: 자산 크기와 초점이 원본과 일치하는지 확인**
-
-```bash
-for file in public/images/kpopsoft/*.jpg; do
-  sips -g pixelWidth -g pixelHeight "$file" 2>/dev/null | tr '\n' ' '
-  echo
-done
-```
-
-Expected: `software-collaboration.jpg`의 긴 변은 1600px, 나머지 8장은 1448×1086px이며 총 9개다.
-
-- [ ] **Step 4: 자산 계약 테스트 통과 확인**
-
-```bash
-node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-name-pattern="photography manifest|every photography asset" tests/*.test.mts
-```
-
-Expected: PASS.
-
-- [ ] **Step 5: 자산과 매니페스트 커밋**
-
-```bash
-git add public/images/kpopsoft src/lib/photography.ts
-git commit -m "assets: replace editorial photography"
-```
-
----
-
-### Task 3: 승인된 1·4·2·2 사진 레이아웃 적용
-
-**Files:**
-- Modify: `src/components/sections/company-introduction.tsx:62-73`
-- Modify: `src/components/sections/education.tsx:42-52`
-- Modify: `src/components/sections/b2b-education.tsx:52-62`
-- Modify: `docs/개발상태.md:12`
-- Modify: `docs/디자인.md:680`
-- Test: `tests/photography-section-contract.test.mts`
-
-**Interfaces:**
-- Consumes: `photography.about.officeCulture`, `photography.education.classroom`, `photography.education.workshop`, `photography.b2b.meetingRoom`, `photography.b2b.lounge`
-- Produces: 회사 1장, Software 4장, Education 2장, B2B 2장의 반응형 화면
-
-- [ ] **Step 1: 회사 소개를 단일 대표 사진으로 변경**
+- [ ] **Step 3: 회사 소개를 단일 대표 사진으로 변경**
 
 `company-introduction.tsx`의 기존 사진 그리드를 다음 코드로 바꾼다.
 
@@ -248,7 +207,48 @@ git commit -m "assets: replace editorial photography"
 </div>
 ```
 
-- [ ] **Step 2: Education의 강의실을 주 사진으로 배치**
+- [ ] **Step 4: 자산 크기와 초점이 원본과 일치하는지 확인**
+
+```bash
+for file in public/images/kpopsoft/*.jpg; do
+  sips -g pixelWidth -g pixelHeight "$file" 2>/dev/null | tr '\n' ' '
+  echo
+done
+```
+
+Expected: `software-collaboration.jpg`의 긴 변은 1600px, 나머지 8장은 1448×1086px이며 총 9개다.
+
+- [ ] **Step 5: 자산과 회사 소개 계약 테스트 통과 확인**
+
+```bash
+node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-name-pattern="photography manifest|every photography asset|company introduction" tests/*.test.mts
+```
+
+Expected: PASS.
+
+- [ ] **Step 6: 자산, 매니페스트와 회사 소개 커밋**
+
+```bash
+git add public/images/kpopsoft src/lib/photography.ts src/components/sections/company-introduction.tsx
+git commit -m "assets: replace editorial photography"
+```
+
+---
+
+### Task 3: 승인된 1·4·2·2 사진 레이아웃 적용
+
+**Files:**
+- Modify: `src/components/sections/education.tsx:42-52`
+- Modify: `src/components/sections/b2b-education.tsx:52-62`
+- Modify: `docs/개발상태.md:12`
+- Modify: `docs/디자인.md:680`
+- Test: `tests/photography-section-contract.test.mts`
+
+**Interfaces:**
+- Consumes: `photography.education.classroom`, `photography.education.workshop`, `photography.b2b.meetingRoom`, `photography.b2b.lounge`
+- Produces: 회사 1장, Software 4장, Education 2장, B2B 2장의 반응형 화면
+
+- [ ] **Step 1: Education의 강의실을 주 사진으로 배치**
 
 `education.tsx`의 사진 두 장 순서를 다음과 같이 바꾼다.
 
@@ -265,7 +265,7 @@ git commit -m "assets: replace editorial photography"
 />
 ```
 
-- [ ] **Step 3: B2B의 회의실 워크숍을 주 사진으로 배치**
+- [ ] **Step 2: B2B의 회의실 워크숍을 주 사진으로 배치**
 
 `b2b-education.tsx`의 사진 두 장 순서를 다음과 같이 바꾼다.
 
@@ -282,7 +282,7 @@ git commit -m "assets: replace editorial photography"
 />
 ```
 
-- [ ] **Step 4: 구현 문서를 실제 9장 구조와 일치시킴**
+- [ ] **Step 3: 구현 문서를 실제 9장 구조와 일치시킴**
 
 `docs/개발상태.md`의 사진 상태를 다음 문장으로 바꾼다.
 
@@ -296,7 +296,7 @@ git commit -m "assets: replace editorial photography"
 - 사진 영역은 여러 팀이 협업하는 오픈 오피스 대표 사진 한 장을 넓게 배치해 회사의 업무 문화를 보여준다.
 ```
 
-- [ ] **Step 5: 섹션 계약과 전체 사진 테스트 통과 확인**
+- [ ] **Step 4: 섹션 계약과 전체 사진 테스트 통과 확인**
 
 ```bash
 node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-name-pattern="company introduction|software uses|education and B2B|experts use|photography manifest" tests/*.test.mts
@@ -304,10 +304,10 @@ node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-name-pattern="
 
 Expected: PASS.
 
-- [ ] **Step 6: 레이아웃과 문서 커밋**
+- [ ] **Step 5: 레이아웃과 문서 커밋**
 
 ```bash
-git add src/components/sections/company-introduction.tsx src/components/sections/education.tsx src/components/sections/b2b-education.tsx docs/개발상태.md docs/디자인.md
+git add src/components/sections/education.tsx src/components/sections/b2b-education.tsx docs/개발상태.md docs/디자인.md
 git commit -m "feat: apply nine-photo editorial layout"
 ```
 
