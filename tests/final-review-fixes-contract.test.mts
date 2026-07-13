@@ -136,7 +136,7 @@ test("status and design documentation reflect the reviewed implementation", () =
   const design = read("docs/디자인.md");
 
   assert.match(status, /마지막 확인: 2026-07-13/);
-  assert.match(status, /`npm test` 통과 \(32개\)/);
+  assert.match(status, /`npm test` 통과 \(38개\)/);
   assert.doesNotMatch(design, /Asymmetric colorful program grid\./);
   assert.match(
     design,
