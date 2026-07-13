@@ -6,10 +6,10 @@ import test from "node:test";
 const read = (name: string) =>
   readFileSync(join(process.cwd(), "src/components/sections", name), "utf8");
 
-test("company introduction uses both approved company images", () => {
+test("company introduction uses the approved office culture image once", () => {
   const source = read("company-introduction.tsx");
-  assert.match(source, /photography\.about\.brandWall/);
-  assert.match(source, /photography\.about\.headquarters/);
+  assert.match(source, /photography\.about\.officeCulture/);
+  assert.doesNotMatch(source, /photography\.about\.(brandWall|headquarters)/);
 });
 
 test("software uses all four approved making-process images", () => {

@@ -5,14 +5,16 @@ import test from "node:test";
 
 import { photography, photographyAssets } from "../src/lib/photography.ts";
 
-test("photography manifest exposes all ten approved scenes", () => {
-  assert.equal(photographyAssets.length, 10);
+test("photography manifest exposes nine unique approved scenes", () => {
+  assert.equal(photographyAssets.length, 9);
+  assert.equal(new Set(photographyAssets.map((asset) => asset.src)).size, 9);
   assert.deepEqual(Object.keys(photography), [
     "about",
     "software",
     "education",
     "b2b",
   ]);
+  assert.deepEqual(Object.keys(photography.about), ["officeCulture"]);
 });
 
 test("every photography asset exists and has accessible copy", () => {
