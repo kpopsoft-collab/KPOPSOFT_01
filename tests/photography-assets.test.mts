@@ -5,17 +5,25 @@ import test from "node:test";
 
 import { photography, photographyAssets } from "../src/lib/photography.ts";
 
-const approvedPhotographyPaths = [
-  "/images/kpopsoft/about-office-culture.jpg",
-  "/images/kpopsoft/software-collaboration.jpg",
-  "/images/kpopsoft/software-dashboard.jpg",
-  "/images/kpopsoft/software-workstation.jpg",
-  "/images/kpopsoft/software-sketch.jpg",
-  "/images/kpopsoft/education-classroom.jpg",
-  "/images/kpopsoft/education-workshop.jpg",
-  "/images/kpopsoft/b2b-meeting-room.jpg",
-  "/images/kpopsoft/b2b-lounge.jpg",
-] as const;
+const approvedPhotographyPathMap = {
+  about: {
+    officeCulture: "/images/kpopsoft/about-office-culture.jpg",
+  },
+  software: {
+    collaboration: "/images/kpopsoft/software-collaboration.jpg",
+    dashboard: "/images/kpopsoft/software-dashboard.jpg",
+    workstation: "/images/kpopsoft/software-workstation.jpg",
+    sketch: "/images/kpopsoft/software-sketch.jpg",
+  },
+  education: {
+    classroom: "/images/kpopsoft/education-classroom.jpg",
+    workshop: "/images/kpopsoft/education-workshop.jpg",
+  },
+  b2b: {
+    meetingRoom: "/images/kpopsoft/b2b-meeting-room.jpg",
+    lounge: "/images/kpopsoft/b2b-lounge.jpg",
+  },
+} as const;
 
 test("photography manifest exposes nine unique approved scenes", () => {
   assert.equal(photographyAssets.length, 9);
@@ -29,11 +37,19 @@ test("photography manifest exposes nine unique approved scenes", () => {
   assert.deepEqual(Object.keys(photography.about), ["officeCulture"]);
 });
 
-test("photography manifest uses the exact nine approved paths", () => {
-  assert.deepEqual(
-    new Set(photographyAssets.map((asset) => asset.src)),
-    new Set(approvedPhotographyPaths),
+test("photography manifest uses the exact approved key-to-path mapping", () => {
+  const photographyPathMap = Object.fromEntries(
+    Object.entries(photography).map(([groupName, assets]) => [
+      groupName,
+      Object.fromEntries(
+        Object.entries(assets).map(([assetName, asset]) => [
+          assetName,
+          asset.src,
+        ]),
+      ),
+    ]),
   );
+  assert.deepEqual(photographyPathMap, approvedPhotographyPathMap);
 });
 
 test("every photography asset exists and has accessible copy", () => {
