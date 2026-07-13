@@ -242,13 +242,41 @@ git commit -m "assets: replace editorial photography"
 - Modify: `src/components/sections/b2b-education.tsx:52-62`
 - Modify: `docs/개발상태.md:12`
 - Modify: `docs/디자인.md:680`
-- Test: `tests/photography-section-contract.test.mts`
+- Modify: `tests/photography-section-contract.test.mts`
 
 **Interfaces:**
 - Consumes: `photography.education.classroom`, `photography.education.workshop`, `photography.b2b.meetingRoom`, `photography.b2b.lounge`
 - Produces: 회사 1장, Software 4장, Education 2장, B2B 2장의 반응형 화면
 
-- [ ] **Step 1: Education의 강의실을 주 사진으로 배치**
+- [ ] **Step 1: 주·보조 사진 순서의 실패 테스트 추가**
+
+`tests/photography-section-contract.test.mts`에 다음 테스트를 추가한다.
+
+```ts
+test("education and B2B place the approved lead image first", () => {
+  const education = read("education.tsx");
+  const b2b = read("b2b-education.tsx");
+
+  assert.ok(
+    education.indexOf("photography.education.classroom") <
+      education.indexOf("photography.education.workshop"),
+  );
+  assert.ok(
+    b2b.indexOf("photography.b2b.meetingRoom") <
+      b2b.indexOf("photography.b2b.lounge"),
+  );
+});
+```
+
+- [ ] **Step 2: 새 순서 계약이 현재 구현에서 실패하는지 확인**
+
+```bash
+node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-name-pattern="approved lead image first" tests/photography-section-contract.test.mts
+```
+
+Expected: FAIL. 현재 Education은 `workshop`이 먼저이고 B2B는 `lounge`가 먼저다.
+
+- [ ] **Step 3: Education의 강의실을 주 사진으로 배치**
 
 `education.tsx`의 사진 두 장 순서를 다음과 같이 바꾼다.
 
@@ -265,7 +293,7 @@ git commit -m "assets: replace editorial photography"
 />
 ```
 
-- [ ] **Step 2: B2B의 회의실 워크숍을 주 사진으로 배치**
+- [ ] **Step 4: B2B의 회의실 워크숍을 주 사진으로 배치**
 
 `b2b-education.tsx`의 사진 두 장 순서를 다음과 같이 바꾼다.
 
@@ -282,7 +310,7 @@ git commit -m "assets: replace editorial photography"
 />
 ```
 
-- [ ] **Step 3: 구현 문서를 실제 9장 구조와 일치시킴**
+- [ ] **Step 5: 구현 문서를 실제 9장 구조와 일치시킴**
 
 `docs/개발상태.md`의 사진 상태를 다음 문장으로 바꾼다.
 
@@ -296,7 +324,7 @@ git commit -m "assets: replace editorial photography"
 - 사진 영역은 여러 팀이 협업하는 오픈 오피스 대표 사진 한 장을 넓게 배치해 회사의 업무 문화를 보여준다.
 ```
 
-- [ ] **Step 4: 섹션 계약과 전체 사진 테스트 통과 확인**
+- [ ] **Step 6: 섹션 계약과 전체 사진 테스트 통과 확인**
 
 ```bash
 node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-name-pattern="company introduction|software uses|education and B2B|experts use|photography manifest" tests/*.test.mts
@@ -304,10 +332,10 @@ node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --test-name-pattern="
 
 Expected: PASS.
 
-- [ ] **Step 5: 레이아웃과 문서 커밋**
+- [ ] **Step 7: 레이아웃, 테스트와 문서 커밋**
 
 ```bash
-git add src/components/sections/education.tsx src/components/sections/b2b-education.tsx docs/개발상태.md docs/디자인.md
+git add src/components/sections/education.tsx src/components/sections/b2b-education.tsx tests/photography-section-contract.test.mts docs/개발상태.md docs/디자인.md
 git commit -m "feat: apply nine-photo editorial layout"
 ```
 
