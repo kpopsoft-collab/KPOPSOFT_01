@@ -51,12 +51,12 @@ export function B2bEducation() {
 
           <div className="grid gap-4 lg:col-span-5">
             <EditorialPhoto
-              asset={photography.b2b.lounge}
+              asset={photography.b2b.meetingRoom}
               sizes="(min-width: 1024px) 34vw, 100vw"
               className="aspect-[16/10]"
             />
             <EditorialPhoto
-              asset={photography.b2b.meetingRoom}
+              asset={photography.b2b.lounge}
               sizes="(min-width: 1024px) 34vw, 100vw"
               className="aspect-video"
             />

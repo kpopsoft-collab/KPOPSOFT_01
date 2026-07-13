@@ -82,6 +82,20 @@ test("education and B2B use all approved photography", () => {
   }
 });
 
+test("education and B2B place the approved lead image first", () => {
+  const education = read("education.tsx");
+  const b2b = read("b2b-education.tsx");
+
+  assert.ok(
+    education.indexOf("photography.education.classroom") <
+      education.indexOf("photography.education.workshop"),
+  );
+  assert.ok(
+    b2b.indexOf("photography.b2b.meetingRoom") <
+      b2b.indexOf("photography.b2b.lounge"),
+  );
+});
+
 test("experts use the approved high-resolution portraits", () => {
   const site = readFileSync(join(process.cwd(), "src/lib/site.ts"), "utf8");
   assert.match(site, /\/experts\/안영근02\.png/);

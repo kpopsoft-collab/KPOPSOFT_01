@@ -41,12 +41,12 @@ export function Education() {
 
       <div className="mt-14 grid gap-4 lg:mt-20 lg:grid-cols-12">
         <EditorialPhoto
-          asset={photography.education.workshop}
+          asset={photography.education.classroom}
           sizes="(min-width: 1024px) 66vw, 100vw"
           className="aspect-video lg:col-span-8"
         />
         <EditorialPhoto
-          asset={photography.education.classroom}
+          asset={photography.education.workshop}
           sizes="(min-width: 1024px) 34vw, 100vw"
           className="aspect-[4/3] lg:col-span-4"
         />
