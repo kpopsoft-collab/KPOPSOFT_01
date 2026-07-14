@@ -11,7 +11,7 @@ function actionFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) return actionFiles(path);
-    return entry.name === "actions.ts" ? [path] : [];
+    return entry.name.endsWith("actions.ts") ? [path] : [];
   });
 }
 
@@ -24,6 +24,18 @@ test("the policy detector rejects a guard placed after a mutation", () => {
   `;
 
   assert.deepEqual(findAdminActionGuardViolations(source), ["unsafeAction"]);
+});
+
+test("team mutations require the shared action guard", () => {
+  const source = `
+    export async function addMember() {
+      await addAdminUser("a@example.com");
+      await requireAdminAction();
+      await getAdminData();
+    }
+  `;
+
+  assert.deepEqual(findAdminActionGuardViolations(source), ["addMember"]);
 });
 
 test("every admin mutation re-authorizes before touching its data source", () => {

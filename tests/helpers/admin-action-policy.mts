@@ -4,6 +4,9 @@ const MUTATION_BOUNDARIES = [
   "getInquiryOptionsData(",
   "createSupabaseServerClient(",
   "createSupabaseAdminClient(",
+  "addAdminUser(",
+  "setAdminUserActive(",
+  "writeAuditLog(",
 ] as const;
 
 export function findAdminActionGuardViolations(source: string): string[] {
