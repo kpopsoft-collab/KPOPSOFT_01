@@ -2,7 +2,7 @@
  * Admin domain types — the shared contract for the admin build.
  * See docs/어드민기획.md §4 (data model) / §11.8 (DB-excluded seam mode).
  * These shapes are DB-agnostic on purpose: the mock adapter and the future
- * Supabase adapter both satisfy them, so screens never change on wiring day.
+ * Neon and explicit development mock adapters satisfy the same contract.
  */
 
 export type InquiryStatus = "new" | "in_progress" | "done";

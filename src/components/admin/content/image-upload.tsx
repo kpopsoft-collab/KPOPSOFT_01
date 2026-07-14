@@ -13,10 +13,9 @@ import { cn } from "@/lib/utils";
 /**
  * Image upload widget (docs §4.2, §8 — 강사/Work/Insights 커버, 공통 재사용).
  *
- * Uploads the chosen file to the given Supabase Storage `bucket` (client-side,
- * via the admin's session — RLS allows admin writes) and reports the resulting
- * public URL via `onChange`. A hidden input named `name` submits that URL with
- * the form's server action. Format/size are validated before upload.
+ * Uploads the chosen file to the selected Vercel Blob category and reports the
+ * resulting public URL via `onChange`. A hidden input named `name` submits that
+ * URL with the form's server action. Format/size are validated before upload.
  */
 const EXT: Record<string, string> = {
   "image/jpeg": "jpg",

@@ -11,7 +11,7 @@
 - 폰트: Pretendard(국문) + 시스템 그로테스크
 - 반응형 웹앱 + PWA(manifest/아이콘/viewport) — 모바일·태블릿·데스크톱 하이브리드 지향
 
-> 데이터베이스/인증(Supabase)은 아직 연결하지 않았습니다. 모든 콘텐츠는 `src/lib/site.ts`의 정적 데이터이며, 문의 CTA는 `mailto:` 링크입니다.
+> 관리자 플랫폼은 Auth.js Google OAuth, Neon Postgres, Vercel Blob, Cloudflare Email Service, Linear로 구성됩니다. 외부 프로비저링 상태는 [개발상태](docs/개발상태.md)의 HOLD 체크리스트를 확인하세요.
 
 ## 실행
 
@@ -33,13 +33,17 @@ src/
     globals.css         # 디자인 토큰(@theme), 타이포 유틸, 스크롤 리빌 모션
     manifest.ts         # PWA manifest
     icon.svg            # 파비콘
+    admin/              # 문의·CMS·팀 관리
   components/
     layout/             # Header(모바일 Sheet 메뉴), Footer, Section 래퍼
     sections/           # 섹션별 컴포넌트 14개 (hero, business-overview, ...)
     shapes/             # 재사용 기하 도형 시스템 (circle/arch/star/wave/capsule ...)
     ui/                 # CtaButton, Tag, Eyebrow + shadcn 프리미티브
   lib/
-    site.ts             # 전 섹션 정적 콘텐츠/설정 + accent 컬러 맵
+    admin/              # 관리자 인증·Neon 저장소 seam
+    db/                 # Drizzle 스키마·DB 연결
+    integrations/       # Cloudflare Email·Linear
+    site.ts             # 기본 공개 콘텐츠/설정
     utils.ts            # cn()
 ```
 
@@ -54,8 +58,9 @@ src/
 
 토큰·컨벤션 상세와 개발 워크플로우(`/dev`, 팀 서브에이전트, MCP)는 [CLAUDE.md](CLAUDE.md) 참고.
 
-## 다음 단계 (DB 연결 시)
+## 배포 전 필수 설정
 
-- Supabase Auth 회원가입/로그인
-- 문의 폼 실제 저장(`inquiries` 테이블 + RLS)
-- 프로그램/전문가/후기/사례/인사이트 데이터의 DB화 (현재 `site.ts` 더미)
+- Vercel Marketplace Neon/Blob 연결과 DB 마이그레이션·시드
+- Google OAuth callback/비밀값, 초기 관리자 이메일
+- Cloudflare 검증 발신자·수신자, Linear API 연결
+- Preview에서 문의·메일·Linear·Blob·모바일 스모크 테스트

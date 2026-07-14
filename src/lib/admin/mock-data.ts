@@ -1,5 +1,5 @@
 /**
- * In-memory mock inquiries — stand-in for the DB until Supabase is wired
+ * In-memory mock inquiries for explicit local development bypass
  * (docs/어드민기획.md §11.8). Module-level array persists across requests within
  * a running dev server, so status/memo edits stick during a session.
  *

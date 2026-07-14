@@ -5,9 +5,9 @@
  *
  * Replaces the old `mailto:` submission: validates the payload, persists it
  * through the admin data seam (`getAdminData().createInquiry`), then fires an
- * admin notification (best-effort — a failed notification never fails the
- * user-facing submission). Both `getAdminData()` and `notifyNewInquiry()` are
- * seams; today they're mock/stub, and wiring day swaps their internals only.
+ * email and Linear notifications (best-effort — a failed delivery never fails
+ * the user-facing submission). Storage and delivery providers stay behind
+ * seams so local development can use the explicit non-production mock mode.
  */
 
 import { getAdminData } from "@/lib/admin/data";

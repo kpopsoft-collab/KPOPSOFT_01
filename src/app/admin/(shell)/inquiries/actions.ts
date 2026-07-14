@@ -3,9 +3,8 @@
 /**
  * Inquiry write actions (docs/어드민기획.md §6, §11.8).
  *
- * Talk only to the `getAdminData()` seam — today that's the in-memory mock,
- * later the Supabase adapter. Both revalidate the list + detail routes so the
- * UI reflects the write immediately (no client-side cache to invalidate).
+ * Talk only to the `getAdminData()` seam. Neon and the explicit local mock both
+ * revalidate list and detail routes so the UI reflects each write immediately.
  */
 
 import { revalidatePath } from "next/cache";
