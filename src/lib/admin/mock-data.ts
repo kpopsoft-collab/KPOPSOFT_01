@@ -15,9 +15,24 @@ function daysAgo(n: number, hour = 10): string {
   return d.toISOString();
 }
 
+function deliveryFields(index: number) {
+  return {
+    submissionKey: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+    emailStatus: "sent" as const,
+    emailMessageId: `mock-email-${index}`,
+    emailSentAt: daysAgo(index - 1),
+    emailError: null,
+    linearStatus: "created" as const,
+    linearIssueId: `mock-linear-${index}`,
+    linearIssueUrl: null,
+    linearError: null,
+  };
+}
+
 export const mockInquiries: Inquiry[] = [
   {
     id: "inq_0001",
+    ...deliveryFields(1),
     type: "프로젝트 문의",
     subtype: "웹 프로젝트",
     sender: "커머스랩 / 박지훈",
@@ -31,6 +46,7 @@ export const mockInquiries: Inquiry[] = [
   },
   {
     id: "inq_0002",
+    ...deliveryFields(2),
     type: "교육 문의",
     subtype: "Vibe Coding",
     sender: "스튜디오K / 이서연",
@@ -44,6 +60,7 @@ export const mockInquiries: Inquiry[] = [
   },
   {
     id: "inq_0003",
+    ...deliveryFields(3),
     type: "AI 솔루션 문의",
     subtype: "AI 챗봇",
     sender: "핀테크컴퍼니 / 운영팀",
@@ -57,6 +74,7 @@ export const mockInquiries: Inquiry[] = [
   },
   {
     id: "inq_0004",
+    ...deliveryFields(4),
     type: "프로젝트 문의",
     subtype: "내부 운영 도구",
     sender: "메이커스 / 김도현",
@@ -70,6 +88,7 @@ export const mockInquiries: Inquiry[] = [
   },
   {
     id: "inq_0005",
+    ...deliveryFields(5),
     type: "AI 솔루션 문의",
     subtype: "AI 업무 자동화",
     sender: "제조데이터 / 안수민",

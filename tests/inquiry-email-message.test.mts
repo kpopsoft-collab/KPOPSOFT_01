@@ -5,6 +5,7 @@ import { buildInquiryEmail } from "../src/lib/inquiries/email-message.ts";
 
 const inquiry = {
   id: "11111111-2222-3333-4444-555555555555",
+  submissionKey: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
   type: "교육 문의",
   subtype: "기업 교육",
   sender: "KPOPSOFT",
@@ -12,6 +13,14 @@ const inquiry = {
   message: "교육 일정과 견적을 요청합니다.",
   status: "new" as const,
   memo: "",
+  emailStatus: "pending" as const,
+  emailMessageId: null,
+  emailSentAt: null,
+  emailError: null,
+  linearStatus: "pending" as const,
+  linearIssueId: null,
+  linearIssueUrl: null,
+  linearError: null,
   createdAt: "2026-07-12T06:00:00.000Z",
   updatedAt: "2026-07-12T06:00:00.000Z",
 };

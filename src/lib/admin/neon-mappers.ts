@@ -15,6 +15,7 @@ import type { Inquiry, InquiryStatus } from "./types";
 
 type InquiryDatabaseRow = {
   id: string;
+  submissionKey: string;
   type: string;
   subtype: string;
   sender: string;
@@ -22,6 +23,14 @@ type InquiryDatabaseRow = {
   message: string;
   status: string;
   memo: string;
+  emailStatus: string;
+  emailMessageId: string | null;
+  emailSentAt: Date | null;
+  emailError: string | null;
+  linearStatus: string;
+  linearIssueId: string | null;
+  linearIssueUrl: string | null;
+  linearError: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -35,6 +44,7 @@ type ContentBaseRow = {
 export function toInquiry(row: InquiryDatabaseRow): Inquiry {
   return {
     id: row.id,
+    submissionKey: row.submissionKey,
     type: row.type,
     subtype: row.subtype,
     sender: row.sender,
@@ -42,6 +52,14 @@ export function toInquiry(row: InquiryDatabaseRow): Inquiry {
     message: row.message,
     status: row.status as InquiryStatus,
     memo: row.memo,
+    emailStatus: row.emailStatus as Inquiry["emailStatus"],
+    emailMessageId: row.emailMessageId,
+    emailSentAt: row.emailSentAt?.toISOString() ?? null,
+    emailError: row.emailError,
+    linearStatus: row.linearStatus as Inquiry["linearStatus"],
+    linearIssueId: row.linearIssueId,
+    linearIssueUrl: row.linearIssueUrl,
+    linearError: row.linearError,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

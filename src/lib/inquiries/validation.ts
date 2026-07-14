@@ -1,4 +1,5 @@
 import type { NewInquiry } from "../admin/types";
+import { z } from "zod";
 
 export const INQUIRY_LIMITS = {
   type: 80,
@@ -8,51 +9,52 @@ export const INQUIRY_LIMITS = {
   message: 5_000,
 } as const satisfies Record<keyof NewInquiry, number>;
 
-type InquiryCandidate = Partial<Record<keyof NewInquiry, unknown>>;
+type InquiryCandidate = Partial<Record<keyof NewInquiry | "startedAt", unknown>>;
 
 export type InquiryValidationResult =
   | { ok: true; value: NewInquiry }
   | { ok: false; error: string };
 
-function trimmedString(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
 function isPlausibleContact(value: string): boolean {
-  if (value.includes("@")) return value.length >= 5;
+  if (value.includes("@")) return z.string().email().safeParse(value).success;
   return value.replace(/\D/g, "").length >= 7;
 }
 
+const inquirySchema = z.object({
+  type: z.string().trim().min(1).max(INQUIRY_LIMITS.type),
+  subtype: z.string().trim().min(1).max(INQUIRY_LIMITS.subtype),
+  sender: z.string().trim().max(INQUIRY_LIMITS.sender),
+  contact: z
+    .string()
+    .trim()
+    .max(INQUIRY_LIMITS.contact)
+    .refine((value) => !value || isPlausibleContact(value)),
+  message: z.string().trim().min(1).max(INQUIRY_LIMITS.message),
+  startedAt: z.number().finite(),
+});
+
 export function validateInquiry(
   input: InquiryCandidate,
+  now = Date.now(),
 ): InquiryValidationResult {
-  const value: NewInquiry = {
-    type: trimmedString(input.type),
-    subtype: trimmedString(input.subtype),
-    sender: trimmedString(input.sender),
-    contact: trimmedString(input.contact),
-    message: trimmedString(input.message),
-  };
-
-  for (const field of Object.keys(INQUIRY_LIMITS) as (keyof NewInquiry)[]) {
-    if (value[field].length > INQUIRY_LIMITS[field]) {
-      return {
-        ok: false,
-        error: "입력 내용이 허용된 길이를 초과했습니다.",
-      };
+  const parsed = inquirySchema.safeParse(input);
+  if (!parsed.success) {
+    const issues = parsed.error.issues;
+    if (issues.some((issue) => issue.code === "too_big")) {
+      return { ok: false, error: "입력 내용이 허용된 길이를 초과했습니다." };
     }
-  }
-
-  if (!value.type || !value.subtype || !value.message) {
+    if (issues.some((issue) => issue.path[0] === "contact")) {
+      return { ok: false, error: "연락처 형식을 다시 확인해 주세요." };
+    }
     return {
       ok: false,
       error: "유형, 세부 유형, 문의 내용을 입력해 주세요.",
     };
   }
-
-  if (value.contact && !isPlausibleContact(value.contact)) {
-    return { ok: false, error: "연락처 형식을 다시 확인해 주세요." };
+  if (now - parsed.data.startedAt < 800) {
+    return { ok: false, error: "잠시 후 다시 시도해 주세요." };
   }
-
+  const { startedAt: _startedAt, ...value } = parsed.data;
+  void _startedAt;
   return { ok: true, value };
 }

@@ -2,7 +2,6 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { AdminDataSource } from "./data";
 import type {
   Inquiry,
   InquiryFilter,
@@ -28,6 +27,7 @@ type InquiryRow = {
 function mapRow(row: InquiryRow): Inquiry {
   return {
     id: row.id,
+    submissionKey: `legacy-${row.id}`,
     type: row.type,
     subtype: row.subtype,
     sender: row.sender,
@@ -35,6 +35,14 @@ function mapRow(row: InquiryRow): Inquiry {
     message: row.message,
     status: row.status,
     memo: row.memo ?? "",
+    emailStatus: "pending",
+    emailMessageId: null,
+    emailSentAt: null,
+    emailError: null,
+    linearStatus: "pending",
+    linearIssueId: null,
+    linearIssueUrl: null,
+    linearError: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -58,7 +66,7 @@ function isToday(iso: string): boolean {
  * exception: the public form is anonymous and RLS blocks reading the row back,
  * so it uses the service-role client (server-only) to insert and return.
  */
-class SupabaseAdminData implements AdminDataSource {
+class SupabaseAdminData {
   async listInquiries(filter: InquiryFilter = {}): Promise<Inquiry[]> {
     const supabase = await createSupabaseServerClient();
     let query = supabase

@@ -11,6 +11,7 @@ import { resolveAdminDataMode } from "./runtime-mode";
 import type {
   Inquiry,
   InquiryFilter,
+  InquiryDeliveryPatch,
   InquiryStats,
   InquiryStatus,
   NewInquiry,
@@ -23,7 +24,15 @@ export interface AdminDataSource {
     id: string,
     patch: { status?: InquiryStatus; memo?: string },
   ): Promise<Inquiry>;
-  createInquiry(input: NewInquiry): Promise<Inquiry>;
+  createInquiry(
+    input: NewInquiry,
+    submissionKey: string,
+  ): Promise<{ inquiry: Inquiry; created: boolean }>;
+  findInquiryBySubmissionKey(key: string): Promise<Inquiry | null>;
+  updateInquiryDelivery(
+    id: string,
+    patch: InquiryDeliveryPatch,
+  ): Promise<Inquiry>;
   getInquiryStats(): Promise<InquiryStats>;
 }
 
@@ -69,18 +78,51 @@ class MockAdminData implements AdminDataSource {
     return found;
   }
 
-  async createInquiry(input: NewInquiry): Promise<Inquiry> {
+  async createInquiry(
+    input: NewInquiry,
+    submissionKey: string,
+  ): Promise<{ inquiry: Inquiry; created: boolean }> {
+    const existing = await this.findInquiryBySubmissionKey(submissionKey);
+    if (existing) return { inquiry: existing, created: false };
     const now = new Date().toISOString();
     const created: Inquiry = {
       id: `inq_${Date.now()}`,
+      submissionKey,
       ...input,
       status: "new",
       memo: "",
+      emailStatus: "pending",
+      emailMessageId: null,
+      emailSentAt: null,
+      emailError: null,
+      linearStatus: "pending",
+      linearIssueId: null,
+      linearIssueUrl: null,
+      linearError: null,
       createdAt: now,
       updatedAt: now,
     };
     mockInquiries.unshift(created);
-    return created;
+    return { inquiry: created, created: true };
+  }
+
+  async findInquiryBySubmissionKey(key: string): Promise<Inquiry | null> {
+    return mockInquiries.find((inquiry) => inquiry.submissionKey === key) ?? null;
+  }
+
+  async updateInquiryDelivery(
+    id: string,
+    patch: InquiryDeliveryPatch,
+  ): Promise<Inquiry> {
+    const found = mockInquiries.find((inquiry) => inquiry.id === id);
+    if (!found) throw new Error(`inquiry not found: ${id}`);
+    Object.assign(found, patch, {
+      ...(patch.emailStatus === "sent" && patch.emailSentAt === undefined
+        ? { emailSentAt: new Date().toISOString() }
+        : {}),
+      updatedAt: new Date().toISOString(),
+    });
+    return found;
   }
 
   async getInquiryStats(): Promise<InquiryStats> {

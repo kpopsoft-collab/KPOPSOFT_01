@@ -12,13 +12,15 @@
 
 import { getAdminData } from "@/lib/admin/data";
 import type { NewInquiry } from "@/lib/admin/types";
-import { notifyNewInquiry } from "@/lib/email";
+import { deliverInquiry } from "@/lib/inquiries/delivery";
 import { validateInquiry } from "@/lib/inquiries/validation";
 
 /** What the public form actually posts — `NewInquiry` plus an anti-spam honeypot. */
 export type SubmitInquiryInput = NewInquiry & {
   /** Hidden field real visitors never fill. Non-empty => treat as spam. */
   honeypot?: unknown;
+  startedAt?: unknown;
+  submissionKey?: unknown;
 };
 
 export type SubmitInquiryResult = { ok: true } | { ok: false; error: string };
@@ -38,9 +40,21 @@ export async function submitInquiry(
   const validated = validateInquiry(input);
   if (!validated.ok) return validated;
 
+  if (
+    typeof input.submissionKey !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      input.submissionKey,
+    )
+  ) {
+    return { ok: false, error: "문의 요청을 다시 시작해 주세요." };
+  }
+
   let created;
   try {
-    created = await getAdminData().createInquiry(validated.value);
+    created = await getAdminData().createInquiry(
+      validated.value,
+      input.submissionKey,
+    );
   } catch {
     console.error("[inquiry] createInquiry failed", { category: "storage" });
     return {
@@ -49,14 +63,15 @@ export async function submitInquiry(
     };
   }
 
-  // Notification is best-effort — a failure here must not undo the save.
-  try {
-    await notifyNewInquiry(created);
-  } catch {
-    console.error("[inquiry] notifyNewInquiry failed", {
-      category: "notification",
-      id: created.id,
-    });
+  if (created.created) {
+    try {
+      await deliverInquiry(created.inquiry.id);
+    } catch {
+      console.error("[inquiry] delivery failed", {
+        category: "delivery",
+        id: created.inquiry.id,
+      });
+    }
   }
 
   return { ok: true };

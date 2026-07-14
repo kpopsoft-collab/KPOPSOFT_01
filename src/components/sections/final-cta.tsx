@@ -192,6 +192,14 @@ export function FinalCta({
   const [message, setMessage] = useState("");
   // Honeypot — real visitors never see or fill this; bots that autofill do.
   const [honeypot, setHoneypot] = useState("");
+  const submission = useRef<{ startedAt: number; key: string } | null>(null);
+
+  useEffect(() => {
+    submission.current = {
+      startedAt: Date.now(),
+      key: crypto.randomUUID(),
+    };
+  }, []);
 
   const [status, setStatus] = useState<"idle" | "success">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -226,6 +234,11 @@ export function FinalCta({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
+    const submissionMeta = submission.current;
+    if (!submissionMeta) {
+      setErrorMessage("잠시 후 다시 시도해 주세요.");
+      return;
+    }
 
     setErrorMessage(null);
     startTransition(async () => {
@@ -236,6 +249,8 @@ export function FinalCta({
         contact: email,
         message,
         honeypot,
+        startedAt: submissionMeta.startedAt,
+        submissionKey: submissionMeta.key,
       });
 
       if (result.ok) {
@@ -255,6 +270,7 @@ export function FinalCta({
     setEmail("");
     setMessage("");
     setHoneypot("");
+    submission.current = { startedAt: Date.now(), key: crypto.randomUUID() };
   };
 
   return (

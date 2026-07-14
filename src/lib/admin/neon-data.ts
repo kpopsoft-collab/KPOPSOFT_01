@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import {
   and,
   count,
@@ -20,6 +19,7 @@ import type { AdminDataSource } from "./data";
 import { toInquiry } from "./neon-mappers";
 import type {
   Inquiry,
+  InquiryDeliveryPatch,
   InquiryFilter,
   InquiryStats,
   InquiryStatus,
@@ -88,18 +88,65 @@ class NeonAdminData implements AdminDataSource {
     return toInquiry(row);
   }
 
-  async createInquiry(input: NewInquiry): Promise<Inquiry> {
+  async createInquiry(
+    input: NewInquiry,
+    submissionKey: string,
+  ): Promise<{ inquiry: Inquiry; created: boolean }> {
     const [row] = await getDb()
       .insert(inquiries)
       .values({
-        submissionKey: randomUUID(),
+        submissionKey,
         type: input.type,
         subtype: input.subtype,
         sender: input.sender,
         contact: input.contact,
         message: input.message,
       })
+      .onConflictDoNothing({ target: inquiries.submissionKey })
       .returning();
+    if (row) return { inquiry: toInquiry(row), created: true };
+
+    const existing = await this.findInquiryBySubmissionKey(submissionKey);
+    if (!existing) throw new Error("inquiry idempotency conflict");
+    return { inquiry: existing, created: false };
+  }
+
+  async findInquiryBySubmissionKey(key: string): Promise<Inquiry | null> {
+    const [row] = await getDb()
+      .select()
+      .from(inquiries)
+      .where(eq(inquiries.submissionKey, key))
+      .limit(1);
+    return row ? toInquiry(row) : null;
+  }
+
+  async updateInquiryDelivery(
+    id: string,
+    patch: InquiryDeliveryPatch,
+  ): Promise<Inquiry> {
+    const { emailSentAt, ...rest } = patch;
+    const resolvedEmailSentAt =
+      emailSentAt !== undefined
+        ? emailSentAt
+        : patch.emailStatus === "sent"
+          ? new Date().toISOString()
+          : undefined;
+    const [row] = await getDb()
+      .update(inquiries)
+      .set({
+        ...rest,
+        ...(resolvedEmailSentAt !== undefined
+          ? {
+              emailSentAt: resolvedEmailSentAt
+                ? new Date(resolvedEmailSentAt)
+                : null,
+            }
+          : {}),
+        updatedAt: new Date(),
+      })
+      .where(eq(inquiries.id, id))
+      .returning();
+    if (!row) throw new Error(`inquiry not found: ${id}`);
     return toInquiry(row);
   }
 
