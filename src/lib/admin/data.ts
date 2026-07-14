@@ -2,9 +2,8 @@
  * Admin data-access seam (docs/어드민기획.md §11.8).
  *
  * Every admin screen and server action talks to this interface — never to
- * Supabase directly. Today `getAdminData()` returns the in-memory mock; on
- * wiring day we add a Supabase implementation and swap the one line in
- * `getAdminData()`. The interface stays frozen, so no screen changes.
+ * a database adapter directly. Neon and the explicit development mock satisfy
+ * the same frozen interface, so screens do not change with runtime mode.
  */
 
 import { mockInquiries } from "./mock-data";
@@ -99,17 +98,17 @@ class MockAdminData implements AdminDataSource {
 const mock = new MockAdminData();
 
 /**
- * Single accessor. Uses the Supabase adapter when the project is configured
+ * Single accessor. Uses the Neon adapter when the project is configured
  * (env present). The in-memory mock is available only through the explicit,
- * non-production ADMIN_DEV_BYPASS=true flag. The Supabase module is imported
+ * non-production ADMIN_DEV_BYPASS=true flag. The Neon module is imported
  * lazily to keep `server-only` out of any accidental client path.
  */
 export function getAdminData(): AdminDataSource {
   const mode = resolveAdminDataMode();
-  if (mode === "supabase") {
+  if (mode === "neon") {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require("./supabase-data") as typeof import("./supabase-data"))
-      .supabaseAdminData;
+    return (require("./neon-data") as typeof import("./neon-data"))
+      .neonAdminData;
   }
   if (mode === "mock") return mock;
   throw new Error("Admin data source is not configured");

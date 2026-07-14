@@ -26,13 +26,10 @@ test("admin bypass is opt-in and never enabled in production", () => {
   );
 });
 
-test("admin data never falls back to mock storage implicitly", () => {
+test("admin data selects Neon only with DATABASE_URL", () => {
   assert.equal(
-    resolveAdminDataMode({
-      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-      SUPABASE_SERVICE_ROLE_KEY: "server-secret",
-    }),
-    "supabase",
+    resolveAdminDataMode({ DATABASE_URL: "postgresql://db" }),
+    "neon",
   );
   assert.equal(resolveAdminDataMode({ NODE_ENV: "production" }), "misconfigured");
   assert.equal(
@@ -51,26 +48,11 @@ test("admin data never falls back to mock storage implicitly", () => {
   );
   assert.equal(
     resolveAdminDataMode({
-      NODE_ENV: "development",
-      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-    }),
-    "misconfigured",
-  );
-  assert.equal(
-    resolveAdminDataMode({
-      NODE_ENV: "development",
-      SUPABASE_SERVICE_ROLE_KEY: "server-secret",
-    }),
-    "misconfigured",
-  );
-  assert.equal(
-    resolveAdminDataMode({
       NODE_ENV: "production",
       ADMIN_DEV_BYPASS: "true",
-      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-      SUPABASE_SERVICE_ROLE_KEY: "server-secret",
+      DATABASE_URL: "postgresql://db",
     }),
-    "supabase",
+    "neon",
   );
 });
 
@@ -85,7 +67,7 @@ test("every admin repository accessor uses the shared fail-closed mode policy", 
 
     assert.match(source, /import \{ resolveAdminDataMode \}/, relativePath);
     assert.match(accessor, /const mode = resolveAdminDataMode\(\)/, relativePath);
-    assert.match(accessor, /if \(mode === "supabase"\)/, relativePath);
+    assert.match(accessor, /if \(mode === "neon"\)/, relativePath);
     assert.match(accessor, /if \(mode === "mock"\) return /, relativePath);
     assert.match(accessor, /throw new Error\("Admin data source is not configured"\)/, relativePath);
     assert.doesNotMatch(accessor, /process\.env\./, relativePath);

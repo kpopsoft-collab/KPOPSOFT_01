@@ -1,4 +1,17 @@
-import { createSupabasePublicClient } from "@/lib/supabase/public";
+import "server-only";
+
+import { asc, eq } from "drizzle-orm";
+
+import { getDb } from "@/lib/db";
+import {
+  experts,
+  inquirySubtypes,
+  inquiryTypes,
+  insights,
+  stats,
+  testimonials,
+  workItems,
+} from "@/lib/db/schema";
 import {
   type Accent,
   type Expert,
@@ -12,7 +25,7 @@ import {
 
 /**
  * Public-site content readers (docs/어드민기획.md §11.8). Each reads published /
- * active rows through the anon public client and maps them back to the exact
+ * active rows through the server-side Neon connection and maps them to the exact
  * src/lib/site.ts shape the sections already consume. On empty result or any
  * error they fall back to the site.ts seed, so the landing page never breaks —
  * even mid-migration or during a DB outage.
@@ -72,20 +85,19 @@ const fallbackInsights: PublicInsight[] = seedInsights.map((n, i) => ({
 
 export async function getPublicExperts(): Promise<PublicExpert[]> {
   try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("experts")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackExperts;
-    return data.map((r) => ({
+    const rows = await getDb()
+      .select()
+      .from(experts)
+      .where(eq(experts.isPublished, true))
+      .orderBy(asc(experts.sortOrder));
+    if (rows.length === 0) return fallbackExperts;
+    return rows.map((r) => ({
       name: r.name,
       role: r.role,
       quote: r.quote,
-      tags: r.tags ?? [],
+      tags: r.tags,
       accent: r.accent as Accent,
-      ...(r.image_url ? { image: r.image_url as string } : {}),
+      ...(r.imageUrl ? { image: r.imageUrl } : {}),
     }));
   } catch {
     return fallbackExperts;
@@ -94,14 +106,13 @@ export async function getPublicExperts(): Promise<PublicExpert[]> {
 
 export async function getPublicWork(): Promise<PublicWork[]> {
   try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("work_items")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackWork;
-    return data.map((r) => ({
+    const rows = await getDb()
+      .select()
+      .from(workItems)
+      .where(eq(workItems.isPublished, true))
+      .orderBy(asc(workItems.sortOrder));
+    if (rows.length === 0) return fallbackWork;
+    return rows.map((r) => ({
       client: r.client,
       title: r.title,
       category: r.category,
@@ -109,8 +120,8 @@ export async function getPublicWork(): Promise<PublicWork[]> {
       summary: r.summary,
       challenge: r.challenge,
       solution: r.solution,
-      results: r.results ?? [],
-      ...(r.image_url ? { imageUrl: r.image_url as string } : {}),
+      results: r.results,
+      ...(r.imageUrl ? { imageUrl: r.imageUrl } : {}),
     }));
   } catch {
     return fallbackWork;
@@ -119,26 +130,25 @@ export async function getPublicWork(): Promise<PublicWork[]> {
 
 export async function getPublicInsights(): Promise<PublicInsight[]> {
   try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("insights")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackInsights;
-    return data.map((r) => ({
+    const rows = await getDb()
+      .select()
+      .from(insights)
+      .where(eq(insights.isPublished, true))
+      .orderBy(asc(insights.sortOrder));
+    if (rows.length === 0) return fallbackInsights;
+    return rows.map((r) => ({
       tag: r.tag,
       title: r.title,
       date: r.date,
       accent: r.accent as Accent,
       excerpt: r.excerpt,
-      body: r.body ?? [],
+      body: r.body,
       inquiry: {
-        type: r.inquiry_type ?? "",
-        subtype: r.inquiry_subtype ?? "",
+        type: r.inquiryType ?? "",
+        subtype: r.inquirySubtype ?? "",
       },
       slug: r.slug,
-      ...(r.image_url ? { imageUrl: r.image_url as string } : {}),
+      ...(r.imageUrl ? { imageUrl: r.imageUrl } : {}),
     }));
   } catch {
     return fallbackInsights;
@@ -147,14 +157,13 @@ export async function getPublicInsights(): Promise<PublicInsight[]> {
 
 export async function getPublicTestimonials(): Promise<PublicTestimonial[]> {
   try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("testimonials")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackTestimonials;
-    return data.map((r) => ({
+    const rows = await getDb()
+      .select()
+      .from(testimonials)
+      .where(eq(testimonials.isPublished, true))
+      .orderBy(asc(testimonials.sortOrder));
+    if (rows.length === 0) return fallbackTestimonials;
+    return rows.map((r) => ({
       quote: r.quote,
       author: r.author,
       program: r.program,
@@ -167,14 +176,13 @@ export async function getPublicTestimonials(): Promise<PublicTestimonial[]> {
 
 export async function getPublicStats(): Promise<PublicStat[]> {
   try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("stats")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackStats;
-    return data.map((r) => ({
+    const rows = await getDb()
+      .select()
+      .from(stats)
+      .where(eq(stats.isPublished, true))
+      .orderBy(asc(stats.sortOrder));
+    if (rows.length === 0) return fallbackStats;
+    return rows.map((r) => ({
       value: r.value,
       suffix: r.suffix,
       label: r.label,
@@ -186,21 +194,26 @@ export async function getPublicStats(): Promise<PublicStat[]> {
 
 export async function getPublicInquiryOptions(): Promise<PublicInquiryOption[]> {
   try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("inquiry_types")
-      .select("*, inquiry_subtypes(*)")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackOptions;
-    return data.map((t) => ({
-      type: t.label as string,
-      subtypes: ((t.inquiry_subtypes ?? []) as Record<string, unknown>[])
-        .filter((s) => s.is_active !== false)
-        .sort((a, b) => (a.sort_order as number) - (b.sort_order as number))
+    const [types, subtypes] = await Promise.all([
+      getDb()
+        .select()
+        .from(inquiryTypes)
+        .where(eq(inquiryTypes.isActive, true))
+        .orderBy(asc(inquiryTypes.sortOrder)),
+      getDb()
+        .select()
+        .from(inquirySubtypes)
+        .where(eq(inquirySubtypes.isActive, true))
+        .orderBy(asc(inquirySubtypes.sortOrder)),
+    ]);
+    if (types.length === 0) return fallbackOptions;
+    return types.map((type) => ({
+      type: type.label,
+      subtypes: subtypes
+        .filter((subtype) => subtype.typeId === type.id)
         .map((s) => ({
-          label: s.label as string,
-          placeholder: (s.placeholder as string) ?? "",
+          label: s.label,
+          placeholder: s.placeholder,
         })),
     }));
   } catch {

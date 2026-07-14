@@ -149,15 +149,15 @@ class MockInquiryOptions implements InquiryOptionsData {
 const data = new MockInquiryOptions();
 
 /**
- * Single accessor. Supabase is the default; the in-memory mock is available
+ * Single accessor. Neon is the configured runtime; the in-memory mock is available
  * only through the explicit non-production ADMIN_DEV_BYPASS=true mode.
  */
 export function getInquiryOptionsData(): InquiryOptionsData {
   const mode = resolveAdminDataMode();
-  if (mode === "supabase") {
+  if (mode === "neon") {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("./supabase-inquiry-options") as typeof import("./supabase-inquiry-options");
-    return mod.supabaseInquiryOptions;
+    const mod = require("./neon-inquiry-options") as typeof import("./neon-inquiry-options");
+    return mod.neonInquiryOptions;
   }
   if (mode === "mock") return data;
   throw new Error("Admin data source is not configured");

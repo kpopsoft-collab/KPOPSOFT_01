@@ -3,9 +3,8 @@
  *
  * Admin content screens call `getContentData().<collection>` — never Supabase
  * directly. Today every collection is a generic in-memory repo over the mock
- * seed; on wiring day we add Supabase-backed repos and swap them in here, with
- * no screen changes. Public sections still read src/lib/site.ts for now; moving
- * them onto this seam happens together with the DB wiring.
+ * seed. Neon-backed repos now satisfy the same interface, while the explicit
+ * development bypass keeps the in-memory implementation available for local UI work.
  */
 
 import {
@@ -91,15 +90,15 @@ const data: ContentData = {
 };
 
 /**
- * Single accessor. Supabase is the default; the in-memory mock is available
+ * Single accessor. Neon is the configured runtime; the in-memory mock is available
  * only through the explicit non-production ADMIN_DEV_BYPASS=true mode.
  */
 export function getContentData(): ContentData {
   const mode = resolveAdminDataMode();
-  if (mode === "supabase") {
+  if (mode === "neon") {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require("./supabase-content") as typeof import("./supabase-content"))
-      .supabaseContentData;
+    return (require("./neon-content") as typeof import("./neon-content"))
+      .neonContentData;
   }
   if (mode === "mock") return data;
   throw new Error("Admin data source is not configured");
