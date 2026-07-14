@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { MemoForm } from "@/components/admin/inquiries/memo-form";
@@ -7,6 +7,10 @@ import { StatusSelect } from "@/components/admin/inquiries/status-select";
 import { getAdminData } from "@/lib/admin/data";
 import { inquiryStatusAccent, inquiryStatusLabel } from "@/lib/admin/types";
 import { cn } from "@/lib/utils";
+import {
+  retryInquiryEmail,
+  retryInquiryLinear,
+} from "../delivery-actions";
 
 /**
  * Inquiry detail (docs/어드민기획.md §6). Server Component fetches the record;
@@ -34,6 +38,84 @@ function formatKst(iso: string): string {
 /** Loose heuristic — the contact field is free text (email or phone). */
 function isEmail(contact: string): boolean {
   return /\S+@\S+\.\S+/.test(contact);
+}
+
+const deliveryErrorLabel: Record<string, string> = {
+  configuration_error: "연동 설정을 확인해 주세요.",
+  unauthorized: "연동 권한을 확인해 주세요.",
+  throttled: "요청이 많아 잠시 후 재시도가 필요합니다.",
+  queued: "메일이 대기열에 있어 재확인이 필요합니다.",
+  permanent_bounce: "수신 주소로 메일을 전달할 수 없습니다.",
+  provider_error: "외부 서비스 처리 중 오류가 발생했습니다.",
+};
+
+function DeliveryRow({
+  label,
+  status,
+  error,
+  retryAction,
+  externalUrl,
+}: {
+  label: string;
+  status: "pending" | "sent" | "created" | "failed";
+  error: string | null;
+  retryAction: () => Promise<void>;
+  externalUrl?: string | null;
+}) {
+  const success = status === "sent" || status === "created";
+  const statusLabel = success
+    ? "완료"
+    : status === "failed"
+      ? "실패"
+      : "대기";
+  return (
+    <div className="rounded-2xl border border-ink/10 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-bold text-ink">{label}</p>
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-1 text-[11px] font-bold",
+            success
+              ? "bg-brand-mint/15 text-brand-mint-ink"
+              : status === "failed"
+                ? "bg-brand-red/10 text-brand-red"
+                : "bg-ink/5 text-ink/50",
+          )}
+        >
+          {statusLabel}
+        </span>
+      </div>
+      {error ? (
+        <p className="mt-2 text-xs leading-5 text-ink/55">
+          {deliveryErrorLabel[error] ?? "재시도가 필요합니다."}
+        </p>
+      ) : null}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {status === "failed" ? (
+          <form action={retryAction}>
+            <button
+              type="submit"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-xs font-bold text-white hover:bg-brand-navy"
+            >
+              <RefreshCw className="size-3.5" aria-hidden />
+              다시 시도
+            </button>
+          </form>
+        ) : null}
+        {externalUrl ? (
+          <a
+            href={externalUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-ink/15 px-4 text-xs font-bold text-ink hover:border-brand-blue hover:text-brand-blue"
+          >
+            Linear에서 보기
+            <ExternalLink className="size-3.5" aria-hidden />
+          </a>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 export default async function InquiryDetailPage({
@@ -124,12 +206,28 @@ export default async function InquiryDetailPage({
 
         <aside className="flex flex-col gap-6">
           <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-6">
-            <h2 className="text-sm font-bold tracking-wide text-ink">상태 관리</h2>
-            <StatusSelect id={inquiry.id} status={inquiry.status} />
-          </div>
-          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-6">
             <h2 className="text-sm font-bold tracking-wide text-ink">내부 메모</h2>
             <MemoForm id={inquiry.id} memo={inquiry.memo} />
+          </div>
+          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-6">
+            <h2 className="text-sm font-bold tracking-wide text-ink">전달 상태</h2>
+            <DeliveryRow
+              label="이메일 알림"
+              status={inquiry.emailStatus}
+              error={inquiry.emailError}
+              retryAction={retryInquiryEmail.bind(null, inquiry.id)}
+            />
+            <DeliveryRow
+              label="Linear 이슈"
+              status={inquiry.linearStatus}
+              error={inquiry.linearError}
+              retryAction={retryInquiryLinear.bind(null, inquiry.id)}
+              externalUrl={inquiry.linearIssueUrl}
+            />
+          </div>
+          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-6">
+            <h2 className="text-sm font-bold tracking-wide text-ink">상태 관리</h2>
+            <StatusSelect id={inquiry.id} status={inquiry.status} />
           </div>
         </aside>
       </div>

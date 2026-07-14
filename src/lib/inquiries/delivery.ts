@@ -22,14 +22,12 @@ export function deliveryPatch(
     ? {
         linearStatus: "created",
         linearIssueId: attempt.externalId,
-        linearIssueUrl: attempt.url ?? null,
+        ...(attempt.url !== undefined
+          ? { linearIssueUrl: attempt.url }
+          : {}),
         linearError: null,
       }
     : { linearStatus: "failed", linearError: attempt.errorCode };
-}
-
-async function unavailableAttempt(): Promise<DeliveryAttempt> {
-  return { ok: false, errorCode: "provider_not_configured" };
 }
 
 async function emailAttempt(
@@ -40,6 +38,11 @@ async function emailAttempt(
   return sendInquiryEmail(inquiry);
 }
 
+async function linearAttempt(inquiry: Inquiry): Promise<DeliveryAttempt> {
+  const { createLinearIssue } = await import("../integrations/linear");
+  return createLinearIssue(inquiry);
+}
+
 export async function deliverInquiry(inquiryId: string): Promise<void> {
   const { getAdminData } = await import("../admin/data");
   const data = getAdminData();
@@ -48,7 +51,7 @@ export async function deliverInquiry(inquiryId: string): Promise<void> {
 
   const attempts = await Promise.allSettled([
     emailAttempt(inquiry),
-    unavailableAttempt(),
+    linearAttempt(inquiry),
   ]);
   const channels = ["email", "linear"] as const;
 
