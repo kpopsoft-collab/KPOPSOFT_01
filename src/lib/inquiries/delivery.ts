@@ -1,5 +1,6 @@
 import type {
   DeliveryAttempt,
+  Inquiry,
   InquiryDeliveryPatch,
 } from "../admin/types";
 
@@ -31,6 +32,14 @@ async function unavailableAttempt(): Promise<DeliveryAttempt> {
   return { ok: false, errorCode: "provider_not_configured" };
 }
 
+async function emailAttempt(
+  inquiry: Inquiry | null,
+): Promise<DeliveryAttempt> {
+  if (!inquiry) return { ok: false, errorCode: "not_found" };
+  const { sendInquiryEmail } = await import("../integrations/cloudflare-email");
+  return sendInquiryEmail(inquiry);
+}
+
 export async function deliverInquiry(inquiryId: string): Promise<void> {
   const { getAdminData } = await import("../admin/data");
   const data = getAdminData();
@@ -38,7 +47,7 @@ export async function deliverInquiry(inquiryId: string): Promise<void> {
   if (!inquiry) throw new Error("inquiry not found");
 
   const attempts = await Promise.allSettled([
-    unavailableAttempt(),
+    emailAttempt(inquiry),
     unavailableAttempt(),
   ]);
   const channels = ["email", "linear"] as const;
