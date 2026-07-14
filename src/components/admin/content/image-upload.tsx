@@ -2,8 +2,12 @@
 
 import { useRef, useState } from "react";
 import { ImagePlus, X } from "lucide-react";
+import { upload } from "@vercel/blob/client";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  IMAGE_CONTENT_TYPES,
+  validateImageUpload,
+} from "@/lib/media/blob";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,8 +18,6 @@ import { cn } from "@/lib/utils";
  * public URL via `onChange`. A hidden input named `name` submits that URL with
  * the form's server action. Format/size are validated before upload.
  */
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
-const MAX_BYTES = 5 * 1024 * 1024;
 const EXT: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -31,8 +33,8 @@ export function ImageUpload({
 }: {
   value?: string;
   onChange: (url: string | undefined) => void;
-  /** Supabase Storage bucket: "experts" | "work" | "insights". */
-  bucket: string;
+  /** Public Blob pathname category. */
+  bucket: "experts" | "work" | "insights";
   name?: string;
   label?: string;
 }) {
@@ -43,28 +45,24 @@ export function ImageUpload({
   const handleFile = async (file: File | undefined) => {
     setError(null);
     if (!file) return;
-    if (!ACCEPTED.includes(file.type)) {
-      setError("JPG · PNG · WEBP 형식만 올릴 수 있어요.");
-      return;
-    }
-    if (file.size > MAX_BYTES) {
-      setError("이미지 용량은 5MB 이하여야 해요.");
+    const validation = validateImageUpload({
+      contentType: file.type,
+      size: file.size,
+    });
+    if (!validation.ok) {
+      setError(validation.error);
       return;
     }
 
     setUploading(true);
     try {
-      const supabase = createSupabaseBrowserClient();
-      const path = `${crypto.randomUUID()}.${EXT[file.type] ?? "jpg"}`;
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (uploadError) {
-        setError("업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-        return;
-      }
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      onChange(data.publicUrl);
+      const pathname = `${bucket}/${crypto.randomUUID()}.${EXT[file.type] ?? "jpg"}`;
+      const blob = await upload(pathname, file, {
+        access: "public",
+        contentType: file.type,
+        handleUploadUrl: "/api/admin/uploads",
+      });
+      onChange(blob.url);
     } catch {
       setError("업로드 중 오류가 발생했습니다.");
     } finally {
@@ -129,7 +127,7 @@ export function ImageUpload({
       <input
         ref={inputRef}
         type="file"
-        accept={ACCEPTED.join(",")}
+        accept={IMAGE_CONTENT_TYPES.join(",")}
         className="sr-only"
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
