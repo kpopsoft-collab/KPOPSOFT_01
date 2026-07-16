@@ -11,7 +11,9 @@
     "db:seed": "dotenv -e .env.local -- tsx scripts/seed-neon.mts",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.test.mts"
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.test.mts",
+    "test:e2e": "playwright test",
+    "test:e2e:billing": "playwright test e2e/billing-widget.spec.ts e2e/billing-admin.spec.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -34,6 +36,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
