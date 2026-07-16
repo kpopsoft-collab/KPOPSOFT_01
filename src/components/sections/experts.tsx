@@ -28,6 +28,15 @@ export function Experts({ experts }: { experts: PublicExpert[] }) {
     <Section id={sectionId.experts} className="relative overflow-hidden">
       <div className="max-w-2xl">
         <Eyebrow dotClassName="bg-brand-navy">강사진 소개</Eyebrow>
+        <h2 className="text-section mt-6 text-ink">
+          가르치는 사람도
+          <br />
+          현업의 전문가입니다.
+        </h2>
+        <p className="mt-6 max-w-xl text-body-lg text-ink/70">
+          실제 프로젝트를 만들어온 전문가와 강사진이, 현장에서 검증한 경험을
+          그대로 전달합니다.
+        </p>
       </div>
 
       <div className="mt-14 flex flex-col gap-10 lg:mt-20 lg:gap-0">
