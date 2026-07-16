@@ -5,7 +5,7 @@ export type ExpectedTossPayment = {
   paymentKey: string;
   orderId: string;
   amount: number;
-  status: "DONE";
+  status: "DONE" | "PARTIAL_CANCELED" | "CANCELED";
 };
 
 export type VerifiedTossPayment = Omit<TossPayment, "method"> & {

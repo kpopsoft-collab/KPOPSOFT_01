@@ -18,6 +18,7 @@ const MUTATION_BOUNDARIES = [
   "rotateWidgetIntegrationCredential(",
   "setWidgetIntegrationCredentialEnabled(",
   "confirmBankReceipt(",
+  "requestTossRefund(",
 ] as const;
 
 const ACTION_GUARDS = [
