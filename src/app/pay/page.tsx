@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   loadPaymentPortal,
   PaymentSessionError,
@@ -160,6 +162,9 @@ export default async function PayPage() {
                     <p className="text-xs leading-5 text-ink/50">입금 확인 후 결제 완료로 반영됩니다. 청구금액과 동일한 금액을 입금해 주세요.</p>
                   </section>
                 ) : null}
+                <div className="border-t border-ink/10 p-5 text-right sm:p-6">
+                  <Link href={`/pay/invoices/${invoice.number}`} className="inline-block rounded-full bg-brand-blue px-5 py-2.5 text-sm font-bold text-white">결제 상세</Link>
+                </div>
               </article>
               );
             })}
