@@ -109,7 +109,6 @@ function tossApiBase(env: PaymentEnv): string | null {
 export function tossServerConfig(
   env: PaymentEnv = process.env,
 ): TossServerConfig | null {
-  if (env.TOSS_PAYMENTS_ENABLED !== "true") return null;
   const keys = tossKeys(env);
   const mid = cleanDisplay(env.TOSS_PAYMENTS_MID, 1, 14);
   const apiBase = tossApiBase(env);
@@ -127,6 +126,7 @@ export function tossServerConfig(
 export function tossPublicConfig(
   env: PaymentEnv = process.env,
 ): { clientKey: string } | null {
+  if (env.TOSS_PAYMENTS_ENABLED !== "true") return null;
   const server = tossServerConfig(env);
   const keys = tossKeys(env);
   if (!server || !keys) return null;

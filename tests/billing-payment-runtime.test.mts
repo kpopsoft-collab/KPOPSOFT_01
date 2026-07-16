@@ -50,7 +50,6 @@ const tossTestEnv = {
 };
 
 test("Toss stays disabled until the full server key set is valid", () => {
-  assert.equal(tossServerConfig({ ...tossTestEnv, TOSS_PAYMENTS_ENABLED: "false" }), null);
   for (const key of [
     "TOSS_PAYMENTS_CLIENT_KEY",
     "TOSS_PAYMENTS_SECRET_KEY",
@@ -59,6 +58,17 @@ test("Toss stays disabled until the full server key set is valid", () => {
     assert.equal(tossServerConfig({ ...tossTestEnv, [key]: "" }), null, key);
     assert.equal(tossPublicConfig({ ...tossTestEnv, [key]: "" }), null, key);
   }
+});
+
+test("disabling new Toss entry keeps server recovery configured", () => {
+  const recoveryOnly = { ...tossTestEnv, TOSS_PAYMENTS_ENABLED: "false" };
+  assert.deepEqual(tossServerConfig(recoveryOnly), {
+    secretKey: "test_gsk_secretvalue123456",
+    mid: "tosstestmid",
+    apiBase: "https://api.tosspayments.com",
+    mode: "test",
+  });
+  assert.equal(tossPublicConfig(recoveryOnly), null);
 });
 
 test("Toss rejects test/live and widget/individual key mismatches", () => {
