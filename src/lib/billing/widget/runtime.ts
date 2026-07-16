@@ -1,5 +1,7 @@
 export type BillingWidgetEnv = {
   BILLING_WIDGET_MASTER_KEY?: string;
+  BILLING_WIDGET_ISSUER?: string;
+  BILLING_WIDGET_AUDIENCE?: string;
   [key: string]: string | undefined;
 };
 
@@ -26,4 +28,43 @@ export function requireWidgetMasterKey(
     "BILLING_WIDGET_MASTER_KEY",
     env.BILLING_WIDGET_MASTER_KEY,
   );
+}
+
+export type WidgetTokenRuntime = {
+  masterKey: Uint8Array;
+  issuer: string;
+  audience: "kpopsoft-billing-widget";
+};
+
+export function requireWidgetTokenRuntime(
+  env: BillingWidgetEnv = process.env,
+): WidgetTokenRuntime {
+  const issuerValue = env.BILLING_WIDGET_ISSUER?.trim() ?? "";
+  let issuer: URL;
+  try {
+    issuer = new URL(issuerValue);
+  } catch {
+    throw new Error("BILLING_WIDGET_ISSUER must be an exact HTTPS origin");
+  }
+  if (
+    issuer.protocol !== "https:" ||
+    issuer.pathname !== "/" ||
+    issuer.search ||
+    issuer.hash ||
+    issuer.username ||
+    issuer.password
+  ) {
+    throw new Error("BILLING_WIDGET_ISSUER must be an exact HTTPS origin");
+  }
+  if (env.BILLING_WIDGET_AUDIENCE !== "kpopsoft-billing-widget") {
+    throw new Error(
+      "BILLING_WIDGET_AUDIENCE must be kpopsoft-billing-widget",
+    );
+  }
+
+  return {
+    masterKey: requireWidgetMasterKey(env),
+    issuer: issuer.origin,
+    audience: "kpopsoft-billing-widget",
+  };
 }

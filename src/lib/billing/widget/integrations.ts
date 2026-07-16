@@ -8,7 +8,10 @@ import {
   encryptWidgetSecret,
   generateWidgetSecret,
 } from "./crypto.ts";
+import { normalizeWidgetOrigin } from "./origins.ts";
 import { requireWidgetMasterKey } from "./runtime.ts";
+
+export { normalizeWidgetOrigin } from "./origins.ts";
 
 export type WidgetIntegrationCredential = {
   id: string;
@@ -62,28 +65,6 @@ export type WidgetIntegrationCommandOptions = {
 
 function defaultPublicId(): string {
   return `wgt_live_${randomBytes(18).toString("base64url")}`;
-}
-
-export function normalizeWidgetOrigin(value: string): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(value);
-  } catch {
-    throw new Error("Invalid widget origin");
-  }
-
-  if (
-    parsed.protocol !== "https:" ||
-    parsed.username ||
-    parsed.password ||
-    parsed.pathname !== "/" ||
-    parsed.search ||
-    parsed.hash ||
-    parsed.hostname.includes("*")
-  ) {
-    throw new Error("Invalid widget origin");
-  }
-  return parsed.origin;
 }
 
 function uuid(value: string): string {
