@@ -35,9 +35,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return Boolean(await findActiveAdmin(email));
     },
     async jwt({ token, account }) {
-      if (account && token.email) {
+      if (account?.provider === "google" && token.email) {
         const admin = await findActiveAdmin(token.email);
         token.adminId = admin?.id;
+        token.authTime = Math.floor(Date.now() / 1000);
       }
       return token;
     },
@@ -45,6 +46,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.adminId =
           typeof token.adminId === "string" ? token.adminId : undefined;
+        session.user.authTime =
+          typeof token.authTime === "number" ? token.authTime : undefined;
       }
       return session;
     },

@@ -13,6 +13,7 @@ export type AdminIdentity = {
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  authTime: number | null;
 };
 
 export type AdminSession = AdminIdentity | null;
@@ -24,6 +25,7 @@ export async function getAdminSession(): Promise<AdminSession> {
       email: "dev@kpopsoft.local",
       name: "Local administrator",
       avatarUrl: null,
+      authTime: Math.floor(Date.now() / 1000),
     };
   }
 
@@ -54,6 +56,8 @@ export async function getAdminSession(): Promise<AdminSession> {
     email: admin.email,
     name: admin.name ?? sessionUser?.name ?? null,
     avatarUrl: admin.avatarUrl ?? sessionUser?.image ?? null,
+    authTime:
+      typeof sessionUser?.authTime === "number" ? sessionUser.authTime : null,
   };
 }
 

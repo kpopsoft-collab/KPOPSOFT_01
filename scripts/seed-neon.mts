@@ -19,6 +19,11 @@ if (!databaseUrl) {
 const adminEmails = parseAdminSeedEmails(
   process.env.ADMIN_SEED_EMAILS ?? "",
 );
+const billingAdminSeedValue =
+  process.env.BILLING_ADMIN_SEED_EMAILS?.trim() ?? "";
+const billingAdminEmails = billingAdminSeedValue
+  ? parseAdminSeedEmails(billingAdminSeedValue)
+  : [];
 
 function stableUuid(key: string): string {
   const bytes = createHash("sha256").update(`kpopsoft:${key}`).digest().subarray(0, 16);
@@ -41,6 +46,17 @@ try {
        on conflict (email) do update
        set is_active = true, updated_at = now()`,
       [stableUuid(`admin:${email}`), email],
+    );
+  }
+
+  for (const email of billingAdminEmails) {
+    await client.query(
+      `insert into billing_admin_roles (admin_id, role, granted_by)
+       select id, 'BILLING_ADMIN', id
+       from admin_users
+       where email = $1 and is_active = true
+       on conflict (admin_id, role) do nothing`,
+      [email],
     );
   }
 
