@@ -293,6 +293,19 @@ test("repository uses the approved atomic billing audit actions", () => {
   assert.match(source, /insert into \$\{auditLogs\}/);
 });
 
+test("the explicit seed provides the four initial billing products", () => {
+  const source = readSource("scripts/seed-neon.mts");
+  assert.match(source, /insert into billing_products/);
+  for (const code of [
+    "MAINTENANCE",
+    "WEBSITE_BUILD",
+    "ADDITIONAL_DEVELOPMENT",
+    "EDUCATION",
+  ]) {
+    assert.match(source, new RegExp(code));
+  }
+});
+
 test("commands reject impossible and missing contract state changes", async () => {
   const repository: BillingContractRepository = {
     async createCustomerWithSite() {

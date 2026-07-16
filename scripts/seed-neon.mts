@@ -24,6 +24,12 @@ const billingAdminSeedValue =
 const billingAdminEmails = billingAdminSeedValue
   ? parseAdminSeedEmails(billingAdminSeedValue)
   : [];
+const billingProducts = [
+  { code: "MAINTENANCE", name: "유지관리" },
+  { code: "WEBSITE_BUILD", name: "웹사이트 제작" },
+  { code: "ADDITIONAL_DEVELOPMENT", name: "추가 개발" },
+  { code: "EDUCATION", name: "교육" },
+] as const;
 
 function stableUuid(key: string): string {
   const bytes = createHash("sha256").update(`kpopsoft:${key}`).digest().subarray(0, 16);
@@ -57,6 +63,22 @@ try {
        where email = $1 and is_active = true
        on conflict (admin_id, role) do nothing`,
       [email],
+    );
+  }
+
+  for (const product of billingProducts) {
+    await client.query(
+      `insert into billing_products (id, code, name, status)
+       values ($1, $2, $3, 'ACTIVE')
+       on conflict (code) do update
+       set name = excluded.name,
+           status = 'ACTIVE',
+           updated_at = now()`,
+      [
+        stableUuid(`billing-product:${product.code}`),
+        product.code,
+        product.name,
+      ],
     );
   }
 

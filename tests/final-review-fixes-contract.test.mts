@@ -135,7 +135,7 @@ test("status and design documentation reflect the reviewed implementation", () =
   const status = read("docs/개발상태.md");
   const design = read("docs/디자인.md");
 
-  assert.match(status, /마지막 확인: 2026-07-14/);
+  assert.match(status, /마지막 확인: 2026-07-16/);
   assert.match(status, /Auth\.js \+ Google OAuth/);
   assert.match(status, /Neon Postgres \+ Drizzle ORM/);
   assert.match(status, /Vercel Blob/);
