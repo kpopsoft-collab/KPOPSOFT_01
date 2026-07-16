@@ -2,7 +2,22 @@ import type { Metadata } from "next";
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { EduHero } from "@/components/sections/education/edu-hero";
+import { VisitPurpose } from "@/components/sections/education/visit-purpose";
+import { EduPrograms } from "@/components/sections/education/edu-programs";
+import { EduOutputs } from "@/components/sections/education/edu-outputs";
+import { VibedaysClub } from "@/components/sections/education/vibedays-club";
+import { HowWeLearn } from "@/components/sections/education/how-we-learn";
+import { OrgTraining } from "@/components/sections/education/org-training";
+import { EduProcess } from "@/components/sections/education/edu-process";
+import { EduCases } from "@/components/sections/education/edu-cases";
+import { Instructors } from "@/components/sections/education/instructors";
+import { Reviews } from "@/components/sections/education/reviews";
+import { Faq } from "@/components/sections/education/faq";
+import { CtaSplit } from "@/components/sections/education/cta-split";
+import { InquiryForm } from "@/components/sections/education/inquiry-form";
 import { educationSectionId, route } from "@/lib/site";
+import { getPublicExperts } from "@/lib/public-content";
 
 const title = "KPOPSOFT Education | AI 활용·Vibe Coding·기업 맞춤형 교육";
 const description =
@@ -43,27 +58,33 @@ export const dynamic = "force-dynamic";
 /**
  * Education 페이지 (docs/KPOPSOFT_Education_Page_ver2.md).
  *
- * 라우트 스텁 — 홈의 Education 배너가 링크할 대상이 먼저 존재해야 해서
- * 껍데기부터 세운다. §5의 16개 섹션은 이 자리에 순서대로 채워진다.
+ * §5의 16개 섹션(Header/Footer 포함) 중 가운데 14개를 순서대로 배치한다.
+ * 강사진은 홈과 동일한 `getPublicExperts()`를 그대로 재사용해 데이터를
+ * 페이지마다 중복 등록하지 않는다(§28). 나머지 콘텐츠(프로그램·결과물·사례·
+ * 후기·FAQ)는 DB 스키마가 아직 없어 `src/lib/education-content.ts`의
+ * mock data를 그대로 읽는다(§33) — 비어 있으면 각 섹션이 스스로 숨는다.
  */
-export default function EducationPage() {
+export default async function EducationPage() {
+  const experts = await getPublicExperts();
+
   return (
     <>
       <Header />
       <main id={educationSectionId.hero} className="flex-1">
-        <section className="container-editorial py-24 md:py-32">
-          <p className="text-eyebrow text-brand-mint">KPOPSOFT EDUCATION</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-tight text-ink md:text-6xl">
-            배우는 데서 끝나지 않고,
-            <br />
-            직접 만들고 적용합니다.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-ink/70">
-            AI 활용부터 Vibe Coding, 업무 자동화와 프로토타입 제작까지. 실제
-            업무와 아이디어를 중심으로 직접 만들며 배우는 KPOPSOFT의 실무형 교육
-            프로그램입니다.
-          </p>
-        </section>
+        <EduHero />
+        <VisitPurpose />
+        <EduPrograms />
+        <EduOutputs />
+        <VibedaysClub />
+        <HowWeLearn />
+        <OrgTraining />
+        <EduProcess />
+        <EduCases />
+        <Instructors experts={experts} />
+        <Reviews />
+        <Faq />
+        <CtaSplit />
+        <InquiryForm />
       </main>
       <Footer />
     </>
