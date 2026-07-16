@@ -3,7 +3,7 @@
 - 작성일: 2026-07-15
 - 대상 저장소: `kpopsoft-collab/KPOPSOFT_01`
 - 대상 브랜치: `codex/kpopsoft-maxonomy-concept-wind`
-- 관련 Linear: [RUS-5](https://linear.app/rushwind/issue/RUS-5/kpopsoft-통합-결제계약-관리-시스템-billing-hub)
+- 관련 Linear: [KPO-91](https://linear.app/kpopsoft/issue/KPO-91/kpopsoft-통합-결제계약-관리-시스템-billing-hub)
 - 상태: 사용자 승인 완료, 구현 계획 작성 완료
 
 ## 1. 목표
