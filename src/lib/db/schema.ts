@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  customType,
   date,
   index,
   integer,
@@ -28,6 +29,15 @@ const timestamps = {
     .notNull()
     .defaultNow(),
 };
+
+const bytea = customType<{
+  data: Uint8Array;
+  driverData: Uint8Array;
+}>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 const publishedContent = {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -734,7 +744,203 @@ export const billingAdminRoles = pgTable(
   ],
 );
 
+export const billingWidgetIntegrations = pgTable(
+  "billing_widget_integrations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    publicId: text("public_id").notNull(),
+    siteId: uuid("site_id")
+      .notNull()
+      .references(() => billingSites.id, { onDelete: "restrict" }),
+    encryptedSecret: bytea("encrypted_secret").notNull(),
+    secretIv: bytea("secret_iv").notNull(),
+    secretTag: bytea("secret_tag").notNull(),
+    allowedOrigin: text("allowed_origin").notNull(),
+    keyVersion: integer("key_version").notNull().default(1),
+    status: text("status")
+      .$type<"ACTIVE" | "DISABLED">()
+      .notNull()
+      .default("ACTIVE"),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    rotatedAt: timestamp("rotated_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_widget_integrations_public_id_uidx").on(
+      table.publicId,
+    ),
+    uniqueIndex("billing_widget_integrations_site_id_uidx").on(table.siteId),
+    index("billing_widget_integrations_active_site_idx")
+      .on(table.siteId)
+      .where(sql`${table.status} = 'ACTIVE'`),
+    check(
+      "billing_widget_integrations_secret_iv_check",
+      sql`octet_length(${table.secretIv}) = 12`,
+    ),
+    check(
+      "billing_widget_integrations_secret_tag_check",
+      sql`octet_length(${table.secretTag}) = 16`,
+    ),
+    check(
+      "billing_widget_integrations_allowed_origin_check",
+      sql`${table.allowedOrigin} ~ '^https://[^/]+$'`,
+    ),
+    check(
+      "billing_widget_integrations_key_version_check",
+      sql`${table.keyVersion} > 0`,
+    ),
+    check(
+      "billing_widget_integrations_status_check",
+      sql`${table.status} in ('ACTIVE', 'DISABLED')`,
+    ),
+  ],
+);
+
+export const billingWidgetTokenUses = pgTable(
+  "billing_widget_token_uses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    integrationId: uuid("integration_id")
+      .notNull()
+      .references(() => billingWidgetIntegrations.id, {
+        onDelete: "restrict",
+      }),
+    jtiHash: bytea("jti_hash").notNull(),
+    originHash: bytea("origin_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    firstUsedAt: timestamp("first_used_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    useCount: integer("use_count").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("billing_widget_token_uses_jti_hash_uidx").on(table.jtiHash),
+    index("billing_widget_token_uses_expiry_idx").on(table.expiresAt),
+    check(
+      "billing_widget_token_uses_use_count_check",
+      sql`${table.useCount} >= 1`,
+    ),
+  ],
+);
+
+export const billingWidgetRateLimits = pgTable(
+  "billing_widget_rate_limits",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    integrationId: uuid("integration_id")
+      .notNull()
+      .references(() => billingWidgetIntegrations.id, {
+        onDelete: "restrict",
+      }),
+    scope: text("scope")
+      .$type<"INTEGRATION" | "INTEGRATION_IP">()
+      .notNull(),
+    keyHash: bytea("key_hash").notNull(),
+    bucketStart: timestamp("bucket_start", { withTimezone: true }).notNull(),
+    requestCount: integer("request_count").notNull().default(1),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_widget_rate_limits_bucket_uidx").on(
+      table.integrationId,
+      table.scope,
+      table.keyHash,
+      table.bucketStart,
+    ),
+    index("billing_widget_rate_limits_bucket_idx").on(table.bucketStart),
+    check(
+      "billing_widget_rate_limits_scope_check",
+      sql`${table.scope} in ('INTEGRATION', 'INTEGRATION_IP')`,
+    ),
+    check(
+      "billing_widget_rate_limits_request_count_check",
+      sql`${table.requestCount} >= 1`,
+    ),
+  ],
+);
+
+export const billingHandoffs = pgTable(
+  "billing_handoffs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tokenHash: bytea("token_hash").notNull(),
+    integrationId: uuid("integration_id")
+      .notNull()
+      .references(() => billingWidgetIntegrations.id, {
+        onDelete: "restrict",
+      }),
+    siteId: uuid("site_id")
+      .notNull()
+      .references(() => billingSites.id, { onDelete: "restrict" }),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => billingCustomers.id, { onDelete: "restrict" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdIpHash: bytea("created_ip_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("billing_handoffs_token_hash_uidx").on(table.tokenHash),
+    index("billing_handoffs_expiry_idx")
+      .on(table.expiresAt)
+      .where(sql`${table.usedAt} is null`),
+    index("billing_handoffs_scope_idx").on(table.siteId, table.customerId),
+  ],
+);
+
+export const billingPaymentSessions = pgTable(
+  "billing_payment_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sessionHash: bytea("session_hash").notNull(),
+    siteId: uuid("site_id")
+      .notNull()
+      .references(() => billingSites.id, { onDelete: "restrict" }),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => billingCustomers.id, { onDelete: "restrict" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    absoluteExpiresAt: timestamp("absolute_expires_at", {
+      withTimezone: true,
+    }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_payment_sessions_session_hash_uidx").on(
+      table.sessionHash,
+    ),
+    index("billing_payment_sessions_active_scope_idx")
+      .on(table.siteId, table.customerId, table.expiresAt)
+      .where(sql`${table.revokedAt} is null`),
+    index("billing_payment_sessions_expiry_idx").on(table.expiresAt),
+    check(
+      "billing_payment_sessions_expiry_order_check",
+      sql`${table.expiresAt} <= ${table.absoluteExpiresAt}`,
+    ),
+  ],
+);
+
 export type BillingCustomerRow = typeof billingCustomers.$inferSelect;
 export type BillingContractRow = typeof billingContracts.$inferSelect;
 export type BillingInvoiceRow = typeof billingInvoices.$inferSelect;
 export type BillingInvoiceItemRow = typeof billingInvoiceItems.$inferSelect;
+export type BillingWidgetIntegrationRow = Omit<
+  typeof billingWidgetIntegrations.$inferSelect,
+  "encryptedSecret" | "secretIv" | "secretTag"
+>;
+export type BillingHandoffRow = typeof billingHandoffs.$inferSelect;
+export type BillingPaymentSessionRow =
+  typeof billingPaymentSessions.$inferSelect;
