@@ -12,7 +12,12 @@ export default async function EditTestimonialPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const item = await getContentData().testimonials.get(id);
+  const data = getContentData();
+  const [item, programs, cases] = await Promise.all([
+    data.testimonials.get(id),
+    data.education.programs.list(),
+    data.education.cases.list(),
+  ]);
   if (!item) notFound();
 
   return (
@@ -27,7 +32,12 @@ export default async function EditTestimonialPage({
         </Link>
         <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-ink">후기 수정</h1>
       </div>
-      <TestimonialForm initial={item} onSave={updateTestimonial.bind(null, id)} />
+      <TestimonialForm
+        initial={item}
+        programs={programs}
+        cases={cases}
+        onSave={updateTestimonial.bind(null, id)}
+      />
     </div>
   );
 }

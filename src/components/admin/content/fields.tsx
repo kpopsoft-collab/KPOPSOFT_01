@@ -41,6 +41,29 @@ export function TextField({
   );
 }
 
+export function DateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  /** ISO date string ("YYYY-MM-DD") or empty. */
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className={labelClass}>
+      {label}
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputClass}
+      />
+    </label>
+  );
+}
+
 export function NumberField({
   label,
   value,
@@ -109,6 +132,53 @@ export function CheckboxField({
       />
       {label}
     </label>
+  );
+}
+
+/**
+ * Multi-select checkbox list — for relational many-to-many pickers
+ * (e.g. Program ↔ Instructor, Education §28).
+ */
+export function CheckboxListField({
+  label,
+  options,
+  values,
+  onChange,
+  emptyLabel = "선택 가능한 항목이 없습니다.",
+}: {
+  label: string;
+  options: { value: string; label: string }[];
+  values: string[];
+  onChange: (v: string[]) => void;
+  emptyLabel?: string;
+}) {
+  const toggle = (v: string) =>
+    onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-sm font-semibold text-ink/70">{label}</span>
+      {options.length === 0 ? (
+        <p className="text-sm text-ink/45">{emptyLabel}</p>
+      ) : (
+        <div className="flex flex-col gap-2 rounded-2xl border border-ink/15 bg-ivory/60 p-3">
+          {options.map((o) => (
+            <label
+              key={o.value}
+              className="flex cursor-pointer items-center gap-3 text-sm font-medium text-ink/80"
+            >
+              <input
+                type="checkbox"
+                checked={values.includes(o.value)}
+                onChange={() => toggle(o.value)}
+                className="size-4 accent-brand-blue"
+              />
+              {o.label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

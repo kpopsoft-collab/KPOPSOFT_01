@@ -14,6 +14,12 @@ import {
   BarChart3,
   ListChecks,
   Settings,
+  GraduationCap,
+  Images,
+  FolderKanban,
+  HelpCircle,
+  Sparkles,
+  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
 
@@ -46,6 +52,21 @@ export const adminNav: AdminNavGroup[] = [
       { label: "강사진", href: "/admin/content/experts", icon: Users },
       { label: "수치", href: "/admin/content/stats", icon: BarChart3 },
       { label: "문의 옵션", href: "/admin/content/inquiry-options", icon: ListChecks },
+    ],
+  },
+  {
+    heading: "Education",
+    items: [
+      { label: "프로그램", href: "/admin/content/education/programs", icon: GraduationCap },
+      { label: "결과물", href: "/admin/content/education/outputs", icon: Images },
+      { label: "사례", href: "/admin/content/education/cases", icon: FolderKanban },
+      { label: "FAQ", href: "/admin/content/education/faqs", icon: HelpCircle },
+      { label: "VIBEDAYS CLUB", href: "/admin/content/education/vibedays", icon: Sparkles },
+      {
+        label: "페이지 설정",
+        href: "/admin/content/education/settings",
+        icon: SlidersHorizontal,
+      },
     ],
   },
   {

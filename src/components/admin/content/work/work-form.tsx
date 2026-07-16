@@ -4,7 +4,11 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 
 import type { Accent } from "@/lib/site";
-import type { WorkItem } from "@/lib/admin/content-types";
+import {
+  WORK_LAYOUT_TYPES,
+  type WorkItem,
+  type WorkLayoutType,
+} from "@/lib/admin/content-types";
 import {
   TextField,
   TextAreaField,
@@ -15,6 +19,15 @@ import { AccentPicker } from "@/components/admin/content/accent-picker";
 import { ImageUpload } from "@/components/admin/content/image-upload";
 
 type WorkInput = Omit<WorkItem, "id" | "sortOrder">;
+
+const selectClass =
+  "h-12 w-full rounded-2xl border border-ink/15 bg-ivory/60 px-4 text-base font-medium text-ink outline-none transition-colors focus:border-brand-blue focus:bg-white";
+
+const workLayoutTypeLabel: Record<WorkLayoutType, string> = {
+  featured: "대형 카드 (featured)",
+  grid: "일반 그리드 (grid)",
+  horizontal: "가로형 (horizontal)",
+};
 
 export function WorkForm({
   initial,
@@ -32,6 +45,9 @@ export function WorkForm({
   const [solution, setSolution] = useState(initial?.solution ?? "");
   const [results, setResults] = useState<string[]>(initial?.results ?? []);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initial?.imageUrl);
+  const [showOnHome, setShowOnHome] = useState(initial?.showOnHome ?? true);
+  const [isFeatured, setIsFeatured] = useState(initial?.isFeatured ?? false);
+  const [layoutType, setLayoutType] = useState<WorkLayoutType>(initial?.layoutType ?? "grid");
   const [isPublished, setIsPublished] = useState(initial?.isPublished ?? true);
   const [pending, start] = useTransition();
 
@@ -49,6 +65,9 @@ export function WorkForm({
         solution: solution.trim(),
         results: results.map((r) => r.trim()).filter(Boolean),
         imageUrl,
+        showOnHome,
+        isFeatured,
+        layoutType,
         isPublished,
       }),
     );
@@ -91,7 +110,26 @@ export function WorkForm({
         addLabel="성과 추가"
       />
 
-      <CheckboxField label="공개 노출" checked={isPublished} onChange={setIsPublished} />
+      <label className="flex flex-col gap-2 text-sm font-semibold text-ink/70">
+        홈 레이아웃 (Home ver2 §7)
+        <select
+          value={layoutType}
+          onChange={(e) => setLayoutType(e.target.value as WorkLayoutType)}
+          className={selectClass}
+        >
+          {WORK_LAYOUT_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {workLayoutTypeLabel[t]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="flex flex-wrap items-center gap-6">
+        <CheckboxField label="홈 노출" checked={showOnHome} onChange={setShowOnHome} />
+        <CheckboxField label="대표 프로젝트" checked={isFeatured} onChange={setIsFeatured} />
+        <CheckboxField label="공개 노출" checked={isPublished} onChange={setIsPublished} />
+      </div>
 
       <div className="flex items-center gap-3 border-t border-ink/10 pt-5">
         <button

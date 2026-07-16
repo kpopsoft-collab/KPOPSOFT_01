@@ -30,6 +30,8 @@ export function ExpertForm({
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [accent, setAccent] = useState<Accent>(initial?.accent ?? "blue");
   const [imageUrl, setImageUrl] = useState<string | undefined>(initial?.imageUrl);
+  const [bio, setBio] = useState(initial?.bio ?? "");
+  const [career, setCareer] = useState<string[]>(initial?.career ?? []);
   const [isPublished, setIsPublished] = useState(initial?.isPublished ?? true);
   const [pending, start] = useTransition();
 
@@ -44,6 +46,8 @@ export function ExpertForm({
         tags: tags.map((t) => t.trim()).filter(Boolean),
         accent,
         imageUrl,
+        bio: bio.trim(),
+        career: career.map((c) => c.trim()).filter(Boolean),
         isPublished,
       }),
     );
@@ -62,18 +66,33 @@ export function ExpertForm({
       </div>
 
       <TextAreaField
-        label="한줄 소개"
+        label="대표 문구"
         value={quote}
         onChange={setQuote}
-        placeholder="강사를 소개하는 한 문장"
+        placeholder="좋은 소프트웨어는 설명이 필요 없습니다. 그냥 작동합니다."
+      />
+
+      <TextAreaField
+        label="한 줄 소개"
+        value={bio}
+        onChange={setBio}
+        placeholder="Education §27.5 — 대표 문구와는 별도의 짧은 소개"
       />
 
       <StringListField
-        label="태그"
+        label="전문 분야 (태그)"
         values={tags}
         onChange={setTags}
         placeholder="예) AI Automation"
-        addLabel="태그 추가"
+        addLabel="전문 분야 추가"
+      />
+
+      <StringListField
+        label="주요 경력"
+        values={career}
+        onChange={setCareer}
+        placeholder="예) OO스타트업 프로덕트 리드"
+        addLabel="경력 추가"
       />
 
       <div className="flex flex-col gap-2">
