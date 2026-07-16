@@ -480,6 +480,7 @@ export const experts: Expert[] = [
     quote: "완벽한 기획보다 빠른 프로토타입이 더 많은 것을 알려줍니다.",
     tags: ["Prototype Development", "Vibe Coding"],
     accent: "mint",
+    image: "/experts/lee-dongjun.jpg",
   },
 ] as const;
 
