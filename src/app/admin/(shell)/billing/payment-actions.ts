@@ -8,6 +8,7 @@ import {
   requireRecentBillingAuth,
 } from "@/lib/billing/permissions";
 import { requestTossRefund } from "@/lib/billing/payments/refunds";
+import { requeryBillingPayment } from "@/lib/billing/payments/repository";
 import type { RefundStatus } from "@/lib/billing/payments/types";
 
 function handleReauthentication(error: unknown): never {
@@ -31,5 +32,21 @@ export async function requestBillingTossRefund(input: {
   const result = await requestTossRefund(actor.id, input);
   revalidatePath(`/admin/billing/payments/${input.paymentId}`);
   revalidatePath("/admin/billing/payments");
+  return result;
+}
+
+export async function requeryBillingPaymentProvider(paymentId: string): Promise<{
+  providerStatus: string;
+  balanceAmount: number;
+  checkedAt: string;
+}> {
+  let actor;
+  try {
+    actor = await requireRecentBillingAuth("BILLING_APPROVE");
+  } catch (error) {
+    handleReauthentication(error);
+  }
+  const result = await requeryBillingPayment(actor.id, paymentId);
+  revalidatePath(`/admin/billing/payments/${paymentId}`);
   return result;
 }

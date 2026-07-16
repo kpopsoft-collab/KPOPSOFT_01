@@ -18,6 +18,8 @@ import {
   Building2,
   FileText,
   ReceiptText,
+  Activity,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -59,6 +61,8 @@ export const adminNav: AdminNavGroup[] = [
       { label: "고객사", href: "/admin/billing/customers", icon: Building2 },
       { label: "계약", href: "/admin/billing/contracts", icon: FileText },
       { label: "청구서", href: "/admin/billing/invoices", icon: ReceiptText },
+      { label: "결제 운영", href: "/admin/billing/payments", icon: Activity },
+      { label: "사이트 연동", href: "/admin/billing/integrations", icon: KeyRound },
     ],
   },
   {

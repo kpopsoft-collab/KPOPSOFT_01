@@ -1,4 +1,5 @@
-import { sql } from "drizzle-orm";
+import { desc, inArray, sql } from "drizzle-orm";
+import { z } from "zod";
 
 import * as schema from "../../db/schema.ts";
 import type { RefundInspection, RefundRepository } from "./refunds.ts";
@@ -314,5 +315,165 @@ export async function getBillingPaymentForAdmin(id: string) {
     siteName: payment.site_name,
     refunds,
     events,
+  };
+}
+
+export async function listBillingPaymentOperations() {
+  const db = await database();
+  const [payments, attempts, webhooks, refunds] = await Promise.all([
+    db
+      .select({
+        id: schema.billingPayments.id,
+        method: schema.billingPayments.method,
+        amount: schema.billingPayments.amount,
+        refundedAmount: schema.billingPayments.refundedAmount,
+        approvedAt: schema.billingPayments.approvedAt,
+        maskedMethod: schema.billingPayments.maskedMethod,
+        invoiceNumber: schema.billingInvoices.number,
+        customerName: schema.billingCustomers.name,
+      })
+      .from(schema.billingPayments)
+      .innerJoin(
+        schema.billingInvoices,
+        sql`${schema.billingInvoices.id} = ${schema.billingPayments.invoiceId}`,
+      )
+      .innerJoin(
+        schema.billingCustomers,
+        sql`${schema.billingCustomers.id} = ${schema.billingInvoices.customerId}`,
+      )
+      .orderBy(desc(schema.billingPayments.approvedAt))
+      .limit(100),
+    db
+      .select({
+        id: schema.billingPaymentAttempts.id,
+        orderId: schema.billingPaymentAttempts.orderId,
+        amount: schema.billingPaymentAttempts.amount,
+        status: schema.billingPaymentAttempts.status,
+        updatedAt: schema.billingPaymentAttempts.updatedAt,
+        invoiceNumber: schema.billingInvoices.number,
+      })
+      .from(schema.billingPaymentAttempts)
+      .innerJoin(
+        schema.billingInvoices,
+        sql`${schema.billingInvoices.id} = ${schema.billingPaymentAttempts.invoiceId}`,
+      )
+      .where(sql`${schema.billingPaymentAttempts.status} = 'CONFIRMING'
+        and ${schema.billingPaymentAttempts.updatedAt} <= now() - interval '2 minutes'`)
+      .orderBy(schema.billingPaymentAttempts.updatedAt)
+      .limit(100),
+    db
+      .select({
+        id: schema.billingWebhookReceipts.id,
+        transmissionId: schema.billingWebhookReceipts.transmissionId,
+        eventType: schema.billingWebhookReceipts.eventType,
+        status: schema.billingWebhookReceipts.status,
+        attemptCount: schema.billingWebhookReceipts.attemptCount,
+        lastErrorCode: schema.billingWebhookReceipts.lastErrorCode,
+        updatedAt: schema.billingWebhookReceipts.updatedAt,
+      })
+      .from(schema.billingWebhookReceipts)
+      .where(
+        inArray(schema.billingWebhookReceipts.status, ["RETRY", "REJECTED"]),
+      )
+      .orderBy(schema.billingWebhookReceipts.updatedAt)
+      .limit(100),
+    db
+      .select({
+        id: schema.billingRefunds.id,
+        paymentId: schema.billingRefunds.paymentId,
+        amount: schema.billingRefunds.amount,
+        reason: schema.billingRefunds.reason,
+        status: schema.billingRefunds.status,
+        providerCode: schema.billingRefunds.providerCode,
+        updatedAt: schema.billingRefunds.updatedAt,
+        invoiceNumber: schema.billingInvoices.number,
+        customerName: schema.billingCustomers.name,
+      })
+      .from(schema.billingRefunds)
+      .innerJoin(
+        schema.billingPayments,
+        sql`${schema.billingPayments.id} = ${schema.billingRefunds.paymentId}`,
+      )
+      .innerJoin(
+        schema.billingInvoices,
+        sql`${schema.billingInvoices.id} = ${schema.billingPayments.invoiceId}`,
+      )
+      .innerJoin(
+        schema.billingCustomers,
+        sql`${schema.billingCustomers.id} = ${schema.billingInvoices.customerId}`,
+      )
+      .where(inArray(schema.billingRefunds.status, ["PROCESSING", "FAILED"]))
+      .orderBy(schema.billingRefunds.updatedAt)
+      .limit(100),
+  ]);
+  return { payments, attempts, webhooks, refunds };
+}
+
+export async function requeryBillingPayment(
+  actorId: string,
+  paymentId: string,
+): Promise<{
+  providerStatus: string;
+  balanceAmount: number;
+  checkedAt: string;
+}> {
+  const parsedActorId = z.string().uuid().parse(actorId);
+  const parsedPaymentId = z.string().uuid().parse(paymentId);
+  const result = await (await database()).execute(sql`
+    select payment.toss_payment_key, payment.amount, payment.refunded_amount,
+           attempt.order_id
+    from ${schema.billingPayments} payment
+    inner join ${schema.billingPaymentAttempts} attempt
+      on attempt.id = payment.attempt_id
+    where payment.id = ${parsedPaymentId}::uuid
+      and payment.method in ('CARD', 'EASY_PAY')
+    limit 1
+  `);
+  const row = result.rows[0] as
+    | {
+        toss_payment_key: string;
+        amount: number;
+        refunded_amount: number;
+        order_id: string;
+      }
+    | undefined;
+  if (!row) throw new Error("Toss payment not found.");
+
+  const [{ tossServerConfig }, { createTossClient }, { verifyTossPayment }] =
+    await Promise.all([
+      import("./runtime.ts"),
+      import("./toss-client.ts"),
+      import("./provider-verification.ts"),
+    ]);
+  const config = tossServerConfig();
+  if (!config) throw new Error("Toss Payments is not configured.");
+  const actual = await createTossClient(config).getPayment(row.toss_payment_key);
+  const expectedStatus =
+    row.refunded_amount === 0
+      ? "DONE"
+      : row.refunded_amount === row.amount
+        ? "CANCELED"
+        : "PARTIAL_CANCELED";
+  const verified = verifyTossPayment(
+    {
+      mid: config.mid,
+      paymentKey: row.toss_payment_key,
+      orderId: row.order_id,
+      amount: row.amount,
+      status: expectedStatus,
+    },
+    actual,
+  );
+  await (await database()).insert(schema.auditLogs).values({
+    actorAdminId: parsedActorId,
+    action: "billing.payment.provider_requeried",
+    entityType: "billing_payment",
+    entityId: parsedPaymentId,
+    metadata: { providerStatus: verified.status },
+  });
+  return {
+    providerStatus: verified.status,
+    balanceAmount: verified.balanceAmount,
+    checkedAt: new Date().toISOString(),
   };
 }
