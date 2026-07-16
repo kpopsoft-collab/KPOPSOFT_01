@@ -57,15 +57,6 @@ export function Process() {
     <Section id={sectionId.process} className="relative overflow-hidden">
       <div className="max-w-2xl">
         <Eyebrow dotClassName="bg-brand-blue">진행 방식</Eyebrow>
-        <h2 className="text-section mt-6 text-ink">
-          이해에서 확장까지,
-          <br />
-          하나의 흐름으로 이어집니다.
-        </h2>
-        <p className="mt-6 max-w-xl text-body-lg text-ink/70">
-          다섯 단계는 각각 끊어진 절차가 아니라, 하나의 선으로 연결된 여정으로
-          진행됩니다.
-        </p>
       </div>
 
       {/* Desktop — zigzag diagram: dashed path threading five overlapping nodes. */}

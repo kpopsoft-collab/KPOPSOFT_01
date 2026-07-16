@@ -9,7 +9,7 @@ export const site = {
   name: "KPOPSOFT",
   tagline: "SOFTWARE · AI SOLUTIONS · EDUCATION",
   description:
-    "KPOPSOFT는 비즈니스에 필요한 소프트웨어를 만들고, AI를 실제 업무에 적용하며, 전문가의 경험을 실무 중심의 교육으로 연결합니다.",
+    "개발팀이 없어도, AI 도입이 막막해도 시작할 수 있습니다. 우리는 고객에게 필요한 소프트웨어를 만들고, 고객사의 업무에 AI를 도입하며, 고객사 구성원이 직접 구축하고 활용할 수 있도록 교육합니다.",
   email: "hello@kpopsoft.com", // 더미
 } as const;
 
@@ -174,7 +174,7 @@ export const businesses = [
     index: "01",
     title: "SOFTWARE",
     accent: "blue",
-    summary: "기업과 조직에 필요한 소프트웨어와 디지털 제품을 개발합니다.",
+    summary: "웹·앱과 내부 운영 도구가 필요하다면.",
     items: [
       "웹 서비스",
       "모바일 앱",
@@ -191,7 +191,7 @@ export const businesses = [
     index: "02",
     title: "AI SOLUTIONS",
     accent: "red",
-    summary: "AI 기술을 실제 업무 환경에 적용하는 솔루션을 제공합니다.",
+    summary: "반복 업무를 AI로 줄이고 싶다면.",
     items: [
       "AI 업무 자동화",
       "AI 챗봇",
@@ -206,8 +206,7 @@ export const businesses = [
     index: "03",
     title: "EDUCATION",
     accent: "mint",
-    summary:
-      "AI와 디지털 기술을 실제 프로젝트를 통해 학습하는 실무 중심의 교육 프로그램을 운영합니다.",
+    summary: "팀이 직접 구축하고 활용해야 한다면.",
     items: [
       "AI 활용 입문",
       "AI 업무 활용",

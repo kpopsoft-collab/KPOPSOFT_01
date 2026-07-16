@@ -36,9 +36,9 @@ export function BusinessOverview() {
       <div className="max-w-2xl">
         <Eyebrow dotClassName="bg-brand-red">핵심 사업</Eyebrow>
         <h2 className="text-section mt-6 text-ink">
-          세 가지 방식으로
+          필요한 기술에 따라
           <br />
-          비즈니스를 만듭니다.
+          시작점도 달라집니다.
         </h2>
       </div>
 

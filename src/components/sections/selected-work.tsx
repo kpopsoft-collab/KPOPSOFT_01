@@ -39,19 +39,8 @@ import { cn } from "@/lib/utils";
 export function SelectedWork({ items }: { items: PublicWork[] }) {
   return (
     <Section id={sectionId.work}>
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-2xl">
-          <Eyebrow dotClassName="bg-brand-blue">WORK</Eyebrow>
-          <h2 className="text-section mt-6 text-ink">
-            아이디어에서
-            <br />
-            운영까지, 직접 만듭니다.
-          </h2>
-        </div>
-        <p className="max-w-sm text-body-lg text-ink/70">
-          다양한 산업의 파트너와 함께 소프트웨어와 AI 솔루션을 기획부터 운영까지
-          만들어온 프로젝트입니다.
-        </p>
+      <div className="max-w-2xl">
+        <Eyebrow dotClassName="bg-brand-blue">WORK</Eyebrow>
       </div>
 
       <div className="mt-14 lg:mt-20">
