@@ -125,7 +125,7 @@ export function AboutSummary({ stats }: { stats: PublicStat[] }) {
       >
         {/* Copy block */}
         <div className="lg:col-span-7">
-          <Eyebrow dotClassName="bg-brand-blue">ABOUT KPOPSOFT</Eyebrow>
+          <Eyebrow>ABOUT</Eyebrow>
           <h2 className="text-section mt-6 max-w-[18ch] text-ink">
             답답했던 문제에,
             <br />

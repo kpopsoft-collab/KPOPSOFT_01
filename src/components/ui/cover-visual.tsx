@@ -49,9 +49,16 @@ export function CoverVisual({
   label?: string;
   className?: string;
 }) {
-  /** ratio를 주면 높이는 비율이 결정한다 — 기본 높이 클래스와 충돌하지 않도록
-   *  둘 중 하나만 붙인다(twMerge로는 md: 변형까지 덮어쓰지 못한다). */
+  /**
+   * ratio를 주면 높이는 비율이 결정한다.
+   *
+   * 폴백 경로의 AccentVisual은 자체 기본 높이(h-40 md:h-28)를 갖는데,
+   * height와 aspect-ratio는 서로 다른 CSS 속성이라 twMerge가 aspect-* 로
+   * h-* 를 지워주지 못한다. 둘 다 살아남으면 명시적 height가 이겨 비율이
+   * 무시되므로, h-auto를 함께 넘겨 같은 속성끼리 충돌시켜 걷어낸다.
+   */
   const box = ratio ? RATIO[ratio] : "h-40 md:h-28";
+  const resetHeight = ratio ? "h-auto md:h-auto" : undefined;
 
   if (!imageUrl) {
     return (
@@ -59,7 +66,7 @@ export function CoverVisual({
         accent={accent}
         monogram={monogram}
         label={label}
-        className={cn(box, className)}
+        className={cn(resetHeight, box, className)}
       />
     );
   }
