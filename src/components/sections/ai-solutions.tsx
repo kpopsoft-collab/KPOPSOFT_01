@@ -32,25 +32,25 @@ const steps: {
 }[] = [
   {
     label: labSteps[0],
-    caption: "문제와 기회를 발견하고 방향을 정의합니다.",
+    caption: "해결할 문제 정의",
     Shape: Lightbulb,
     accent: "red",
   },
   {
     label: labSteps[1],
-    caption: "아이디어를 빠르게 작동하는 형태로 만듭니다.",
+    caption: "작동하는 시제품 제작",
     Shape: Cube,
     accent: "yellow",
   },
   {
     label: labSteps[2],
-    caption: "실제 사용자와 데이터로 검증합니다.",
+    caption: "사용자·데이터 검증",
     Shape: Check,
     accent: "sky",
   },
   {
     label: labSteps[3],
-    caption: "검증된 것을 실제 시스템으로 구축합니다.",
+    caption: "실제 시스템 구축",
     Shape: Blocks,
     accent: "navy",
   },
@@ -78,14 +78,14 @@ export function AiSolutions() {
         <div className="lg:col-span-7">
           <Eyebrow dotClassName="bg-brand-red">AI SOLUTIONS</Eyebrow>
           <h2 className="text-section mt-6 text-ink">
-            AI를 실험하고,
+            실험으로 끝나는 AI 말고,
             <br />
-            업무에 바로 적용합니다.
+            업무에서 작동하는 AI로.
           </h2>
           <p className="mt-6 max-w-xl text-body-lg text-ink/70">
-            {aiSolutions.summary} 반복 업무 자동화부터 챗봇, 콘텐츠 자동화,
-            사내 AI Tool까지 — 아이디어가 아니라 실제로 작동하는 형태로
-            만듭니다.
+            반복 업무 자동화부터 챗봇, 콘텐츠 자동화, 사내 AI Tool까지. AI
+            기술의 가능성을 실험하고 실제 업무에 적용할 수 있는 솔루션으로
+            구현합니다.
           </p>
 
           <p className="mt-10 text-eyebrow text-ink/50">주요 분야</p>
@@ -124,9 +124,7 @@ export function AiSolutions() {
 
         <Eyebrow dotClassName="bg-brand-red">AI PROTOTYPE LAB</Eyebrow>
         <h3 className="relative mt-4 max-w-lg text-2xl font-extrabold tracking-tight text-ink md:text-4xl">
-          아이디어에서 실제 서비스까지,
-          <br />
-          네 단계로 빠르게 검증합니다.
+          AI 아이디어를 검증하고 구현하는 4단계.
         </h3>
 
         <ol className="relative mt-14 flex flex-col md:mt-16 md:flex-row md:items-start">

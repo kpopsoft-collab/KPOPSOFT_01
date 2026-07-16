@@ -271,9 +271,9 @@ export function FinalCta({
           <Eyebrow dotClassName="bg-brand-red">Contact</Eyebrow>
 
           <h2 className="text-display mt-8 text-ink">
-            Learn. Build.
+            기획서가 없어도,
             <br />
-            Move <span className="text-brand-navy">Forward.</span>
+            문제부터 이야기할 수 있습니다.
           </h2>
 
           <p className="text-body-lg mt-8 max-w-xl text-ink/70">

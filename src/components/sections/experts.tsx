@@ -27,7 +27,7 @@ export function Experts({ experts }: { experts: PublicExpert[] }) {
   return (
     <Section id={sectionId.experts} className="relative overflow-hidden">
       <div className="max-w-2xl">
-        <Eyebrow dotClassName="bg-brand-navy">전문가 · 강사진</Eyebrow>
+        <Eyebrow dotClassName="bg-brand-navy">강사진 소개</Eyebrow>
         <h2 className="text-section mt-6 text-ink">
           가르치는 사람도
           <br />

@@ -23,14 +23,14 @@ export function B2bEducation() {
           </Eyebrow>
 
           <h2 className="text-section mt-6 text-ivory">
-            조직에 필요한 AI 활용 방식을
+            귀사의 AI 활용 목표는 무엇인가요?
             <br />
-            함께 설계합니다.
+            업무와 구성원 수준에 맞춰 교육을 설계합니다.
           </h2>
 
           <p className="mt-6 max-w-xl text-body-lg text-ivory/80">
-            팀의 업무와 목표에 맞춘 커리큘럼으로, 이론이 아닌 실무에 바로
-            적용되는 AI 활용 교육을 설계합니다.
+            AI 입문부터 업무 활용, 자동화 구축까지 귀사의 실제 업무와 구성원의
+            현재 수준을 바탕으로 맞춤형 과정을 진행합니다.
           </p>
 
           <div className="mt-10">

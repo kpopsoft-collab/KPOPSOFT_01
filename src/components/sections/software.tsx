@@ -51,14 +51,14 @@ export function Software() {
       <div className="max-w-2xl">
         <Eyebrow dotClassName="bg-brand-blue">SOFTWARE</Eyebrow>
         <h2 className="text-section mt-6 text-ink">
-          필요한 것을
+          고객이 원하는 기능을,
           <br />
-          직접 만듭니다.
+          기획부터 개발까지 한 번에.
         </h2>
         <p className="mt-6 text-body-lg text-ink/70">
-          웹 서비스와 모바일 앱, 기업용 소프트웨어와 디지털 플랫폼까지 —
-          아이디어를 기획에서 멈추지 않고 실제로 작동하는 제품으로
-          만듭니다.
+          원하는 기능이 기획서로 정리되지 않아도 괜찮습니다. 해결할 문제와
+          사용자, 업무 흐름을 함께 정리해 개발 가능한 기획으로 구체화하고 실제
+          제품으로 구현합니다.
         </p>
 
         {/* Section-level CTA (별개 버튼) — cards deep-link per category, this covers the whole section. */}

@@ -20,9 +20,9 @@ export function CompanyIntroduction() {
       <div className="relative mt-6 grid grid-cols-1 gap-10 lg:mt-10 lg:grid-cols-12 lg:gap-6">
         {/* Dominant headline — wide left column, occupies most of the width. */}
         <h2 className="text-section max-w-[18ch] text-ink lg:col-span-8">
-          기술을 어렵게 설명하기보다
+          답답했던 문제에,
           <br />
-          직접 작동하게 만듭니다.
+          필요한 기술로 답합니다.
         </h2>
 
         {/* Cropped arch fills the empty lower-left gap under the short headline
@@ -41,17 +41,17 @@ export function CompanyIntroduction() {
           </div>
           <div className="max-w-[52ch] space-y-5 text-body-lg text-ink/70">
             <p>
-              KPOPSOFT는 기업과 조직의 아이디어를 실제 서비스와 시스템으로
-              구현합니다.
+              KPOPSOFT는 화려해 보이지만 실제 도움이 되지 않는 기술을 권하지
+              않습니다. 고객이 해결하려는 문제와 기대하는 결과를 먼저 이해하고,
+              필요한 해결책을 함께 만들어 갑니다.
             </p>
             <p>
-              웹 서비스와 모바일 앱, 기업용 소프트웨어와 디지털 플랫폼을
-              개발하고, AI 기술을 업무 과정에 적용하여 반복 업무를 줄이고
-              새로운 업무 방식을 만듭니다.
+              고객에게 필요한 소프트웨어를 개발하고, 고객사의 업무에 AI를 도입해
+              실제로 사용할 수 있는 형태로 구현합니다.
             </p>
             <p>
-              또한 실제 프로젝트 경험을 가진 전문 강사진과 함께 AI와 디지털
-              기술을 직접 활용할 수 있는 실무 교육 프로그램을 운영합니다.
+              직접 구축하고 활용할 역량이 필요한 조직에는 현업 과제를 중심으로
+              맞춤형 교육을 설계합니다.
             </p>
           </div>
         </div>

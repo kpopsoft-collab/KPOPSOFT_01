@@ -49,6 +49,7 @@ export default async function Home() {
       <main id={sectionId.hero} className="flex-1">
         <Hero />
         <CompanyIntroduction />
+        <CompanyNumbers stats={stats} />
         <BusinessOverview />
         <Software />
         <AiSolutions />
@@ -58,7 +59,6 @@ export default async function Home() {
         <Process />
         <B2bEducation />
         <Insights insights={insights} />
-        <CompanyNumbers stats={stats} />
         <Testimonials testimonials={testimonials} />
         <Suspense>
           <FinalCta inquiryOptions={inquiryOptions} />

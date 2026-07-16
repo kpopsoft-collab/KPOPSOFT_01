@@ -41,7 +41,11 @@ export function Insights({ insights }: { insights: PublicInsight[] }) {
     <Section id={sectionId.insights}>
       <div>
         <Eyebrow dotClassName="bg-brand-sky">INSIGHTS</Eyebrow>
-        <h2 className="text-section mt-6 text-ink">생각과 기록</h2>
+        <h2 className="text-section mt-6 text-ink">
+          프로젝트를 만들며 배운 것을
+          <br />
+          기록합니다.
+        </h2>
       </div>
 
       <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 lg:mt-20">
