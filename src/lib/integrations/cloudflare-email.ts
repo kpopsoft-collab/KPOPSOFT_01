@@ -8,6 +8,13 @@ type CloudflareEmailResponse = {
   permanent_bounces: string[];
 };
 
+export type TransactionalEmailInput = {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+};
+
 export function mapCloudflareEmailResponse(
   response: CloudflareEmailResponse,
 ): DeliveryAttempt {
@@ -31,6 +38,36 @@ function providerErrorCode(error: unknown): string {
   if (status === 401 || status === 403) return "unauthorized";
   if (status === 429) return "throttled";
   return "provider_error";
+}
+
+export async function sendTransactionalEmail(
+  input: TransactionalEmailInput,
+): Promise<DeliveryAttempt> {
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  const from = (
+    process.env.BILLING_NOTIFICATION_FROM ??
+    process.env.INQUIRY_NOTIFICATION_FROM
+  )?.trim();
+  if (!apiToken || !accountId || !from || !input.to.trim()) {
+    return { ok: false, errorCode: "configuration_error" };
+  }
+
+  const { default: Cloudflare } = await import("cloudflare");
+  const client = new Cloudflare({ apiToken });
+  try {
+    const response = await client.emailSending.send({
+      account_id: accountId,
+      from,
+      to: [input.to.trim().toLowerCase()],
+      subject: input.subject,
+      text: input.text,
+      html: input.html,
+    });
+    return mapCloudflareEmailResponse(response);
+  } catch (error) {
+    return { ok: false, errorCode: providerErrorCode(error) };
+  }
 }
 
 export async function sendInquiryEmail(
