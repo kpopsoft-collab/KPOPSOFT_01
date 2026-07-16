@@ -1,7 +1,10 @@
 export type BillingWidgetEnv = {
+  BILLING_ENABLED?: string;
+  BILLING_WIDGET_ENABLED?: string;
   BILLING_WIDGET_MASTER_KEY?: string;
   BILLING_WIDGET_ISSUER?: string;
   BILLING_WIDGET_AUDIENCE?: string;
+  BILLING_RATE_LIMIT_HASH_KEY?: string;
   [key: string]: string | undefined;
 };
 
@@ -19,6 +22,15 @@ function requireBase64Key(name: string, value: string | undefined): Uint8Array {
     throw new Error(`${name} must be canonical base64 for exactly 32 bytes`);
   }
   return new Uint8Array(decoded);
+}
+
+export function isBillingWidgetEnabled(
+  env: BillingWidgetEnv = process.env,
+): boolean {
+  return (
+    env.BILLING_ENABLED === "true" &&
+    env.BILLING_WIDGET_ENABLED === "true"
+  );
 }
 
 export function requireWidgetMasterKey(
@@ -67,4 +79,20 @@ export function requireWidgetTokenRuntime(
     issuer: issuer.origin,
     audience: "kpopsoft-billing-widget",
   };
+}
+
+export function requireWidgetRateLimitHashKey(
+  env: BillingWidgetEnv = process.env,
+): Uint8Array {
+  const key = requireBase64Key(
+    "BILLING_RATE_LIMIT_HASH_KEY",
+    env.BILLING_RATE_LIMIT_HASH_KEY,
+  );
+  const masterKey = requireWidgetMasterKey(env);
+  if (Buffer.from(key).equals(Buffer.from(masterKey))) {
+    throw new Error(
+      "BILLING_RATE_LIMIT_HASH_KEY must differ from BILLING_WIDGET_MASTER_KEY",
+    );
+  }
+  return key;
 }

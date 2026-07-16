@@ -2,6 +2,7 @@ import {
   generateDueInvoices,
 } from "../../../../../lib/billing/invoice-generator.ts";
 import { createBillingGenerateHandler } from "../../../../../lib/billing/generate-route-handler.ts";
+import { cleanupExpiredWidgetRateLimits } from "../../../../../lib/billing/widget/rate-limit.ts";
 import {
   isBillingEnabled,
   requireCronSecret,
@@ -27,4 +28,5 @@ export const GET = createBillingGenerateHandler({
   requireCronSecret,
   generateDueInvoices,
   todayInSeoul,
+  cleanupExpiredWidgetRateLimits,
 });

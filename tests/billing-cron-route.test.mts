@@ -57,6 +57,7 @@ test("missing or wrong bearer authorization returns 401", async () => {
 });
 
 test("successful generation returns only sanitized counts", async () => {
+  let cleaned = false;
   const handler = createBillingGenerateHandler({
     isBillingEnabled: () => true,
     requireCronSecret: () => {},
@@ -75,6 +76,9 @@ test("successful generation returns only sanitized counts", async () => {
       };
     },
     todayInSeoul: () => "2026-07-16",
+    cleanupExpiredWidgetRateLimits: async () => {
+      cleaned = true;
+    },
   });
   const response = await handler(request("Bearer correct"));
 
@@ -87,6 +91,7 @@ test("successful generation returns only sanitized counts", async () => {
     createdCount: 2,
     failedCount: 1,
   });
+  assert.equal(cleaned, true);
   assert.doesNotMatch(JSON.stringify(body), /sensitive-contract-id/);
 });
 

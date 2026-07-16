@@ -7,6 +7,7 @@ export type BillingGenerateDependencies = {
     runDate: string,
   ) => Promise<GenerateDueInvoicesResult>;
   todayInSeoul: () => string;
+  cleanupExpiredWidgetRateLimits?: () => Promise<void>;
 };
 
 function json(body: unknown, status: number): Response {
@@ -36,6 +37,7 @@ export function createBillingGenerateHandler(
       const result = await dependencies.generateDueInvoices(
         dependencies.todayInSeoul(),
       );
+      await dependencies.cleanupExpiredWidgetRateLimits?.();
       return json(
         {
           ok: true,
