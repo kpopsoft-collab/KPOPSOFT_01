@@ -350,3 +350,94 @@ export async function setWidgetIntegrationEnabled(
     enabled,
   );
 }
+
+export async function listWidgetIntegrationsForAdmin() {
+  const [{ getDb }, schema] = await Promise.all([
+    import("../../db"),
+    import("../../db/schema"),
+  ]);
+  const db = getDb();
+  const [integrations, sites] = await Promise.all([
+    db
+      .select({
+        id: schema.billingWidgetIntegrations.id,
+        publicId: schema.billingWidgetIntegrations.publicId,
+        allowedOrigin: schema.billingWidgetIntegrations.allowedOrigin,
+        keyVersion: schema.billingWidgetIntegrations.keyVersion,
+        status: schema.billingWidgetIntegrations.status,
+        lastUsedAt: schema.billingWidgetIntegrations.lastUsedAt,
+        rotatedAt: schema.billingWidgetIntegrations.rotatedAt,
+        siteId: schema.billingSites.id,
+        siteCode: schema.billingSites.code,
+        siteName: schema.billingSites.name,
+        customerName: schema.billingCustomers.name,
+      })
+      .from(schema.billingWidgetIntegrations)
+      .innerJoin(
+        schema.billingSites,
+        sql`${schema.billingSites.id} = ${schema.billingWidgetIntegrations.siteId}`,
+      )
+      .innerJoin(
+        schema.billingCustomers,
+        sql`${schema.billingCustomers.id} = ${schema.billingSites.customerId}`,
+      )
+      .orderBy(schema.billingCustomers.name, schema.billingSites.code),
+    db
+      .select({
+        id: schema.billingSites.id,
+        code: schema.billingSites.code,
+        name: schema.billingSites.name,
+        customerName: schema.billingCustomers.name,
+        primaryOrigin: schema.billingSites.primaryOrigin,
+      })
+      .from(schema.billingSites)
+      .innerJoin(
+        schema.billingCustomers,
+        sql`${schema.billingCustomers.id} = ${schema.billingSites.customerId}`,
+      )
+      .leftJoin(
+        schema.billingWidgetIntegrations,
+        sql`${schema.billingWidgetIntegrations.siteId} = ${schema.billingSites.id}`,
+      )
+      .where(sql`${schema.billingSites.status} = 'ACTIVE'
+        and ${schema.billingCustomers.status} = 'ACTIVE'
+        and ${schema.billingWidgetIntegrations.id} is null`)
+      .orderBy(schema.billingCustomers.name, schema.billingSites.code),
+  ]);
+  return { integrations, sites };
+}
+
+export async function getWidgetIntegrationForAdmin(id: string) {
+  const parsedId = z.string().uuid().safeParse(id);
+  if (!parsedId.success) return null;
+  const [{ getDb }, schema] = await Promise.all([
+    import("../../db"),
+    import("../../db/schema"),
+  ]);
+  const [row] = await getDb()
+    .select({
+      id: schema.billingWidgetIntegrations.id,
+      publicId: schema.billingWidgetIntegrations.publicId,
+      allowedOrigin: schema.billingWidgetIntegrations.allowedOrigin,
+      keyVersion: schema.billingWidgetIntegrations.keyVersion,
+      status: schema.billingWidgetIntegrations.status,
+      lastUsedAt: schema.billingWidgetIntegrations.lastUsedAt,
+      rotatedAt: schema.billingWidgetIntegrations.rotatedAt,
+      createdAt: schema.billingWidgetIntegrations.createdAt,
+      siteCode: schema.billingSites.code,
+      siteName: schema.billingSites.name,
+      customerName: schema.billingCustomers.name,
+    })
+    .from(schema.billingWidgetIntegrations)
+    .innerJoin(
+      schema.billingSites,
+      sql`${schema.billingSites.id} = ${schema.billingWidgetIntegrations.siteId}`,
+    )
+    .innerJoin(
+      schema.billingCustomers,
+      sql`${schema.billingCustomers.id} = ${schema.billingSites.customerId}`,
+    )
+    .where(sql`${schema.billingWidgetIntegrations.id} = ${parsedId.data}::uuid`)
+    .limit(1);
+  return row ?? null;
+}
