@@ -142,7 +142,7 @@ export type WidgetSummaryHandlerDependencies = {
   clientIp(request: Request): string;
 };
 
-function requestTooLarge(request: Request): boolean {
+export function widgetRequestTooLarge(request: Request): boolean {
   let size = Buffer.byteLength(request.url, "utf8");
   request.headers.forEach((value, name) => {
     size += Buffer.byteLength(name, "utf8") + Buffer.byteLength(value, "utf8") + 4;
@@ -159,13 +159,13 @@ function json(
   return Response.json(body, { status, headers });
 }
 
-function bearerToken(request: Request): string | null {
+export function widgetBearerToken(request: Request): string | null {
   const authorization = request.headers.get("authorization") ?? "";
   const match = authorization.match(/^Bearer ([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/);
   return match?.[1] ?? null;
 }
 
-function validPreflight(request: Request): boolean {
+export function validWidgetPreflight(request: Request): boolean {
   const method = request.headers.get("access-control-request-method");
   if (method && method !== "GET" && method !== "POST") return false;
   const requested = (request.headers.get("access-control-request-headers") ?? "")
@@ -181,7 +181,7 @@ export function createWidgetSummaryHandler(
 ) {
   return async function widgetSummaryHandler(request: Request): Promise<Response> {
     const deniedHeaders = corsHeadersForOrigin(null, null);
-    if (requestTooLarge(request)) {
+    if (widgetRequestTooLarge(request)) {
       return json({ ok: false, code: "request_too_large" }, 413, deniedHeaders);
     }
     if (!dependencies.isEnabled()) {
@@ -197,7 +197,7 @@ export function createWidgetSummaryHandler(
 
     if (request.method === "OPTIONS") {
       const allowed =
-        validPreflight(request) &&
+        validWidgetPreflight(request) &&
         (await dependencies.hasActiveOrigin(origin));
       const headers = corsHeadersForOrigin(origin, allowed ? origin : null);
       return new Response(null, { status: allowed ? 204 : 403, headers });
@@ -216,7 +216,7 @@ export function createWidgetSummaryHandler(
       return json({ ok: false, code: "origin_denied" }, 403, deniedHeaders);
     }
     const allowedHeaders = corsHeadersForOrigin(origin, integration.allowedOrigin);
-    const token = bearerToken(request);
+    const token = widgetBearerToken(request);
     if (!token) {
       return json({ ok: false, code: "unauthorized" }, 401, allowedHeaders);
     }
@@ -308,7 +308,9 @@ const defaultSummaryRepository: WidgetSummaryRepository = {
 
 const getDefaultSummary = createWidgetSummaryService(defaultSummaryRepository);
 
-async function findIntegration(publicId: string): Promise<PublicWidgetIntegration | null> {
+export async function findPublicWidgetIntegration(
+  publicId: string,
+): Promise<PublicWidgetIntegration | null> {
   const [{ getDb }, schema] = await Promise.all([
     import("../../db"),
     import("../../db/schema"),
@@ -338,7 +340,7 @@ async function findIntegration(publicId: string): Promise<PublicWidgetIntegratio
   return row ?? null;
 }
 
-async function hasActiveOrigin(origin: string): Promise<boolean> {
+export async function hasActiveWidgetOrigin(origin: string): Promise<boolean> {
   const [{ getDb }, schema] = await Promise.all([
     import("../../db"),
     import("../../db/schema"),
@@ -367,20 +369,26 @@ async function hasActiveOrigin(origin: string): Promise<boolean> {
 export function createDefaultWidgetSummaryHandler() {
   return createWidgetSummaryHandler({
     isEnabled: isBillingWidgetEnabled,
-    hasActiveOrigin,
-    findIntegration,
+    hasActiveOrigin: hasActiveWidgetOrigin,
+    findIntegration: findPublicWidgetIntegration,
     verifyToken: verifyWidgetToken,
-    consumeRateLimit(input) {
-      return createNeonWidgetRateLimiter(
-        requireWidgetRateLimitHashKey(),
-      ).consume(input);
-    },
+    consumeRateLimit: consumeDefaultWidgetRateLimit,
     getSummary: getDefaultSummary,
-    clientIp(request) {
-      return (
-        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-        "unknown"
-      );
-    },
+    clientIp: widgetClientIp,
   });
+}
+
+export function consumeDefaultWidgetRateLimit(
+  input: WidgetRateLimitInput,
+): Promise<WidgetRateLimitResult> {
+  return createNeonWidgetRateLimiter(
+    requireWidgetRateLimitHashKey(),
+  ).consume(input);
+}
+
+export function widgetClientIp(request: Request): string {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown"
+  );
 }

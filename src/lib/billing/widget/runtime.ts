@@ -5,6 +5,8 @@ export type BillingWidgetEnv = {
   BILLING_WIDGET_ISSUER?: string;
   BILLING_WIDGET_AUDIENCE?: string;
   BILLING_RATE_LIMIT_HASH_KEY?: string;
+  BILLING_PAY_SESSION_KEY?: string;
+  BILLING_PAY_HOST?: string;
   [key: string]: string | undefined;
 };
 
@@ -95,4 +97,34 @@ export function requireWidgetRateLimitHashKey(
     );
   }
   return key;
+}
+
+export type PaySessionRuntime = {
+  key: Uint8Array;
+  host: string;
+};
+
+export function requirePaySessionRuntime(
+  env: BillingWidgetEnv = process.env,
+): PaySessionRuntime {
+  const key = requireBase64Key(
+    "BILLING_PAY_SESSION_KEY",
+    env.BILLING_PAY_SESSION_KEY,
+  );
+  const host = env.BILLING_PAY_HOST?.trim().toLowerCase() ?? "";
+  if (
+    !/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(host) ||
+    host.includes("..")
+  ) {
+    throw new Error("BILLING_PAY_HOST must be an exact hostname");
+  }
+  const masterKey = requireWidgetMasterKey(env);
+  const rateKey = requireWidgetRateLimitHashKey(env);
+  if (
+    Buffer.from(key).equals(Buffer.from(masterKey)) ||
+    Buffer.from(key).equals(Buffer.from(rateKey))
+  ) {
+    throw new Error("BILLING_PAY_SESSION_KEY must be distinct from widget keys");
+  }
+  return { key, host };
 }
