@@ -18,6 +18,10 @@ import {
   type DraftInvoiceInput,
 } from "@/lib/billing/invoices";
 import {
+  confirmBankReceipt,
+  type ConfirmBankReceiptInput,
+} from "@/lib/billing/payments/bank";
+import {
   BillingReauthenticationRequiredError,
   requireBillingPermission,
   requireRecentBillingAuth,
@@ -103,5 +107,18 @@ export async function retryBillingInvoiceDelivery(
 ): Promise<void> {
   const actor = await requireBillingPermission("BILLING_EDIT");
   await retryInvoiceDelivery(actor.id, deliveryId);
+  revalidateBilling();
+}
+
+export async function confirmBillingBankReceipt(
+  input: ConfirmBankReceiptInput,
+): Promise<void> {
+  let actor;
+  try {
+    actor = await requireRecentBillingAuth("BILLING_APPROVE");
+  } catch (error) {
+    handleReauthentication(error);
+  }
+  await confirmBankReceipt(actor.id, input);
   revalidateBilling();
 }

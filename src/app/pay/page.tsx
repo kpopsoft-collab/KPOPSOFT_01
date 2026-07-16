@@ -4,6 +4,7 @@ import {
   requirePaymentSession,
   type PaymentPortalData,
 } from "@/lib/billing/widget/payment-session";
+import { getBankTransferInstructions } from "@/lib/billing/payments/bank";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,9 @@ export default async function PayPage() {
           <EmptyInvoices data={data} />
         ) : (
           <div className="grid gap-5">
-            {data.invoices.map((invoice) => (
+            {data.invoices.map((invoice) => {
+              const bank = getBankTransferInstructions(invoice);
+              return (
               <article
                 key={invoice.number}
                 className="overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-sm"
@@ -149,8 +152,17 @@ export default async function PayPage() {
                     <dd>{won.format(invoice.totalAmount)}</dd>
                   </div>
                 </dl>
+                {bank ? (
+                  <section className="grid gap-2 border-t border-brand-blue/15 bg-brand-blue/5 p-5 text-sm sm:p-6">
+                    <h3 className="font-black text-ink">무통장 입금</h3>
+                    <p className="text-ink/65">{bank.bank} {bank.accountNumber} · 예금주 {bank.holder}</p>
+                    <p className="font-bold text-brand-blue">입금액 {won.format(bank.amount)}</p>
+                    <p className="text-xs leading-5 text-ink/50">입금 확인 후 결제 완료로 반영됩니다. 청구금액과 동일한 금액을 입금해 주세요.</p>
+                  </section>
+                ) : null}
               </article>
-            ))}
+              );
+            })}
           </div>
         )}
 

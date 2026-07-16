@@ -19,6 +19,8 @@ import {
   billingInvoiceDeliveries,
   billingInvoiceItems,
   billingInvoices,
+  billingBankReceipts,
+  billingPayments,
   billingProducts,
   billingRuns,
   billingSites,
@@ -332,7 +334,7 @@ export async function getBillingInvoiceForAdmin(id: string) {
     .where(eq(billingInvoices.id, id))
     .limit(1);
   if (!invoice) return null;
-  const [items, deliveries] = await Promise.all([
+  const [items, deliveries, payments] = await Promise.all([
     db
       .select()
       .from(billingInvoiceItems)
@@ -343,8 +345,26 @@ export async function getBillingInvoiceForAdmin(id: string) {
       .from(billingInvoiceDeliveries)
       .where(eq(billingInvoiceDeliveries.invoiceId, id))
       .orderBy(desc(billingInvoiceDeliveries.updatedAt)),
+    db
+      .select({
+        id: billingPayments.id,
+        method: billingPayments.method,
+        amount: billingPayments.amount,
+        approvedAt: billingPayments.approvedAt,
+        refundedAmount: billingPayments.refundedAmount,
+        depositorName: billingBankReceipts.depositorName,
+        depositedOn: billingBankReceipts.depositedOn,
+        evidenceNote: billingBankReceipts.evidenceNote,
+      })
+      .from(billingPayments)
+      .leftJoin(
+        billingBankReceipts,
+        eq(billingBankReceipts.paymentId, billingPayments.id),
+      )
+      .where(eq(billingPayments.invoiceId, id))
+      .orderBy(desc(billingPayments.approvedAt)),
   ]);
-  return { ...invoice, items, deliveries };
+  return { ...invoice, items, deliveries, payments };
 }
 
 export function isContractStatus(value: string | undefined): value is ContractStatus {

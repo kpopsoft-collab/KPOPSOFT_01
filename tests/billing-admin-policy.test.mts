@@ -35,6 +35,8 @@ test("each billing action requires the exact approved permission", () => {
     voidBillingInvoice: 'requireRecentBillingAuth("BILLING_APPROVE")',
     retryBillingInvoiceDelivery:
       'requireBillingPermission("BILLING_EDIT")',
+    confirmBillingBankReceipt:
+      'requireRecentBillingAuth("BILLING_APPROVE")',
   } as const;
 
   for (const [name, guard] of Object.entries(expected)) {
@@ -50,6 +52,7 @@ test("each billing action requires the exact approved permission", () => {
         "approveInvoice(",
         "voidInvoice(",
         "retryInvoiceDelivery(",
+        "confirmBankReceipt(",
       ]
         .map((boundary) => body.indexOf(boundary))
         .filter((index) => index !== -1),
