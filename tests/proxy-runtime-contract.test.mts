@@ -11,7 +11,8 @@ test("Proxy performs only an optimistic Auth.js session check", () => {
   assert.match(source, /export async function proxy\(/);
   assert.doesNotMatch(
     source,
-    /getDb|adminUsers|DATABASE_URL|createServerClient|Supabase/,
+    /getDb|adminUsers|DATABASE_URL|createServerClient|Supabase|server-only|node:crypto/,
   );
-  assert.match(source, /matcher: \["\/admin\/:path\*"\]/);
+  assert.match(source, /matcher:/);
+  assert.match(source, /_next\/static/);
 });

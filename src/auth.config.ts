@@ -10,7 +10,8 @@ const authConfig = {
   },
   callbacks: {
     authorized({ auth, request }) {
-      if (request.nextUrl.pathname === "/admin/login") return true;
+      const pathname = request.nextUrl.pathname;
+      if (pathname === "/admin/login" || pathname === "/login") return true;
       return Boolean(auth?.user);
     },
   },
