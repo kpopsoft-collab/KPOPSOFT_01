@@ -8,8 +8,12 @@
 export const site = {
   name: "KPOPSOFT",
   tagline: "SOFTWARE · AI SOLUTIONS · EDUCATION",
+  /**
+   * Hero 설명 (docs/KPOPSOFT_Home_Landing_ver2.md §3). 두 문장을 "\n\n"으로
+   * 구분 — Hero가 이 구분자로 문단을 나눠 렌더한다.
+   */
   description:
-    "개발팀이 없어도, AI 도입이 막막해도 시작할 수 있습니다. 우리는 고객에게 필요한 소프트웨어를 만들고, 고객사의 업무에 AI를 도입하며, 고객사 구성원이 직접 구축하고 활용할 수 있도록 교육합니다.",
+    "개발팀이 없어도, AI 도입이 막막해도 시작할 수 있습니다.\n\nKPOPSOFT는 아이디어와 업무 문제를 웹·앱·내부 운영 도구와 AI 솔루션으로 구현합니다.",
   email: "hello@kpopsoft.com", // 더미
 } as const;
 
@@ -216,16 +220,15 @@ export const businesses = [
     title: "SOFTWARE",
     accent: "blue",
     summary: "웹·앱과 내부 운영 도구가 필요하다면.",
+    /** docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 05 "Software" 목록 그대로. */
     items: [
       "웹 서비스",
       "모바일 앱",
       "기업용 소프트웨어",
+      "관리자 시스템",
       "업무 관리 시스템",
       "내부 운영 도구",
-      "관리자 시스템",
-      "디지털 플랫폼",
-      "MVP",
-      "Prototype",
+      "MVP · Prototype",
     ],
   },
   {
@@ -525,9 +528,32 @@ export const experts: Expert[] = [
   },
 ] as const;
 
-/** Selected work (docs/기획서.md §9) — 더미 데이터. */
+/**
+ * Selected work (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 04).
+ *
+ * 첫 항목은 실제 제작 사례(신도H렌탈)이고, 홈 Selected Work 레이아웃에서
+ * 대표(featured) 카드로 노출된다 — 배열의 [0]번째를 featured, [1],[2]를
+ * 보조, 나머지를 가로형으로 매핑한다(components/sections/selected-work.tsx).
+ * 이후 항목은 실제 자산이 없는 더미 사례다.
+ */
 export const selectedWork = [
   {
+    // 실제 사례 — sindohr.com. 성과 수치는 확인된 바 없어 비워둔다(results: []).
+    client: "신도H렌탈",
+    title: "신도H렌탈 렌탈 서비스 랜딩페이지",
+    category: "Web",
+    accent: "blue",
+    summary:
+      "사무용 복합기 렌탈 전문 기업 신도H렌탈의 랜딩페이지를 기획부터 개발까지 제작했습니다.",
+    challenge:
+      "전문 컨설팅, 합리적인 렌탈료, 신속한 설치·AS라는 강점을 방문자에게 명확하게 전달하고, 업종에 맞는 렌탈 상품을 바로 찾을 수 있는 랜딩페이지가 필요했습니다.",
+    solution:
+      "업종별 추천 솔루션을 구성해 방문자가 자신에게 맞는 렌탈 상품을 바로 확인할 수 있도록 설계하고, 데스크톱과 모바일 모두에서 매끄럽게 동작하는 반응형 랜딩페이지로 구현했습니다.",
+    results: [] as string[],
+    imageUrl: "/work/sindohr-desktop.jpg",
+  },
+  {
+    // 더미
     client: "커머스 스타트업",
     title: "주문 운영 자동화 어드민",
     category: "Internal Tools · AI Automation",
@@ -545,6 +571,7 @@ export const selectedWork = [
     ],
   },
   {
+    // 더미
     client: "교육 기관",
     title: "AI 활용 사내 교육 플랫폼",
     category: "Web · Education",
@@ -562,6 +589,7 @@ export const selectedWork = [
     ],
   },
   {
+    // 더미
     client: "핀테크",
     title: "고객 문의 AI 챗봇",
     category: "AI Solutions",
@@ -579,6 +607,7 @@ export const selectedWork = [
     ],
   },
   {
+    // 더미
     client: "제조 기업",
     title: "생산 데이터 대시보드 MVP",
     category: "Digital Product · Prototype",
@@ -650,13 +679,17 @@ export const insights = [
   },
 ] as const;
 
-/** Company numbers (docs/기획서.md §13) — 더미 데이터. */
+/** Company numbers (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 03) — 더미 데이터. */
 export const stats = [
-  { value: 120, suffix: "+", label: "완료 프로젝트" },
-  { value: 40, suffix: "+", label: "파트너 기업" },
-  { value: 1800, suffix: "+", label: "교육 수료생" },
-  { value: 96, suffix: "%", label: "재의뢰 만족도" },
+  { value: 120, suffix: "+", label: "주요 멤버 누적 프로젝트" },
+  { value: 40, suffix: "+", label: "프로젝트 참여 기업 및 기관" },
+  { value: 1800, suffix: "+", label: "강사진 누적 교육 수료생" },
+  { value: 96, suffix: "%", label: "프로젝트 및 교육 만족도" },
 ] as const;
+
+/** Numbers 하단 주석 (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 03). */
+export const statsFootnote =
+  "주요 멤버와 강사진의 누적 수행 경험을 포함한 수치입니다.";
 
 /** Testimonials (docs/디자인.md §Testimonial) — 더미 데이터. */
 export const testimonials = [

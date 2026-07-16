@@ -1,11 +1,13 @@
 import Link from "next/link";
 
-import { navItems, sectionId, site } from "@/lib/site";
+import { headerCta, navItems, site } from "@/lib/site";
 import { Circle, Star, Wave } from "@/components/shapes";
 
 /**
- * Footer (docs/기획서.md §16). Reuses the brand shape vocabulary so the
- * visual language carries through to the very bottom of the page.
+ * Footer (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 08). Reuses the brand
+ * shape vocabulary so the visual language carries through to the very
+ * bottom of the page. CTA label/href reuse `headerCta.default` (site.ts) —
+ * the single source for the site-wide "프로젝트 의뢰" call to action.
  */
 export function Footer() {
   return (
@@ -20,10 +22,10 @@ export function Footer() {
               작동하는 기술로.
             </p>
             <Link
-              href={`#${sectionId.contact}`}
+              href={headerCta.default.href}
               className="inline-flex h-13 items-center rounded-full bg-ivory px-7 font-semibold text-ink transition-colors hover:bg-white"
             >
-              프로젝트 문의
+              {headerCta.default.label}
             </Link>
           </div>
 
