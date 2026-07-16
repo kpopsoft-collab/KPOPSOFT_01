@@ -14,6 +14,9 @@ const MUTATION_BOUNDARIES = [
   "approveInvoice(",
   "voidInvoice(",
   "retryInvoiceDelivery(",
+  "createWidgetIntegrationCredential(",
+  "rotateWidgetIntegrationCredential(",
+  "setWidgetIntegrationCredentialEnabled(",
 ] as const;
 
 const ACTION_GUARDS = [
