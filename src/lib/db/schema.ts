@@ -20,6 +20,13 @@ import type {
   ContractStatus,
   InvoiceStatus,
 } from "../billing/types";
+import type {
+  PaymentAttemptStatus,
+  PaymentEventSource,
+  PaymentMethod,
+  RefundStatus,
+  WebhookStatus,
+} from "../billing/payments/types";
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -744,6 +751,301 @@ export const billingAdminRoles = pgTable(
   ],
 );
 
+export const billingPaymentAttempts = pgTable(
+  "billing_payment_attempts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    invoiceId: uuid("invoice_id")
+      .notNull()
+      .references(() => billingInvoices.id, { onDelete: "restrict" }),
+    orderId: text("order_id").notNull(),
+    amount: integer("amount").notNull(),
+    status: text("status")
+      .$type<PaymentAttemptStatus>()
+      .notNull()
+      .default("CREATED"),
+    idempotencyKey: uuid("idempotency_key").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    paymentKey: text("payment_key"),
+    failureCode: text("failure_code"),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_payment_attempts_order_id_uidx").on(table.orderId),
+    uniqueIndex("billing_payment_attempts_idempotency_key_uidx").on(
+      table.idempotencyKey,
+    ),
+    uniqueIndex("billing_payment_attempts_active_invoice_uidx")
+      .on(table.invoiceId)
+      .where(
+        sql`${table.status} in ('CREATED', 'AUTHENTICATED', 'CONFIRMING')`,
+      ),
+    index("billing_payment_attempts_invoice_idx").on(
+      table.invoiceId,
+      table.createdAt,
+    ),
+    index("billing_payment_attempts_status_expiry_idx").on(
+      table.status,
+      table.expiresAt,
+    ),
+    check("billing_payment_attempts_amount_check", sql`${table.amount} > 0`),
+    check(
+      "billing_payment_attempts_order_id_check",
+      sql`${table.orderId} ~ '^[A-Za-z0-9_-]{6,64}$'`,
+    ),
+    check(
+      "billing_payment_attempts_status_check",
+      sql`${table.status} in ('CREATED', 'AUTHENTICATED', 'CONFIRMING', 'DONE', 'FAILED', 'EXPIRED', 'CANCELED')`,
+    ),
+    check(
+      "billing_payment_attempts_confirmation_check",
+      sql`(${table.status} = 'DONE' and ${table.paymentKey} is not null and ${table.confirmedAt} is not null)
+        or (${table.status} <> 'DONE' and ${table.confirmedAt} is null)`,
+    ),
+  ],
+);
+
+export const billingPayments = pgTable(
+  "billing_payments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    invoiceId: uuid("invoice_id")
+      .notNull()
+      .references(() => billingInvoices.id, { onDelete: "restrict" }),
+    attemptId: uuid("attempt_id").references(() => billingPaymentAttempts.id, {
+      onDelete: "restrict",
+    }),
+    method: text("method").$type<PaymentMethod>().notNull(),
+    amount: integer("amount").notNull(),
+    approvedAt: timestamp("approved_at", { withTimezone: true }).notNull(),
+    tossPaymentKey: text("toss_payment_key"),
+    tossMid: text("toss_mid"),
+    approvalNumber: text("approval_number"),
+    maskedMethod: jsonb("masked_method")
+      .$type<Record<string, string | number | null>>()
+      .notNull()
+      .default({}),
+    refundedAmount: integer("refunded_amount").notNull().default(0),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_payments_toss_payment_key_uidx")
+      .on(table.tossPaymentKey)
+      .where(sql`${table.tossPaymentKey} is not null`),
+    uniqueIndex("billing_payments_completed_invoice_uidx")
+      .on(table.invoiceId)
+      .where(sql`${table.amount} > 0`),
+    index("billing_payments_invoice_idx").on(table.invoiceId),
+    index("billing_payments_attempt_idx").on(table.attemptId),
+    check("billing_payments_amount_check", sql`${table.amount} > 0`),
+    check(
+      "billing_payments_method_check",
+      sql`${table.method} in ('BANK_TRANSFER', 'CARD', 'EASY_PAY')`,
+    ),
+    check(
+      "billing_payments_refunded_amount_check",
+      sql`${table.refundedAmount} between 0 and ${table.amount}`,
+    ),
+    check(
+      "billing_payments_provider_fields_check",
+      sql`(${table.method} = 'BANK_TRANSFER'
+          and ${table.attemptId} is null
+          and ${table.tossPaymentKey} is null
+          and ${table.tossMid} is null)
+        or (${table.method} in ('CARD', 'EASY_PAY')
+          and ${table.attemptId} is not null
+          and ${table.tossPaymentKey} is not null
+          and ${table.tossMid} is not null)`,
+    ),
+  ],
+);
+
+export const billingBankReceipts = pgTable(
+  "billing_bank_receipts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => billingPayments.id, { onDelete: "restrict" }),
+    depositorName: text("depositor_name").notNull(),
+    amount: integer("amount").notNull(),
+    depositedOn: date("deposited_on").notNull(),
+    confirmedBy: uuid("confirmed_by")
+      .notNull()
+      .references(() => adminUsers.id, { onDelete: "restrict" }),
+    evidenceNote: text("evidence_note").notNull(),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_bank_receipts_payment_id_uidx").on(table.paymentId),
+    index("billing_bank_receipts_deposited_on_idx").on(table.depositedOn),
+    check("billing_bank_receipts_amount_check", sql`${table.amount} > 0`),
+    check(
+      "billing_bank_receipts_depositor_name_check",
+      sql`char_length(btrim(${table.depositorName})) between 1 and 100`,
+    ),
+    check(
+      "billing_bank_receipts_evidence_note_check",
+      sql`char_length(btrim(${table.evidenceNote})) between 5 and 500`,
+    ),
+  ],
+);
+
+export const billingRefunds = pgTable(
+  "billing_refunds",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => billingPayments.id, { onDelete: "restrict" }),
+    amount: integer("amount").notNull(),
+    reason: text("reason").notNull(),
+    status: text("status")
+      .$type<RefundStatus>()
+      .notNull()
+      .default("REQUESTED"),
+    idempotencyKey: uuid("idempotency_key").notNull(),
+    requestedBy: uuid("requested_by")
+      .notNull()
+      .references(() => adminUsers.id, { onDelete: "restrict" }),
+    processedBy: uuid("processed_by").references(() => adminUsers.id, {
+      onDelete: "restrict",
+    }),
+    tossTransactionKey: text("toss_transaction_key"),
+    providerCode: text("provider_code"),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_refunds_idempotency_key_uidx").on(
+      table.idempotencyKey,
+    ),
+    index("billing_refunds_payment_idx").on(table.paymentId, table.createdAt),
+    index("billing_refunds_status_idx").on(table.status, table.updatedAt),
+    check("billing_refunds_amount_check", sql`${table.amount} > 0`),
+    check(
+      "billing_refunds_reason_check",
+      sql`char_length(btrim(${table.reason})) between 5 and 200`,
+    ),
+    check(
+      "billing_refunds_status_check",
+      sql`${table.status} in ('REQUESTED', 'PROCESSING', 'DONE', 'FAILED')`,
+    ),
+    check(
+      "billing_refunds_completion_check",
+      sql`(${table.status} = 'DONE' and ${table.processedBy} is not null and ${table.completedAt} is not null)
+        or (${table.status} <> 'DONE' and ${table.completedAt} is null)`,
+    ),
+  ],
+);
+
+export const billingPaymentEvents = pgTable(
+  "billing_payment_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    paymentId: uuid("payment_id").references(() => billingPayments.id, {
+      onDelete: "restrict",
+    }),
+    attemptId: uuid("attempt_id").references(() => billingPaymentAttempts.id, {
+      onDelete: "restrict",
+    }),
+    refundId: uuid("refund_id").references(() => billingRefunds.id, {
+      onDelete: "restrict",
+    }),
+    source: text("source").$type<PaymentEventSource>().notNull(),
+    eventType: text("event_type").notNull(),
+    fromStatus: text("from_status"),
+    toStatus: text("to_status").notNull(),
+    correlationId: text("correlation_id").notNull(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("billing_payment_events_payment_idx").on(
+      table.paymentId,
+      table.occurredAt,
+    ),
+    index("billing_payment_events_attempt_idx").on(
+      table.attemptId,
+      table.occurredAt,
+    ),
+    index("billing_payment_events_refund_idx").on(
+      table.refundId,
+      table.occurredAt,
+    ),
+    index("billing_payment_events_correlation_idx").on(table.correlationId),
+    check(
+      "billing_payment_events_source_check",
+      sql`${table.source} in ('CUSTOMER', 'ADMIN', 'TOSS_REDIRECT', 'TOSS_WEBHOOK', 'RECONCILIATION', 'SYSTEM')`,
+    ),
+    check(
+      "billing_payment_events_entity_reference_check",
+      sql`${table.paymentId} is not null or ${table.attemptId} is not null or ${table.refundId} is not null`,
+    ),
+  ],
+);
+
+export const billingWebhookReceipts = pgTable(
+  "billing_webhook_receipts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    transmissionId: text("transmission_id").notNull(),
+    attemptId: uuid("attempt_id").references(() => billingPaymentAttempts.id, {
+      onDelete: "restrict",
+    }),
+    eventType: text("event_type").notNull(),
+    paymentKey: text("payment_key").notNull(),
+    paymentKeyHash: bytea("payment_key_hash").notNull(),
+    orderId: text("order_id").notNull(),
+    payloadHash: bytea("payload_hash").notNull(),
+    status: text("status")
+      .$type<WebhookStatus>()
+      .notNull()
+      .default("RECEIVED"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastErrorCode: text("last_error_code"),
+    receivedAt: timestamp("received_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("billing_webhook_receipts_transmission_id_uidx").on(
+      table.transmissionId,
+    ),
+    index("billing_webhook_receipts_attempt_idx").on(table.attemptId),
+    index("billing_webhook_receipts_status_idx").on(
+      table.status,
+      table.updatedAt,
+    ),
+    check(
+      "billing_webhook_receipts_status_check",
+      sql`${table.status} in ('RECEIVED', 'PROCESSING', 'DONE', 'RETRY', 'REJECTED')`,
+    ),
+    check(
+      "billing_webhook_receipts_hashes_check",
+      sql`octet_length(${table.paymentKeyHash}) = 32 and octet_length(${table.payloadHash}) = 32`,
+    ),
+    check(
+      "billing_webhook_receipts_attempt_count_check",
+      sql`${table.attemptCount} >= 0`,
+    ),
+  ],
+);
+
 export const billingWidgetIntegrations = pgTable(
   "billing_widget_integrations",
   {
@@ -937,6 +1239,10 @@ export type BillingCustomerRow = typeof billingCustomers.$inferSelect;
 export type BillingContractRow = typeof billingContracts.$inferSelect;
 export type BillingInvoiceRow = typeof billingInvoices.$inferSelect;
 export type BillingInvoiceItemRow = typeof billingInvoiceItems.$inferSelect;
+export type BillingPaymentAttemptRow =
+  typeof billingPaymentAttempts.$inferSelect;
+export type BillingPaymentRow = typeof billingPayments.$inferSelect;
+export type BillingRefundRow = typeof billingRefunds.$inferSelect;
 export type BillingWidgetIntegrationRow = Omit<
   typeof billingWidgetIntegrations.$inferSelect,
   "encryptedSecret" | "secretIv" | "secretTag"
