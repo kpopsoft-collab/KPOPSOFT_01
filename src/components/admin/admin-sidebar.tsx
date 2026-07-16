@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { BrandMark } from "@/components/layout/brand-mark";
-import { Wordmark } from "@/components/layout/wordmark";
+import { BrandLockup } from "@/components/layout/brand-lockup";
 import { adminNav } from "./admin-nav";
 
 /** Is `href` the active route? Exact for /admin, prefix for the rest. */
@@ -79,8 +78,7 @@ export function AdminSidebar() {
     <aside className="hidden w-64 shrink-0 border-r border-border bg-sidebar lg:block">
       <div className="sticky top-0 flex h-dvh flex-col gap-8 p-4">
         <Link href="/admin" className="flex items-center px-3 pt-2">
-          <BrandMark className="mr-2" />
-          <Wordmark />
+          <BrandLockup />
           <span className="ml-2 rounded-full bg-brand-blue/10 px-2 py-0.5 text-[10px] font-bold tracking-wide text-brand-blue">
             ADMIN
           </span>

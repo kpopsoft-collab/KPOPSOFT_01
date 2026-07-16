@@ -15,12 +15,20 @@ import { cn } from "@/lib/utils";
  * no gray photo placeholders, no gradients. Each accent gets its own pairing
  * from the shape vocabulary so a card reads from shape + copy, not color alone
  * (§12). Shared by Selected Work and Education so both surfaces stay consistent.
+ *
+ * `monogram`/`label`은 ver2 Placeholder 요건(Education §25 — 도형 + 이름 첫
+ * 글자 + 감성 라벨)을 위한 선택 오버레이. 카드 제목을 그대로 되풀이하는
+ * 장식이므로 이 블록 전체는 계속 aria-hidden이다.
  */
 export function AccentVisual({
   accent,
+  monogram,
+  label,
   className,
 }: {
   accent: Accent;
+  monogram?: string;
+  label?: string;
   className?: string;
 }) {
   const fg = accentOnDark[accent] ? "text-ivory" : "text-ink";
@@ -34,6 +42,26 @@ export function AccentVisual({
       )}
       aria-hidden
     >
+      {monogram && (
+        <span
+          className={cn(
+            "absolute top-3 left-4 text-3xl font-extrabold tracking-tight opacity-70",
+            fg,
+          )}
+        >
+          {monogram}
+        </span>
+      )}
+      {label && (
+        <span
+          className={cn(
+            "text-eyebrow absolute right-4 bottom-3 opacity-70",
+            fg,
+          )}
+        >
+          {label}
+        </span>
+      )}
       {accent === "blue" && (
         <>
           <Arch className={cn("absolute -bottom-7 size-28 opacity-90", fg)} />

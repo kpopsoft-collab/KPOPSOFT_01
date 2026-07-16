@@ -13,6 +13,12 @@ export const site = {
   email: "hello@kpopsoft.com", // 더미
 } as const;
 
+/** Real routes. ver2에서 Education이 홈 섹션 → 독립 페이지로 분리됐다. */
+export const route = {
+  home: "/",
+  education: "/education",
+} as const;
+
 /** Section anchor ids — shared by nav links and section elements. */
 export const sectionId = {
   hero: "top",
@@ -29,17 +35,52 @@ export const sectionId = {
   numbers: "numbers",
   testimonials: "testimonials",
   contact: "contact",
+  /** ver2 홈 — Software·AI Solutions를 묶은 통합 섹션. 두 블록은 위의
+   *  software/aiSolutions id를 그대로 유지해 헤더 앵커가 계속 동작한다. */
+  whatWeDo: "what-we-do",
 } as const;
 
-/** Header navigation (docs/기획서.md §3). */
+/** Education 페이지 전용 앵커 (docs/KPOPSOFT_Education_Page_ver2.md §5). */
+export const educationSectionId = {
+  hero: "top",
+  programs: "programs",
+  b2b: "for-organizations",
+  inquiry: "education-inquiry",
+} as const;
+
+/**
+ * Header navigation (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 01).
+ *
+ * 홈 앵커는 반드시 루트 기준 절대경로(`/#work`)로 둔다 — `/education` 같은
+ * 다른 라우트에서 눌러도 홈으로 이동한 뒤 스크롤되어야 하기 때문이다.
+ *
+ * INSIGHTS는 ver2에서 제외했다(기획서 §6: 실제 콘텐츠가 쌓인 뒤 추가).
+ * `/insights/[slug]` 라우트 자체는 살아 있어 기존 링크는 깨지지 않는다.
+ */
 export const navItems = [
-  { label: "ABOUT", href: `#${sectionId.about}` },
-  { label: "SOFTWARE", href: `#${sectionId.software}` },
-  { label: "AI SOLUTIONS", href: `#${sectionId.aiSolutions}` },
-  { label: "EDUCATION", href: `#${sectionId.education}` },
-  { label: "WORK", href: `#${sectionId.work}` },
-  { label: "INSIGHTS", href: `#${sectionId.insights}` },
+  { label: "WORK", href: `/#${sectionId.work}` },
+  { label: "SOFTWARE", href: `/#${sectionId.software}` },
+  { label: "AI SOLUTIONS", href: `/#${sectionId.aiSolutions}` },
+  { label: "EDUCATION", href: route.education },
+  { label: "ABOUT", href: `/#${sectionId.about}` },
+  { label: "CONTACT", href: `/#${sectionId.contact}` },
 ] as const;
+
+/**
+ * Header CTA — 페이지마다 방문자가 할 "다음 행동"이 다르다.
+ * 홈은 프로젝트 의뢰, Education은 기업 교육 문의
+ * (Home ver2 §SECTION 01 / Education ver2 §6).
+ */
+export const headerCta = {
+  [route.education]: {
+    label: "기업 교육 문의",
+    href: `${route.education}#${educationSectionId.inquiry}`,
+  },
+  default: {
+    label: "프로젝트 의뢰",
+    href: `/#${sectionId.contact}`,
+  },
+} as const;
 
 /**
  * 문의 폼 유형 + 세부 유형 (docs/기획서.md §15, docs/어드민기획.md §문의 폼 옵션 관리).
