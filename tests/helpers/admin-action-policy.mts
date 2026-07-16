@@ -7,6 +7,19 @@ const MUTATION_BOUNDARIES = [
   "addAdminUser(",
   "setAdminUserActive(",
   "writeAuditLog(",
+  "createCustomerWithSite(",
+  "saveContract(",
+  "changeContractStatus(",
+  "updateDraftInvoice(",
+  "approveInvoice(",
+  "voidInvoice(",
+  "retryInvoiceDelivery(",
+] as const;
+
+const ACTION_GUARDS = [
+  "await requireAdminAction()",
+  "await requireBillingPermission(",
+  "await requireRecentBillingAuth(",
 ] as const;
 
 export function findAdminActionGuardViolations(source: string): string[] {
@@ -17,7 +30,12 @@ export function findAdminActionGuardViolations(source: string): string[] {
       const functionName = exportedFunction.match(/^([A-Za-z0-9_]+)/)?.[1];
       if (!functionName) return ["<unknown>"];
 
-      const guardIndex = exportedFunction.indexOf("await requireAdminAction()");
+      const guardIndex = Math.min(
+        ...ACTION_GUARDS.map((guard) => {
+          const index = exportedFunction.indexOf(guard);
+          return index === -1 ? Number.POSITIVE_INFINITY : index;
+        }),
+      );
       const mutationIndex = Math.min(
         ...MUTATION_BOUNDARIES.map((boundary) => {
           const index = exportedFunction.indexOf(boundary);
@@ -25,7 +43,7 @@ export function findAdminActionGuardViolations(source: string): string[] {
         }),
       );
 
-      return guardIndex === -1 || guardIndex > mutationIndex
+      return !Number.isFinite(guardIndex) || guardIndex > mutationIndex
         ? [functionName]
         : [];
     });

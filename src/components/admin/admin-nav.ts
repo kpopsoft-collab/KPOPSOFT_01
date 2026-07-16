@@ -14,6 +14,10 @@ import {
   BarChart3,
   ListChecks,
   Settings,
+  CreditCard,
+  Building2,
+  FileText,
+  ReceiptText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -46,6 +50,15 @@ export const adminNav: AdminNavGroup[] = [
       { label: "강사진", href: "/admin/content/experts", icon: Users },
       { label: "수치", href: "/admin/content/stats", icon: BarChart3 },
       { label: "문의 옵션", href: "/admin/content/inquiry-options", icon: ListChecks },
+    ],
+  },
+  {
+    heading: "결제·계약",
+    items: [
+      { label: "결제 대시보드", href: "/admin/billing", icon: CreditCard },
+      { label: "고객사", href: "/admin/billing/customers", icon: Building2 },
+      { label: "계약", href: "/admin/billing/contracts", icon: FileText },
+      { label: "청구서", href: "/admin/billing/invoices", icon: ReceiptText },
     ],
   },
   {
