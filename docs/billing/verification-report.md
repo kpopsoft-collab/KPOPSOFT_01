@@ -78,8 +78,12 @@ git diff --check
 | `npm run build` | PASS |
 | `npm audit --omit=dev` | 취약점 0 |
 | live read-only verifier | exact `aabcef8` READY runtime attestation 실행 후 OAuth env 누락으로 의도한 fail-closed |
+| Google OAuth Preview control plane | Google Cloud project `kpopsoft-billing-preview`, 외부/테스트 모드, 테스트 사용자 `kpopsoft@gmail.com`, canonical admin Auth.js callback만 등록 |
+| Vercel OAuth env | NEO 계정의 `kpopsoft-2075s-projects/kpopsoft-02`에 `AUTH_GOOGLE_ID`와 `AUTH_GOOGLE_SECRET`을 `codex/billing-preview-oauth` 브랜치 Preview 범위로만 등록 |
 
 focused RED/GREEN으로 실제 Vercel list record의 deployment ID 부재와 `vercel curl` 프로젝트 링크/옵션 경계를 재현하고 수정했습니다. live OAuth smoke가 통과되기 전에는 Preview 관리자/결제 게이트를 `PASS`로 바꾸지 않습니다.
+
+로컬 CLI 배포는 Git 작성자 `h19h29@gmail.com`의 Pro Developer 권한이 없어 `TEAM_ACCESS_REQUIRED`로 빌드 전에 차단되는 것을 확인했습니다. 해당 Vercel 계정은 추가 요금 없는 Viewer로 팀 연결했지만 Viewer는 배포 권한이 없으며, 월 과금되는 Developer 좌석은 추가하지 않았습니다. NEO 계정에 연결된 GitHub 저장소의 source deployment를 canonical 배포 경로로 유지하고, Git 메타데이터가 없는 prebuilt는 alias를 연결하지 않는 진단용 Preview에만 사용합니다.
 
 Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `postcss@8.5.19`를 사용하게 했고 빌드를 재검증했습니다. 전체 개발 의존성 감사에는 Drizzle Kit의 구형 esbuild loader 경로로 moderate 4건이 남습니다. Production 의존성에는 포함되지 않으며 npm의 자동 수정은 Drizzle Kit를 역다운그레이드하므로 적용하지 않았습니다. 개발 DB 도구를 외부 네트워크에 노출하지 않고 후속 Drizzle Kit 릴리스에서 재검토합니다.
 
