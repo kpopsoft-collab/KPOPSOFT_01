@@ -8,6 +8,7 @@ import { expect, test, type APIRequestContext, type Page } from "@playwright/tes
 const execFileAsync = promisify(execFile);
 
 const previewAdminHost = "admin-kpopsoft-billing-preview-neo.vercel.app";
+const previewDatabaseHost = "ep-polished-scene-at1xxh71.c-9.us-east-1.aws.neon.tech";
 const maxStorageStateAgeMs = 10 * 60 * 1000;
 const disposable = process.env.BILLING_E2E_DISPOSABLE_PREVIEW === "true";
 const storageStatePath = process.env.BILLING_E2E_STORAGE_STATE_PATH;
@@ -223,11 +224,27 @@ function parseTargetedInvoiceGenerationResult(value: string): TargetedInvoiceGen
   };
 }
 
+function hasPinnedPreviewDatabaseUrl(environment: NodeJS.ProcessEnv): boolean {
+  try {
+    const hostname = new URL(environment.DATABASE_URL ?? "").hostname;
+    const [firstLabel, ...remainingLabels] = previewDatabaseHost.split(".");
+    const poolerHost = firstLabel && remainingLabels.length > 0
+      ? `${firstLabel}-pooler.${remainingLabels.join(".")}`
+      : "";
+    return hostname === previewDatabaseHost || hostname === poolerHost;
+  } catch {
+    return false;
+  }
+}
+
 async function runTargetedInvoiceGenerator(
   runDate: string,
   contractId: string,
 ): Promise<TargetedInvoiceGenerationResult> {
   try {
+    if (!hasPinnedPreviewDatabaseUrl(process.env)) {
+      throw new Error("billing_e2e_targeted_generator_failed");
+    }
     const result = await execFileAsync(
       process.execPath,
       [

@@ -89,7 +89,7 @@ Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `p
 
 ## Preview 전용 브라우저 시나리오
 
-`scripts/verify-billing-preview.mts`는 audited `vercel@56.3.2`로 exact Vercel team ID와 scoped project ID를 확인합니다. local `git rev-parse HEAD`와 branch/SHA metadata로 `READY` deployment를 좁히고 pagination이 남으면 실패하며, canonical admin alias는 list 첫 페이지가 아니라 direct `vercel inspect <alias>`로 같은 deployment ID/URL인지 확인합니다. required Preview env metadata는 이름별 단일 branch/target record만 허용하고, Neon은 branch identity와 정확히 하나의 active read-write endpoint를 요구합니다. runtime boolean attestation은 caller `process.env`가 아니라 selected deployment의 `vercel env pull --id` 결과를 mode-600 temporary file에서만 읽고 즉시 삭제해 계산하며, child가 상속할 required values가 그 exact deployment와 일치하지 않으면 실패합니다. 새 관리자 E2E는 canonical Preview URL, 10분 이내의 canonical-host Auth.js storage state, exact expected admin email, deterministic run ID, 그리고 `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 browser mutation을 시작하지 않습니다. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
+`scripts/verify-billing-preview.mts`는 audited `vercel@56.3.2`로 exact Vercel team ID와 scoped project ID를 확인합니다. local `git rev-parse HEAD`와 branch/SHA metadata로 `READY` deployment를 좁히고 pagination이 남으면 실패하며, canonical admin alias는 list 첫 페이지가 아니라 direct `vercel inspect <alias>`로 같은 deployment ID/URL인지 확인합니다. required Preview env metadata는 이름별 단일 branch/target record만 허용하고 각 record가 selected deployment보다 늦게 갱신되면 실패합니다. Neon은 branch identity와 정확히 하나의 active read-write endpoint를 요구합니다. runtime boolean attestation은 caller `process.env`나 READY deployment `env pull`이 아니라 selected deployment URL의 protected `vercel curl` 요청으로만 얻으며, route는 exact Preview branch/deployment/SHA header checks 뒤 fixed boolean contract만 반환합니다. 새 관리자 E2E는 canonical Preview URL, 10분 이내의 canonical-host Auth.js storage state, exact expected admin email, deterministic run ID, 그리고 `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 browser mutation을 시작하지 않습니다. Its child validates its parent-owned local Preview `DATABASE_URL` hostname immediately before targeted generation. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
 
 다음 5개 시나리오는 조건이 없으면 강제로 skip합니다.
 
@@ -103,26 +103,18 @@ Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `p
 
 ### Parent-Owned Live Command
 
-OAuth login으로 만든 storage state는 외부에 출력하거나 저장소에 추가하지 않습니다. branch env는 권한 있는 parent가 private file로 pull하고, command line에는 cron secret을 넣지 않습니다.
+OAuth login으로 만든 storage state는 외부에 출력하거나 저장소에 추가하지 않습니다. destination Preview secrets와 parent-owned local Preview runtime inputs are created through the approved operator path and are never printed; command line에는 cron secret을 넣지 않습니다.
 
 ```bash
-umask 077
-npx --yes vercel@56.3.2 env pull .env.billing-preview-e2e.local \
-  --environment=preview \
-  --git-branch=codex/billing-preview-oauth \
-  --project=kpopsoft-02 \
-  --scope=kpopsoft-2075s-projects
-
 BILLING_E2E_DISPOSABLE_PREVIEW=true \
 BILLING_E2E_BASE_URL=https://admin-kpopsoft-billing-preview-neo.vercel.app \
 BILLING_E2E_STORAGE_STATE_PATH="$BILLING_E2E_STORAGE_STATE_PATH" \
 BILLING_E2E_EXPECTED_ADMIN_EMAIL="$BILLING_E2E_EXPECTED_ADMIN_EMAIL" \
 BILLING_E2E_RUN_ID="$BILLING_E2E_RUN_ID" \
-./node_modules/.bin/dotenv -e .env.billing-preview-e2e.local -- \
-  npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
+npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
 ```
 
-The `BILLING_E2E_RUN_ID` must be 8-25 lowercase letters, digits, or internal hyphens. The E2E checks unauthenticated deployed `/api/internal/billing/generate` and `/api/internal/billing/reconcile` for `401`, then re-runs the verifier immediately before calling only the local one-contract generator in the child server runtime. The child receives `runDate` and the UUID contract ID as separate arguments, parses only target/created counts plus sanitized failure codes, and never sends a cron secret.
+The `BILLING_E2E_RUN_ID` must be 8-25 lowercase letters, digits, or internal hyphens. The E2E checks unauthenticated deployed `/api/internal/billing/generate` and `/api/internal/billing/reconcile` for `401`, then re-runs the verifier immediately before validating its parent-owned local Preview `DATABASE_URL` hostname and calling only the local one-contract generator in the child server runtime. The child receives `runDate` and the UUID contract ID as separate arguments, parses only target/created counts plus sanitized failure codes, and never sends a cron secret.
 
 ## 외부 HOLD
 

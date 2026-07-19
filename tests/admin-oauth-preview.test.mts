@@ -1,13 +1,5 @@
 import assert from "node:assert/strict";
-import {
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -33,19 +25,6 @@ const config: BillingPreviewConfig = {
 const localHead = "a".repeat(40);
 const endpointHost = "ep-polished-scene-at1xxh71.c-9.us-east-1.aws.neon.tech";
 
-const runtimeEnvironment: NodeJS.ProcessEnv = {
-  AUTH_GOOGLE_ID: "test-google-id",
-  AUTH_GOOGLE_SECRET: "test-google-secret",
-  AUTH_SECRET: "test-auth-secret",
-  BANK_TRANSFER_ENABLED: "false",
-  BILLING_CRON_SECRET: "test-billing-cron-secret",
-  BILLING_ENABLED: "true",
-  BILLING_WIDGET_ENABLED: "false",
-  DATABASE_URL: `postgresql://user:password@${endpointHost}/preview`,
-  NODE_ENV: "test",
-  TOSS_PAYMENTS_ENABLED: "false",
-};
-
 const requiredEnvironmentNames = [
   "AUTH_SECRET",
   "AUTH_GOOGLE_ID",
@@ -68,6 +47,7 @@ function snapshot(): BillingPreviewSnapshot {
         url: "kpopsoft-02-exact-preview.vercel.app",
       },
       deployment: {
+        createdAt: 1_721_360_000_000,
         gitCommitRef: config.branch,
         gitCommitSha: localHead,
         id: "dpl_exact_preview",
@@ -83,6 +63,7 @@ function snapshot(): BillingPreviewSnapshot {
         gitBranch: config.branch,
         key,
         targets: ["preview"],
+        updatedAt: 1_721_360_000_000,
       })),
       project: { id: config.projectId, name: config.projectName },
       team: { id: config.teamId, slug: config.teamSlug },
@@ -103,10 +84,11 @@ function snapshot(): BillingPreviewSnapshot {
       billingEnabled: true,
       billingWidgetDisabled: true,
       databaseUrlMatchesPreviewEndpoint: true,
+      deploymentIdMatchesRequest: true,
+      gitCommitShaMatchesRequest: true,
       requiredRuntimeEnvironmentPresent: true,
       tossPaymentsDisabled: true,
     },
-    childEnvironmentMatchesDeployment: true,
   } as unknown as BillingPreviewSnapshot;
 }
 
@@ -233,51 +215,6 @@ test("requires preview in Vercel's target array and the explicit branch", () => 
   });
 });
 
-test("attests exact deployment runtime values only as booleans and accepts the endpoint pooler host", () => {
-  const attestation = billingPreview.attestBillingPreviewRuntime(
-    {
-      ...runtimeEnvironment,
-      DATABASE_URL: `postgresql://user:password@${endpointHost.replace(
-        "ep-polished-scene-at1xxh71",
-        "ep-polished-scene-at1xxh71-pooler",
-      )}/preview`,
-    },
-    endpointHost,
-  );
-
-  assert.deepEqual(attestation, {
-    bankTransferDisabled: true,
-    billingEnabled: true,
-    billingWidgetDisabled: true,
-    databaseUrlMatchesPreviewEndpoint: true,
-    requiredRuntimeEnvironmentPresent: true,
-    tossPaymentsDisabled: true,
-  });
-  assert.doesNotMatch(JSON.stringify(attestation), /password|postgresql|secret/i);
-});
-
-test("fails closed when a required runtime value is empty or the database host is wrong", () => {
-  const attestation = billingPreview.attestBillingPreviewRuntime(
-    {
-      ...runtimeEnvironment,
-      AUTH_GOOGLE_SECRET: "",
-      DATABASE_URL: "postgresql://user:password@ep-production.example.test/app",
-    },
-    endpointHost,
-  );
-
-  assert.equal(attestation.requiredRuntimeEnvironmentPresent, false);
-  assert.equal(attestation.databaseUrlMatchesPreviewEndpoint, false);
-  const state = snapshot() as unknown as {
-    runtimeAttestation: billingPreview.BillingPreviewRuntimeAttestation;
-  } & BillingPreviewSnapshot;
-  state.runtimeAttestation = attestation;
-  assert.deepEqual(verify(state), {
-    ok: false,
-    code: "runtime_attestation_failed",
-  });
-});
-
 test("rejects duplicate or conflicting required Preview environment metadata", () => {
   const state = snapshot() as unknown as {
     vercel: {
@@ -293,6 +230,21 @@ test("rejects duplicate or conflicting required Preview environment metadata", (
   assert.deepEqual(verify(state), {
     ok: false,
     code: "environment_metadata_ambiguous",
+  });
+});
+
+test("rejects required Preview environment metadata updated after the selected deployment", () => {
+  const state = snapshot() as unknown as {
+    vercel: {
+      deployment: { createdAt: number };
+      environments: Array<{ updatedAt: number }>;
+    };
+  } & BillingPreviewSnapshot;
+  state.vercel.environments[0]!.updatedAt = state.vercel.deployment.createdAt + 1;
+
+  assert.deepEqual(verify(state), {
+    ok: false,
+    code: "environment_metadata_after_deployment",
   });
 });
 
@@ -320,47 +272,28 @@ test("does not use caller process runtime values when deployment runtime evidenc
   );
 });
 
-test("rejects a child environment that differs from the exact deployment runtime", () => {
-  const state = snapshot() as unknown as {
-    childEnvironmentMatchesDeployment: boolean;
-  } & BillingPreviewSnapshot;
-  state.childEnvironmentMatchesDeployment = false;
+test("parses only the exact boolean deployment-runtime attestation contract", () => {
+  const parser = (billingPreview as typeof billingPreview & {
+    parseBillingPreviewRuntimeAttestation?: (value: string) => billingPreview.BillingPreviewRuntimeAttestation;
+  }).parseBillingPreviewRuntimeAttestation;
+  assert.equal(typeof parser, "function");
 
-  assert.deepEqual(verify(state), {
-    ok: false,
-    code: "runtime_attestation_failed",
-  });
-});
+  const allowed = JSON.stringify(snapshot().runtimeAttestation);
+  assert.deepEqual(parser!(allowed), snapshot().runtimeAttestation);
 
-test("reads exact deployment runtime values from a mode-600 temporary env file and removes it", () => {
-  const directory = mkdtempSync(join(tmpdir(), "billing-preview-runtime-"));
-  const path = join(directory, "deployment.env");
-  writeFileSync(path, [
-    "AUTH_SECRET=test-auth-secret",
-    "AUTH_GOOGLE_ID=test-google-id",
-    "AUTH_GOOGLE_SECRET=test-google-secret",
-    `DATABASE_URL=postgresql://user:password@${endpointHost}/preview`,
-    "BILLING_ENABLED=true",
-    "BILLING_CRON_SECRET=test-billing-cron-secret",
-    "BANK_TRANSFER_ENABLED=false",
-    "TOSS_PAYMENTS_ENABLED=false",
-    "BILLING_WIDGET_ENABLED=false",
-  ].join("\n"), { mode: 0o600 });
-
-  try {
-    const attestation = billingPreview.readBillingPreviewRuntimeAttestation(path, endpointHost);
-    assert.equal(attestation.databaseUrlMatchesPreviewEndpoint, true);
-    assert.equal(attestation.requiredRuntimeEnvironmentPresent, true);
-    assert.doesNotMatch(JSON.stringify(attestation), /password|postgresql|secret/i);
-  } finally {
-    rmSync(directory, { force: true, recursive: true });
+  for (const invalid of [
+    JSON.stringify({ ...snapshot().runtimeAttestation, unexpected: true }),
+    JSON.stringify({ ...snapshot().runtimeAttestation, billingEnabled: "true" }),
+    JSON.stringify(Object.fromEntries(
+      Object.entries(snapshot().runtimeAttestation).filter(([key]) => key !== "billingEnabled"),
+    )),
+  ]) {
+    assert.throws(() => parser!(invalid), /inspection_shape_invalid/);
   }
 });
 
-test("inspector pins the audited Vercel CLI and exact scoped deployment commands", async () => {
+test("inspector rejects unsupported READY env pull and requires deployment curl runtime attestation", async () => {
   const calls: Array<{ command: string; args: string[] }> = [];
-  let runtimeEnvironmentPath: string | undefined;
-  let runtimeEnvironmentMode: number | undefined;
   const inspector = billingPreview.createBillingPreviewCliInspector(
     async (command, args) => {
       calls.push({ command, args });
@@ -373,21 +306,8 @@ test("inspector pins the audited Vercel CLI and exact scoped deployment commands
           projects: [{ id: config.projectId, name: config.projectName }],
         });
       }
-      if (args.includes("env") && args.includes("pull")) {
-        runtimeEnvironmentPath = args[args.indexOf("pull") + 1];
-        runtimeEnvironmentMode = statSync(runtimeEnvironmentPath!).mode & 0o777;
-        writeFileSync(runtimeEnvironmentPath!, [
-          "AUTH_SECRET=test-auth-secret",
-          "AUTH_GOOGLE_ID=test-google-id",
-          "AUTH_GOOGLE_SECRET=test-google-secret",
-          `DATABASE_URL=postgresql://user:password@${endpointHost}/preview`,
-          "BILLING_ENABLED=true",
-          "BILLING_CRON_SECRET=test-billing-cron-secret",
-          "BANK_TRANSFER_ENABLED=false",
-          "TOSS_PAYMENTS_ENABLED=false",
-          "BILLING_WIDGET_ENABLED=false",
-        ].join("\n"), { mode: 0o600 });
-        return "";
+      if (args.includes("curl")) {
+        return JSON.stringify(snapshot().runtimeAttestation);
       }
       if (args.includes("env") && args.includes("ls")) {
         return JSON.stringify({
@@ -395,6 +315,7 @@ test("inspector pins the audited Vercel CLI and exact scoped deployment commands
             gitBranch: config.branch,
             key,
             target: ["preview"],
+            updatedAt: 1_721_360_000_000,
           })),
         });
       }
@@ -417,6 +338,7 @@ test("inspector pins the audited Vercel CLI and exact scoped deployment commands
       if (args.includes("list")) {
         return JSON.stringify({
           deployments: [{
+            createdAt: 1_721_360_000_000,
             meta: {
               githubCommitRef: config.branch,
               githubCommitSha: localHead,
@@ -454,7 +376,6 @@ test("inspector pins the audited Vercel CLI and exact scoped deployment commands
       throw new Error("unexpected command");
     },
     config,
-    runtimeEnvironment,
   );
 
   const inspected = await inspector();
@@ -485,14 +406,22 @@ test("inspector pins the audited Vercel CLI and exact scoped deployment commands
     calls.some(({ args }) => args.includes("inspect") && args.includes(new URL(config.adminOrigin).hostname)),
     true,
   );
-  const environmentPull = calls.find(({ args }) => args.includes("env") && args.includes("pull"));
-  assert.equal(environmentPull?.args.includes("--yes"), true);
-  assert.equal(environmentPull?.args.at(-2), "--yes");
-  assert.equal(environmentPull?.args.at(-1), "--non-interactive");
-  assert.equal(environmentPull?.args.includes("--id"), true);
-  assert.equal(environmentPull?.args.includes("dpl_exact_preview"), true);
-  assert.equal(runtimeEnvironmentMode, 0o600);
-  assert.equal(existsSync(runtimeEnvironmentPath!), false);
+  assert.equal(
+    calls.some(({ args }) => args.includes("env") && args.includes("pull")),
+    false,
+    "READY runtime attestation must not use Vercel env pull",
+  );
+  const runtimeCurl = calls.find(({ args }) => args.includes("curl"));
+  assert.deepEqual(runtimeCurl?.args.slice(0, 6), [
+    "--yes",
+    "vercel@56.3.2",
+    "curl",
+    "/api/internal/billing/attestation",
+    "--deployment",
+    "https://kpopsoft-02-exact-preview.vercel.app",
+  ]);
+  assert.equal(runtimeCurl?.args.includes("--"), true);
+  assert.equal(runtimeCurl?.args.includes("--header"), true);
 });
 
 test("CLI emits a specific safe environment failure and never prints values", async () => {
@@ -555,4 +484,9 @@ test("Preview E2E requires attested identity and executes one targeted generator
   assert.match(source, /runBillingPreviewVerifier\(\);\s*\n\s*const generation = await runTargetedInvoiceGenerator/);
   assert.match(source, /process\.execPath,[\s\S]*runDate,[\s\S]*contractId/);
   assert.match(source, /targetCount: number;\s*createdCount: number;\s*failed: Array<\{ code: string \}>/);
+  assert.match(source, /function hasPinnedPreviewDatabaseUrl\(environment: NodeJS\.ProcessEnv\)/);
+  assert.match(
+    source,
+    /if \(!hasPinnedPreviewDatabaseUrl\(process\.env\)\) \{\s*throw new Error\("billing_e2e_targeted_generator_failed"\);\s*\}\s*const result = await execFileAsync/,
+  );
 });

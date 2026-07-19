@@ -1,16 +1,7 @@
 import { execFile } from "node:child_process";
-import {
-  chmodSync,
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseEnv, promisify } from "node:util";
+import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
@@ -24,6 +15,12 @@ export const BILLING_PREVIEW_VERCEL_PROJECT = "kpopsoft-02";
 export const BILLING_PREVIEW_VERCEL_PROJECT_ID = "prj_Xb6z5eGIOLTmrpWczO8zU9UYE9x0";
 export const BILLING_PREVIEW_VERCEL_TEAM = "kpopsoft-2075s-projects";
 export const BILLING_PREVIEW_VERCEL_TEAM_ID = "team_JyJcVEVDcq6Jg1DDgDTW99Su";
+export const BILLING_PREVIEW_ATTESTATION_PATH = "/api/internal/billing/attestation";
+
+const billingPreviewAttestationDeploymentHeader =
+  "x-kpopsoft-billing-attestation-deployment-id";
+const billingPreviewAttestationGitShaHeader =
+  "x-kpopsoft-billing-attestation-git-sha";
 
 export const requiredBillingPreviewEnvironmentNames = [
   "AUTH_SECRET",
@@ -70,6 +67,7 @@ export type BillingPreviewSnapshot = {
       url: string;
     };
     deployment: {
+      createdAt: number;
       gitCommitRef: string;
       gitCommitSha: string;
       id: string;
@@ -85,6 +83,7 @@ export type BillingPreviewSnapshot = {
       gitBranch: string | null;
       key: string;
       targets: string[];
+      updatedAt: number;
     }>;
     project: { id: string; name: string };
     team: { id: string; slug: string };
@@ -101,7 +100,6 @@ export type BillingPreviewSnapshot = {
     projectId: string;
   };
   runtimeAttestation: BillingPreviewRuntimeAttestation;
-  childEnvironmentMatchesDeployment: boolean;
 };
 
 export type BillingPreviewRuntimeAttestation = {
@@ -109,11 +107,11 @@ export type BillingPreviewRuntimeAttestation = {
   billingEnabled: boolean;
   billingWidgetDisabled: boolean;
   databaseUrlMatchesPreviewEndpoint: boolean;
+  deploymentIdMatchesRequest: boolean;
+  gitCommitShaMatchesRequest: boolean;
   requiredRuntimeEnvironmentPresent: boolean;
   tossPaymentsDisabled: boolean;
 };
-
-type EnvironmentValues = Record<string, string | undefined>;
 
 type BillingPreviewFailureCode =
   | "admin_alias_mismatch"
@@ -124,6 +122,7 @@ type BillingPreviewFailureCode =
   | "deployment_list_target_mismatch"
   | "deployment_not_preview"
   | "deployment_not_ready"
+  | "environment_metadata_after_deployment"
   | "environment_metadata_ambiguous"
   | "environment_name_missing"
   | "environment_scope_mismatch"
@@ -179,74 +178,6 @@ export function buildGoogleCallbackUrl(adminOrigin: string): string {
   }
 
   return `${BILLING_PREVIEW_ADMIN_ORIGIN}/api/auth/callback/google`;
-}
-
-function hasNonemptyValue(environment: EnvironmentValues, name: string): boolean {
-  return typeof environment[name] === "string" && environment[name].trim().length > 0;
-}
-
-function poolerVariant(hostname: string): string {
-  const [firstLabel, ...remainingLabels] = hostname.split(".");
-  if (!firstLabel || remainingLabels.length === 0) return "";
-  return `${firstLabel.endsWith("-pooler") ? firstLabel : `${firstLabel}-pooler`}.${remainingLabels.join(".")}`;
-}
-
-function databaseUrlMatchesEndpoint(
-  environment: EnvironmentValues,
-  endpointHost: string,
-): boolean {
-  try {
-    const hostname = new URL(environment.DATABASE_URL ?? "").hostname;
-    return hostname === endpointHost || hostname === poolerVariant(endpointHost);
-  } catch {
-    return false;
-  }
-}
-
-export function attestBillingPreviewRuntime(
-  environment: EnvironmentValues = process.env,
-  endpointHost: string,
-): BillingPreviewRuntimeAttestation {
-  return {
-    bankTransferDisabled: environment.BANK_TRANSFER_ENABLED === "false",
-    billingEnabled: environment.BILLING_ENABLED === "true",
-    billingWidgetDisabled: environment.BILLING_WIDGET_ENABLED === "false",
-    databaseUrlMatchesPreviewEndpoint: databaseUrlMatchesEndpoint(
-      environment,
-      endpointHost,
-    ),
-    requiredRuntimeEnvironmentPresent: requiredBillingPreviewEnvironmentNames.every(
-      (name) => hasNonemptyValue(environment, name),
-    ),
-    tossPaymentsDisabled: environment.TOSS_PAYMENTS_ENABLED === "false",
-  };
-}
-
-export function readBillingPreviewRuntimeAttestation(
-  environmentPath: string,
-  endpointHost: string,
-): BillingPreviewRuntimeAttestation {
-  return attestBillingPreviewRuntime(
-    parseEnv(readFileSync(environmentPath, "utf8")),
-    endpointHost,
-  );
-}
-
-function exactDeploymentEnvironment(
-  environmentPath: string,
-  endpointHost: string,
-  childEnvironment: EnvironmentValues,
-): {
-  attestation: BillingPreviewRuntimeAttestation;
-  childEnvironmentMatchesDeployment: boolean;
-} {
-  const deploymentEnvironment = parseEnv(readFileSync(environmentPath, "utf8"));
-  return {
-    attestation: attestBillingPreviewRuntime(deploymentEnvironment, endpointHost),
-    childEnvironmentMatchesDeployment: requiredBillingPreviewEnvironmentNames.every(
-      (name) => deploymentEnvironment[name] === childEnvironment[name],
-    ),
-  };
 }
 
 function runtimeAttestationPasses(
@@ -316,6 +247,12 @@ export function verifyBillingPreview(
     ) {
       return failure("environment_scope_mismatch");
     }
+    if (
+      !Number.isSafeInteger(entry.updatedAt) ||
+      entry.updatedAt > deployment.createdAt
+    ) {
+      return failure("environment_metadata_after_deployment");
+    }
   }
 
   if (snapshot.neon.projectId !== config.neonProjectId) {
@@ -339,7 +276,6 @@ export function verifyBillingPreview(
 
   if (
     !snapshot.runtimeAttestation ||
-    !snapshot.childEnvironmentMatchesDeployment ||
     !runtimeAttestationPasses(snapshot.runtimeAttestation)
   ) {
     return failure("runtime_attestation_failed");
@@ -410,6 +346,53 @@ function boolean(value: unknown): boolean {
   return value;
 }
 
+function timestamp(value: unknown): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
+    throw new Error("inspection_shape_invalid");
+  }
+  return value;
+}
+
+const billingPreviewRuntimeAttestationKeys = [
+  "bankTransferDisabled",
+  "billingEnabled",
+  "billingWidgetDisabled",
+  "databaseUrlMatchesPreviewEndpoint",
+  "deploymentIdMatchesRequest",
+  "gitCommitShaMatchesRequest",
+  "requiredRuntimeEnvironmentPresent",
+  "tossPaymentsDisabled",
+] as const;
+
+export function parseBillingPreviewRuntimeAttestation(
+  value: string,
+): BillingPreviewRuntimeAttestation {
+  let parsed: JsonRecord;
+  try {
+    parsed = record(parseJson(value));
+  } catch {
+    throw new Error("inspection_shape_invalid");
+  }
+
+  if (
+    Object.keys(parsed).sort().join(",") !==
+    [...billingPreviewRuntimeAttestationKeys].sort().join(",")
+  ) {
+    throw new Error("inspection_shape_invalid");
+  }
+
+  return {
+    bankTransferDisabled: boolean(parsed.bankTransferDisabled),
+    billingEnabled: boolean(parsed.billingEnabled),
+    billingWidgetDisabled: boolean(parsed.billingWidgetDisabled),
+    databaseUrlMatchesPreviewEndpoint: boolean(parsed.databaseUrlMatchesPreviewEndpoint),
+    deploymentIdMatchesRequest: boolean(parsed.deploymentIdMatchesRequest),
+    gitCommitShaMatchesRequest: boolean(parsed.gitCommitShaMatchesRequest),
+    requiredRuntimeEnvironmentPresent: boolean(parsed.requiredRuntimeEnvironmentPresent),
+    tossPaymentsDisabled: boolean(parsed.tossPaymentsDisabled),
+  };
+}
+
 function targetArray(value: unknown): string[] {
   const targets = value;
   if (
@@ -441,58 +424,39 @@ function paginatedResultHasNextPage(value: unknown): boolean {
   return pagination.next !== null;
 }
 
-async function pullExactDeploymentRuntimeAttestation(
+function deploymentUrl(url: string): string {
+  return url.startsWith("https://") ? url : `https://${url}`;
+}
+
+async function fetchDeploymentRuntimeAttestation(
   run: CliCommandRunner,
   config: BillingPreviewConfig,
+  deploymentUrlValue: string,
   deploymentId: string,
-  endpointHost: string,
-  childEnvironment: EnvironmentValues,
-): Promise<{
-  attestation: BillingPreviewRuntimeAttestation;
-  childEnvironmentMatchesDeployment: boolean;
-}> {
-  const directory = mkdtempSync(join(tmpdir(), "billing-preview-runtime-"));
-  const environmentPath = join(directory, "deployment.env");
-  const previousUmask = process.umask(0o077);
-
-  try {
-    chmodSync(directory, 0o700);
-    writeFileSync(environmentPath, "", { flag: "wx", mode: 0o600 });
-    chmodSync(environmentPath, 0o600);
-    await run("npx", [
-      "--yes",
-      "vercel@56.3.2",
-      "env",
-      "pull",
-      environmentPath,
-      "--id",
-      deploymentId,
-      "--project",
-      config.projectName,
-      "--scope",
-      config.teamSlug,
-      "--yes",
-      "--non-interactive",
-    ]);
-    chmodSync(environmentPath, 0o600);
-    return exactDeploymentEnvironment(environmentPath, endpointHost, childEnvironment);
-  } finally {
-    try {
-      if (existsSync(environmentPath)) {
-        writeFileSync(environmentPath, "");
-        rmSync(environmentPath, { force: true });
-      }
-    } finally {
-      process.umask(previousUmask);
-      rmSync(directory, { force: true, recursive: true });
-    }
-  }
+  gitCommitSha: string,
+): Promise<BillingPreviewRuntimeAttestation> {
+  const response = await run("npx", [
+    "--yes",
+    "vercel@56.3.2",
+    "curl",
+    BILLING_PREVIEW_ATTESTATION_PATH,
+    "--deployment",
+    deploymentUrl(deploymentUrlValue),
+    "--scope",
+    config.teamSlug,
+    "--non-interactive",
+    "--",
+    "--header",
+    `${billingPreviewAttestationDeploymentHeader}: ${deploymentId}`,
+    "--header",
+    `${billingPreviewAttestationGitShaHeader}: ${gitCommitSha}`,
+  ]);
+  return parseBillingPreviewRuntimeAttestation(response);
 }
 
 export function createBillingPreviewCliInspector(
   run: CliCommandRunner = runCliCommand,
   config: BillingPreviewConfig = billingPreviewConfig,
-  childEnvironment: EnvironmentValues = process.env,
 ) {
   return async (): Promise<BillingPreviewSnapshot> => {
     const [teamsJson, projectsJson, head] = await Promise.all([
@@ -603,8 +567,10 @@ export function createBillingPreviewCliInspector(
       throw new BillingPreviewInspectionError("deployment_ambiguous");
     }
     const selectedDeployment = matchingDeployments[0]!;
+    const selectedDeploymentId = string(selectedDeployment.uid);
     const selectedMeta = deploymentMeta(selectedDeployment.meta);
     const selectedUrl = string(selectedDeployment.url);
+    const selectedCreatedAt = timestamp(selectedDeployment.createdAt);
     if (selectedDeployment.target !== null) throw new Error("inspection_shape_invalid");
 
     const inspectedDeployment = record(
@@ -637,13 +603,13 @@ export function createBillingPreviewCliInspector(
     }
     const previewEndpoint = previewEndpoints.length === 1 ? previewEndpoints[0] : undefined;
     const endpointHost = previewEndpoint ? string(previewEndpoint.host) : "";
-    const deploymentId = string(inspectedDeployment.id);
-    const exactRuntime = await pullExactDeploymentRuntimeAttestation(
+    const inspectedDeploymentId = string(inspectedDeployment.id);
+    const runtimeAttestation = await fetchDeploymentRuntimeAttestation(
       run,
       config,
-      deploymentId,
-      endpointHost,
-      childEnvironment,
+      selectedUrl,
+      selectedDeploymentId,
+      selectedMeta.gitCommitSha,
     );
 
     return {
@@ -655,10 +621,11 @@ export function createBillingPreviewCliInspector(
           url: string(inspectedAlias.url),
         },
         deployment: {
+          createdAt: selectedCreatedAt,
           gitCommitRef: selectedMeta.gitCommitRef,
           gitCommitSha: selectedMeta.gitCommitSha,
-          id: deploymentId,
-          inspectedId: deploymentId,
+          id: selectedDeploymentId,
+          inspectedId: inspectedDeploymentId,
           inspectedStatus: string(inspectedDeployment.readyState),
           inspectedTarget: string(inspectedDeployment.target),
           inspectedUrl: string(inspectedDeployment.url),
@@ -671,6 +638,7 @@ export function createBillingPreviewCliInspector(
             gitBranch: nullableString(entry.gitBranch),
             key: string(entry.key),
             targets: targetArray(entry.target),
+            updatedAt: timestamp(entry.updatedAt),
           }),
         ),
         project: {
@@ -690,8 +658,7 @@ export function createBillingPreviewCliInspector(
         parentId: nullableString(neon.parent_id),
         projectId: string(neon.project_id),
       },
-      runtimeAttestation: exactRuntime.attestation,
-      childEnvironmentMatchesDeployment: exactRuntime.childEnvironmentMatchesDeployment,
+      runtimeAttestation,
     };
   };
 }

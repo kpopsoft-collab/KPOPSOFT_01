@@ -334,20 +334,22 @@ git push -u origin codex/billing-preview-oauth
 **Files:**
 - `scripts/verify-billing-preview.mts`
 - `tests/admin-oauth-preview.test.mts`
+- `src/app/api/internal/billing/attestation/route.ts`
+- `tests/billing-preview-attestation-route.test.mts`
 - `e2e/billing-admin.spec.ts`
 - `src/lib/billing/invoice-generator.ts`
 - `tests/billing-generator.test.mts`
 - `docs/billing/verification-report.md`
 
-**Boundary:** No readiness claim is valid until the current local HEAD resolves to one `READY` deployment on `codex/billing-preview-oauth`, its exact inspect reports `target=preview`, and the canonical admin alias resolves to that exact deployment ID and URL. The verifier uses `vercel@56.3.2`, exact branch/SHA metadata filters, and a fail-closed pagination check; it verifies the team ID plus project ID through scoped commands without inventing a project-team field. Vercel env metadata remains value-free and unique per required name/scope; runtime values are reduced to booleans only after an exact-deployment `env pull --id` into a mode-600 temporary file that is immediately deleted, and the child-inherited required environment must exactly match that deployment. Production, Vercel aliases, Neon, Google, and payment providers are not mutated by this task.
+**Boundary:** No readiness claim is valid until the current local HEAD resolves to one `READY` deployment on `codex/billing-preview-oauth`, its exact inspect reports `target=preview`, and the canonical admin alias resolves to that exact deployment ID and URL. The verifier uses `vercel@56.3.2`, exact branch/SHA metadata filters, and a fail-closed pagination check; it verifies the team ID plus project ID through scoped commands without inventing a project-team field. Vercel env metadata remains value-free and unique per required name/scope, with every required record updated no later than the selected deployment. The selected deployment alone answers `/api/internal/billing/attestation` through protected `vercel curl`; the route returns only a fixed boolean contract after exact Preview branch/deployment/SHA header checks. The E2E child may inherit parent-owned local Preview values, but it validates the local `DATABASE_URL` hostname against the pinned Neon Preview endpoint immediately before targeted generation. Production, Vercel aliases, Neon, Google, and payment providers are not mutated by this task.
 
 - [ ] **Step 1: Drive exact-control-plane and one-contract behavior with tests**
 
-Add RED tests for Vercel team `team_JyJcVEVDcq6Jg1DDgDTW99Su`, scoped project `kpopsoft-02` / `prj_Xb6z5eGIOLTmrpWczO8zU9UYE9x0`, local HEAD match, direct inspect/alias linkage, duplicate env metadata rejection, single active Neon endpoint, exact-deployment runtime attestation, and child-server-runtime single-contract invoice generation. Record the observed failures before implementing the boundary.
+Add RED tests for Vercel team `team_JyJcVEVDcq6Jg1DDgDTW99Su`, scoped project `kpopsoft-02` / `prj_Xb6z5eGIOLTmrpWczO8zU9UYE9x0`, local HEAD match, direct inspect/alias linkage, duplicate or late env metadata rejection, single active Neon endpoint, strict protected deployment-runtime attestation, and child-server-runtime single-contract invoice generation with a pinned local DB host. Record the observed failures before implementing the boundary.
 
 - [ ] **Step 2: Implement the read-only Preview verifier**
 
-Use `vercel@56.3.2` to query the exact team, scoped project, branch/SHA-filtered `READY` deployment list, selected deployment inspect, direct canonical alias inspect, and branch env metadata; also query local `git rev-parse HEAD`, Neon branch, and `/projects/red-smoke-09462401/endpoints`. Reject a non-empty deployment next page, duplicate/conflicting required env metadata, and any active Preview Neon endpoint count other than one. Require list `target: null`, selected inspect `target: preview`, and direct canonical alias inspect mapping to the same deployment ID and URL. Pull the selected deployment environment with `env pull --id` only into a mode-600 temporary file, reduce it to boolean attestation, and remove it in `finally`. Return only stable safe codes.
+Use `vercel@56.3.2` to query the exact team, scoped project, branch/SHA-filtered `READY` deployment list, selected deployment inspect, direct canonical alias inspect, and branch env metadata; also query local `git rev-parse HEAD`, Neon branch, and `/projects/red-smoke-09462401/endpoints`. Reject a non-empty deployment next page, duplicate/conflicting or post-deployment required env metadata, and any active Preview Neon endpoint count other than one. Require list `target: null`, selected inspect `target: preview`, and direct canonical alias inspect mapping to the same deployment ID and URL. Call the selected URL's `/api/internal/billing/attestation` through `vercel@56.3.2 curl --deployment`; pass only the expected deployment ID and Git SHA headers, then parse the exact fixed boolean response and fail closed. Return only stable safe codes.
 
 - [ ] **Step 3: Prepare the parent-owned secure inputs**
 
@@ -357,28 +359,20 @@ Register only this callback in the selected company-owned Google OAuth client:
 https://admin-kpopsoft-billing-preview-neo.vercel.app/api/auth/callback/google
 ```
 
-Pull the encrypted branch Preview env to an ignored, mode-600 local file. Create a fresh Auth.js storage state for the canonical admin host, set `BILLING_E2E_EXPECTED_ADMIN_EMAIL`, and choose a unique 8-25 character lowercase `BILLING_E2E_RUN_ID`. Do not pass or create a cron secret for the E2E.
+Securely create the destination Preview secrets through the approved operator path, then supply parent-owned local Preview runtime inputs without printing them. Create a fresh Auth.js storage state for the canonical admin host, set `BILLING_E2E_EXPECTED_ADMIN_EMAIL`, and choose a unique 8-25 character lowercase `BILLING_E2E_RUN_ID`. The E2E child may inherit the local Preview `DATABASE_URL` only after its hostname is checked against the pinned Preview endpoint. Do not pass or create a cron secret for the E2E.
 
 - [ ] **Step 4: Run the guarded Preview browser flow**
 
 ```bash
-umask 077
-npx --yes vercel@56.3.2 env pull .env.billing-preview-e2e.local \
-  --environment=preview \
-  --git-branch=codex/billing-preview-oauth \
-  --project=kpopsoft-02 \
-  --scope=kpopsoft-2075s-projects
-
 BILLING_E2E_DISPOSABLE_PREVIEW=true \
 BILLING_E2E_BASE_URL=https://admin-kpopsoft-billing-preview-neo.vercel.app \
 BILLING_E2E_STORAGE_STATE_PATH="$BILLING_E2E_STORAGE_STATE_PATH" \
 BILLING_E2E_EXPECTED_ADMIN_EMAIL="$BILLING_E2E_EXPECTED_ADMIN_EMAIL" \
 BILLING_E2E_RUN_ID="$BILLING_E2E_RUN_ID" \
-./node_modules/.bin/dotenv -e .env.billing-preview-e2e.local -- \
-  npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
+npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
 ```
 
-The E2E first runs the live verifier and exact-deployment runtime attestation, requires a fresh unexpired Auth.js session cookie scoped to the canonical host, checks the expected email after opening `/admin/billing`, and verifies unauthenticated bulk generate/reconcile return `401`. Immediately before mutation it re-runs the verifier, then starts a `react-server` child Node process using the repository TypeScript loader with only `runDate` and the UUID contract ID as positional arguments. The child invokes only the targeted generator and returns only strict sanitized counts/failure codes; the test requires `targetCount=1` and `createdCount=1` and retains recoverable disposable Preview evidence.
+The E2E first runs the live verifier and protected deployment-runtime attestation, requires a fresh unexpired Auth.js session cookie scoped to the canonical host, checks the expected email after opening `/admin/billing`, and verifies unauthenticated bulk generate/reconcile return `401`. Immediately before mutation it re-runs the verifier, validates the inherited local `DATABASE_URL` hostname, then starts a `react-server` child Node process using the repository TypeScript loader with only `runDate` and the UUID contract ID as positional arguments. The child invokes only the targeted generator and returns only strict sanitized counts/failure codes; the test requires `targetCount=1` and `createdCount=1` and retains recoverable disposable Preview evidence.
 
 - [ ] **Step 5: Record only observed evidence**
 
