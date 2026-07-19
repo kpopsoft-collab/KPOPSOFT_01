@@ -5,8 +5,6 @@ import { promisify } from "node:util";
 
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
-import { generateDueInvoiceForContract } from "../src/lib/billing/invoice-generator.ts";
-
 const execFileAsync = promisify(execFile);
 
 const previewAdminHost = "admin-kpopsoft-billing-preview-neo.vercel.app";
@@ -24,6 +22,44 @@ type SyntheticEvidenceCodes = {
   siteName: string;
   siteOrigin: string;
 };
+
+type TargetedInvoiceGenerationResult = {
+  targetCount: number;
+  createdCount: number;
+  failed: Array<{ code: string }>;
+};
+
+const targetedInvoiceGeneratorProgram = `
+const [runDate, contractId] = process.argv.slice(1);
+
+try {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(runDate ?? "") || !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(contractId ?? "")) {
+    throw new Error("invalid_input");
+  }
+  const { generateDueInvoiceForContract } = await import(${JSON.stringify(
+    resolve(process.cwd(), "src/lib/billing/invoice-generator.ts"),
+  )});
+  const result = await generateDueInvoiceForContract(runDate, contractId);
+  const sanitized = {
+    targetCount: result.targetCount,
+    createdCount: result.createdCount,
+    failed: result.failed.map(({ code }) => ({ code })),
+  };
+  if (
+    !Number.isInteger(sanitized.targetCount) ||
+    sanitized.targetCount < 0 ||
+    !Number.isInteger(sanitized.createdCount) ||
+    sanitized.createdCount < 0 ||
+    !sanitized.failed.every(({ code }) => /^[A-Z_]+$/.test(code))
+  ) {
+    throw new Error("invalid_result");
+  }
+  process.stdout.write(JSON.stringify(sanitized));
+} catch {
+  process.stderr.write("billing_e2e_targeted_generator_failed\\n");
+  process.exitCode = 1;
+}
+`;
 
 function previewBaseUrl(input: string | undefined): string | undefined {
   if (!input) return undefined;
@@ -144,6 +180,76 @@ async function runBillingPreviewVerifier(): Promise<void> {
   }
 }
 
+function parseTargetedInvoiceGenerationResult(value: string): TargetedInvoiceGenerationResult {
+  let result: unknown;
+  try {
+    result = JSON.parse(value);
+  } catch {
+    throw new Error("billing_e2e_targeted_generator_failed");
+  }
+
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    throw new Error("billing_e2e_targeted_generator_failed");
+  }
+  const record = result as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  if (keys.join(",") !== "createdCount,failed,targetCount") {
+    throw new Error("billing_e2e_targeted_generator_failed");
+  }
+  if (
+    !Number.isInteger(record.targetCount) ||
+    (record.targetCount as number) < 0 ||
+    !Number.isInteger(record.createdCount) ||
+    (record.createdCount as number) < 0 ||
+    !Array.isArray(record.failed) ||
+    !record.failed.every(
+      (failure) =>
+        failure &&
+        typeof failure === "object" &&
+        !Array.isArray(failure) &&
+        Object.keys(failure).length === 1 &&
+        Object.keys(failure)[0] === "code" &&
+        typeof (failure as { code?: unknown }).code === "string" &&
+        /^[A-Z_]+$/.test((failure as { code: string }).code),
+    )
+  ) {
+    throw new Error("billing_e2e_targeted_generator_failed");
+  }
+
+  return {
+    targetCount: record.targetCount as number,
+    createdCount: record.createdCount as number,
+    failed: record.failed as Array<{ code: string }>,
+  };
+}
+
+async function runTargetedInvoiceGenerator(
+  runDate: string,
+  contractId: string,
+): Promise<TargetedInvoiceGenerationResult> {
+  try {
+    const result = await execFileAsync(
+      process.execPath,
+      [
+        "--conditions",
+        "react-server",
+        "--import",
+        resolve(process.cwd(), "node_modules/tsx/dist/loader.mjs"),
+        "--input-type=module",
+        "--eval",
+        targetedInvoiceGeneratorProgram,
+        runDate,
+        contractId,
+      ],
+      { encoding: "utf8", env: process.env },
+    );
+    if (result.stderr !== "") throw new Error("billing_e2e_targeted_generator_failed");
+    return parseTargetedInvoiceGenerationResult(result.stdout);
+  } catch {
+    throw new Error("billing_e2e_targeted_generator_failed");
+  }
+}
+
 async function assertUnauthenticatedBillingEndpoints(
   request: APIRequestContext,
 ): Promise<void> {
@@ -226,7 +332,8 @@ test.describe("disposable Preview billing workflow", () => {
       /^\/admin\/billing\/contracts\/([^/]+)$/,
     );
     expect(contractMatch?.[1]).toBeTruthy();
-    const generation = await generateDueInvoiceForContract(
+    await runBillingPreviewVerifier();
+    const generation = await runTargetedInvoiceGenerator(
       today,
       decodeURIComponent(contractMatch![1]!),
     );

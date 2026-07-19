@@ -1,7 +1,9 @@
 import { execFile } from "node:child_process";
-import { resolve } from "node:path";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
+import { parseEnv, promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
@@ -77,11 +79,12 @@ export type BillingPreviewSnapshot = {
       key: string;
       targets: string[];
     }>;
-    project: { id: string; name: string; teamId: string };
+    project: { id: string; name: string };
     team: { id: string; slug: string };
   };
   neon: {
     currentState: string;
+    endpointCount: number;
     endpointHost: string;
     expiresAt: string | null;
     id: string;
@@ -90,6 +93,8 @@ export type BillingPreviewSnapshot = {
     parentId: string | null;
     projectId: string;
   };
+  runtimeAttestation: BillingPreviewRuntimeAttestation;
+  childEnvironmentMatchesDeployment: boolean;
 };
 
 export type BillingPreviewRuntimeAttestation = {
@@ -101,6 +106,8 @@ export type BillingPreviewRuntimeAttestation = {
   tossPaymentsDisabled: boolean;
 };
 
+type EnvironmentValues = Record<string, string | undefined>;
+
 type BillingPreviewFailureCode =
   | "admin_alias_mismatch"
   | "admin_host_mismatch"
@@ -110,9 +117,11 @@ type BillingPreviewFailureCode =
   | "deployment_list_target_mismatch"
   | "deployment_not_preview"
   | "deployment_not_ready"
+  | "environment_metadata_ambiguous"
   | "environment_name_missing"
   | "environment_scope_mismatch"
   | "neon_default_branch"
+  | "neon_endpoint_ambiguous"
   | "neon_endpoint_mismatch"
   | "neon_expired"
   | "neon_id_mismatch"
@@ -121,7 +130,6 @@ type BillingPreviewFailureCode =
   | "neon_primary_branch"
   | "neon_project_mismatch"
   | "project_mismatch"
-  | "project_team_mismatch"
   | "runtime_attestation_failed"
   | "team_mismatch";
 
@@ -138,7 +146,6 @@ export type CliCommandRunner = (command: string, args: string[]) => Promise<stri
 
 export type BillingPreviewCliDependencies = {
   config?: BillingPreviewConfig;
-  environment?: NodeJS.ProcessEnv;
   inspect?: () => Promise<BillingPreviewSnapshot>;
   now?: Date;
   output?: CliOutput;
@@ -167,7 +174,7 @@ export function buildGoogleCallbackUrl(adminOrigin: string): string {
   return `${BILLING_PREVIEW_ADMIN_ORIGIN}/api/auth/callback/google`;
 }
 
-function hasNonemptyValue(environment: NodeJS.ProcessEnv, name: string): boolean {
+function hasNonemptyValue(environment: EnvironmentValues, name: string): boolean {
   return typeof environment[name] === "string" && environment[name].trim().length > 0;
 }
 
@@ -178,7 +185,7 @@ function poolerVariant(hostname: string): string {
 }
 
 function databaseUrlMatchesEndpoint(
-  environment: NodeJS.ProcessEnv,
+  environment: EnvironmentValues,
   endpointHost: string,
 ): boolean {
   try {
@@ -190,7 +197,7 @@ function databaseUrlMatchesEndpoint(
 }
 
 export function attestBillingPreviewRuntime(
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: EnvironmentValues = process.env,
   endpointHost: string,
 ): BillingPreviewRuntimeAttestation {
   return {
@@ -208,6 +215,33 @@ export function attestBillingPreviewRuntime(
   };
 }
 
+export function readBillingPreviewRuntimeAttestation(
+  environmentPath: string,
+  endpointHost: string,
+): BillingPreviewRuntimeAttestation {
+  return attestBillingPreviewRuntime(
+    parseEnv(readFileSync(environmentPath, "utf8")),
+    endpointHost,
+  );
+}
+
+function exactDeploymentEnvironment(
+  environmentPath: string,
+  endpointHost: string,
+  childEnvironment: EnvironmentValues,
+): {
+  attestation: BillingPreviewRuntimeAttestation;
+  childEnvironmentMatchesDeployment: boolean;
+} {
+  const deploymentEnvironment = parseEnv(readFileSync(environmentPath, "utf8"));
+  return {
+    attestation: attestBillingPreviewRuntime(deploymentEnvironment, endpointHost),
+    childEnvironmentMatchesDeployment: requiredBillingPreviewEnvironmentNames.every(
+      (name) => deploymentEnvironment[name] === childEnvironment[name],
+    ),
+  };
+}
+
 function runtimeAttestationPasses(
   attestation: BillingPreviewRuntimeAttestation,
 ): boolean {
@@ -222,7 +256,7 @@ const failure = (code: BillingPreviewFailureCode): BillingPreviewVerificationRes
 export function verifyBillingPreview(
   config: BillingPreviewConfig,
   snapshot: BillingPreviewSnapshot,
-  options: { environment?: NodeJS.ProcessEnv; now?: Date } = {},
+  options: { now?: Date } = {},
 ): BillingPreviewVerificationResult {
   try {
     buildGoogleCallbackUrl(config.adminOrigin);
@@ -242,10 +276,6 @@ export function verifyBillingPreview(
   ) {
     return failure("project_mismatch");
   }
-  if (snapshot.vercel.project.teamId !== config.teamId) {
-    return failure("project_team_mismatch");
-  }
-
   const { deployment } = snapshot.vercel;
   if (deployment.status !== "READY" || deployment.inspectedStatus !== "READY") {
     return failure("deployment_not_ready");
@@ -270,11 +300,12 @@ export function verifyBillingPreview(
   for (const key of requiredBillingPreviewEnvironmentNames) {
     const entries = snapshot.vercel.environments.filter((entry) => entry.key === key);
     if (entries.length === 0) return failure("environment_name_missing");
+    if (entries.length !== 1) return failure("environment_metadata_ambiguous");
+    const [entry] = entries;
     if (
-      !entries.some(
-        (entry) =>
-          entry.gitBranch === config.branch && entry.targets.includes("preview"),
-      )
+      entry?.gitBranch !== config.branch ||
+      entry.targets.length !== 1 ||
+      entry.targets[0] !== "preview"
     ) {
       return failure("environment_scope_mismatch");
     }
@@ -290,6 +321,7 @@ export function verifyBillingPreview(
   }
   if (snapshot.neon.isPrimary) return failure("neon_primary_branch");
   if (snapshot.neon.isDefault) return failure("neon_default_branch");
+  if (snapshot.neon.endpointCount !== 1) return failure("neon_endpoint_ambiguous");
   if (!snapshot.neon.endpointHost) return failure("neon_endpoint_mismatch");
 
   const now = options.now ?? new Date();
@@ -299,9 +331,9 @@ export function verifyBillingPreview(
   }
 
   if (
-    !runtimeAttestationPasses(
-      attestBillingPreviewRuntime(options.environment ?? process.env, snapshot.neon.endpointHost),
-    )
+    !snapshot.runtimeAttestation ||
+    !snapshot.childEnvironmentMatchesDeployment ||
+    !runtimeAttestationPasses(snapshot.runtimeAttestation)
   ) {
     return failure("runtime_attestation_failed");
   }
@@ -397,37 +429,93 @@ function deploymentMeta(value: unknown): { gitCommitRef: string; gitCommitSha: s
   };
 }
 
+function paginatedResultHasNextPage(value: unknown): boolean {
+  const pagination = record(record(value).pagination);
+  return pagination.next !== null;
+}
+
+async function pullExactDeploymentRuntimeAttestation(
+  run: CliCommandRunner,
+  config: BillingPreviewConfig,
+  deploymentId: string,
+  endpointHost: string,
+  childEnvironment: EnvironmentValues,
+): Promise<{
+  attestation: BillingPreviewRuntimeAttestation;
+  childEnvironmentMatchesDeployment: boolean;
+}> {
+  const directory = mkdtempSync(join(tmpdir(), "billing-preview-runtime-"));
+  const environmentPath = join(directory, "deployment.env");
+  const previousUmask = process.umask(0o077);
+
+  try {
+    chmodSync(directory, 0o700);
+    writeFileSync(environmentPath, "", { flag: "wx", mode: 0o600 });
+    chmodSync(environmentPath, 0o600);
+    await run("npx", [
+      "--yes",
+      "vercel@56.3.2",
+      "env",
+      "pull",
+      environmentPath,
+      "--id",
+      deploymentId,
+      "--project",
+      config.projectName,
+      "--scope",
+      config.teamSlug,
+    ]);
+    chmodSync(environmentPath, 0o600);
+    return exactDeploymentEnvironment(environmentPath, endpointHost, childEnvironment);
+  } finally {
+    process.umask(previousUmask);
+    rmSync(directory, { force: true, recursive: true });
+  }
+}
+
 export function createBillingPreviewCliInspector(
   run: CliCommandRunner = runCliCommand,
   config: BillingPreviewConfig = billingPreviewConfig,
+  childEnvironment: EnvironmentValues = process.env,
 ) {
   return async (): Promise<BillingPreviewSnapshot> => {
-    const [teamsJson, projectsJson, deploymentsJson, environmentsJson, aliasesJson, neonBranchJson, neonEndpointsJson, head] =
+    const [teamsJson, projectsJson, head] = await Promise.all([
+      run("npx", ["--yes", "vercel@56.3.2", "teams", "ls", "--format=json"]),
+      run("npx", [
+        "--yes",
+        "vercel@56.3.2",
+        "project",
+        "ls",
+        "--scope",
+        config.teamSlug,
+        "--format=json",
+      ]),
+      run("git", ["rev-parse", "HEAD"]),
+    ]);
+    const localHead = parseGitHead(head);
+    const aliasHost = new URL(config.adminOrigin).hostname;
+    const [deploymentsJson, environmentsJson, aliasInspectionJson, neonBranchJson, neonEndpointsJson] =
       await Promise.all([
-        run("npx", ["--yes", "vercel@latest", "teams", "ls", "--format=json"]),
         run("npx", [
           "--yes",
-          "vercel@latest",
-          "project",
-          "ls",
-          "--scope",
-          config.teamSlug,
-          "--format=json",
-        ]),
-        run("npx", [
-          "--yes",
-          "vercel@latest",
+          "vercel@56.3.2",
           "list",
           config.projectName,
           "--scope",
           config.teamSlug,
+          "--status",
+          "READY",
+          "--meta",
+          `githubCommitRef=${config.branch}`,
+          "--meta",
+          `githubCommitSha=${localHead}`,
           "--limit",
           "100",
           "--format=json",
         ]),
         run("npx", [
           "--yes",
-          "vercel@latest",
+          "vercel@56.3.2",
           "env",
           "ls",
           "preview",
@@ -440,13 +528,11 @@ export function createBillingPreviewCliInspector(
         ]),
         run("npx", [
           "--yes",
-          "vercel@latest",
-          "alias",
-          "ls",
+          "vercel@56.3.2",
+          "inspect",
+          aliasHost,
           "--scope",
           config.teamSlug,
-          "--limit",
-          "100",
           "--format=json",
         ]),
         run("npx", [
@@ -468,7 +554,6 @@ export function createBillingPreviewCliInspector(
           "--output",
           "json",
         ]),
-        run("git", ["rev-parse", "HEAD"]),
       ]);
 
     const team = recordsAt(parseJson(teamsJson), "teams").find(
@@ -479,8 +564,11 @@ export function createBillingPreviewCliInspector(
     );
     if (!team || !project) throw new Error("inspection_shape_invalid");
 
-    const localHead = parseGitHead(head);
-    const matchingDeployments = recordsAt(parseJson(deploymentsJson), "deployments").filter(
+    const deployments = parseJson(deploymentsJson);
+    if (paginatedResultHasNextPage(deployments)) {
+      throw new BillingPreviewInspectionError("deployment_ambiguous");
+    }
+    const matchingDeployments = recordsAt(deployments, "deployments").filter(
       (candidate) => {
         const meta = candidate.meta;
         if (!meta || typeof meta !== "object" || Array.isArray(meta)) return false;
@@ -507,7 +595,7 @@ export function createBillingPreviewCliInspector(
       parseJson(
         await run("npx", [
           "--yes",
-          "vercel@latest",
+          "vercel@56.3.2",
           "inspect",
           selectedUrl,
           "--scope",
@@ -517,11 +605,7 @@ export function createBillingPreviewCliInspector(
       ),
     );
 
-    const aliasHost = new URL(config.adminOrigin).hostname;
-    const alias = recordsAt(parseJson(aliasesJson), "aliases").find(
-      (candidate) => candidate.alias === aliasHost,
-    );
-    if (!alias) throw new Error("inspection_shape_invalid");
+    const inspectedAlias = record(parseJson(aliasInspectionJson));
 
     const neon = record(parseJson(neonBranchJson));
     const previewEndpoints = recordsAt(parseJson(neonEndpointsJson), "endpoints")
@@ -531,26 +615,34 @@ export function createBillingPreviewCliInspector(
           endpoint.branch_id === config.neonBranchId &&
           endpoint.type === "read_write" &&
           endpoint.disabled !== true,
-      )
-      .sort((left, right) => string(left.id).localeCompare(string(right.id)));
+      );
     if (previewEndpoints.length === 0) {
       throw new BillingPreviewInspectionError("neon_endpoint_missing");
     }
-    const previewEndpoint = previewEndpoints[0]!;
+    const previewEndpoint = previewEndpoints.length === 1 ? previewEndpoints[0] : undefined;
+    const endpointHost = previewEndpoint ? string(previewEndpoint.host) : "";
+    const deploymentId = string(inspectedDeployment.id);
+    const exactRuntime = await pullExactDeploymentRuntimeAttestation(
+      run,
+      config,
+      deploymentId,
+      endpointHost,
+      childEnvironment,
+    );
 
     return {
       localHead,
       vercel: {
         adminAlias: {
-          alias: string(alias.alias),
-          deploymentId: string(alias.deploymentId),
-          url: string(alias.url),
+          alias: aliasHost,
+          deploymentId: string(inspectedAlias.id),
+          url: string(inspectedAlias.url),
         },
         deployment: {
           gitCommitRef: selectedMeta.gitCommitRef,
           gitCommitSha: selectedMeta.gitCommitSha,
-          id: string(inspectedDeployment.id),
-          inspectedId: string(inspectedDeployment.id),
+          id: deploymentId,
+          inspectedId: deploymentId,
           inspectedStatus: string(inspectedDeployment.readyState),
           inspectedTarget: string(inspectedDeployment.target),
           inspectedUrl: string(inspectedDeployment.url),
@@ -568,13 +660,13 @@ export function createBillingPreviewCliInspector(
         project: {
           id: string(project.id),
           name: string(project.name),
-          teamId: config.teamId,
         },
         team: { id: string(team.id), slug: string(team.slug) },
       },
       neon: {
         currentState: string(neon.current_state),
-        endpointHost: string(previewEndpoint.host),
+        endpointCount: previewEndpoints.length,
+        endpointHost,
         expiresAt: nullableString(neon.expires_at),
         id: string(neon.id),
         isDefault: boolean(neon.default),
@@ -582,6 +674,8 @@ export function createBillingPreviewCliInspector(
         parentId: nullableString(neon.parent_id),
         projectId: string(neon.project_id),
       },
+      runtimeAttestation: exactRuntime.attestation,
+      childEnvironmentMatchesDeployment: exactRuntime.childEnvironmentMatchesDeployment,
     };
   };
 }
@@ -592,7 +686,6 @@ export async function inspectAndVerifyBillingPreview(
   const config = dependencies.config ?? billingPreviewConfig;
   const inspect = dependencies.inspect ?? createBillingPreviewCliInspector(undefined, config);
   return verifyBillingPreview(config, await inspect(), {
-    environment: dependencies.environment ?? process.env,
     now: dependencies.now,
   });
 }

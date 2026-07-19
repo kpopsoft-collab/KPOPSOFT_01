@@ -89,11 +89,11 @@ Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `p
 
 ## Preview 전용 브라우저 시나리오
 
-`scripts/verify-billing-preview.mts`는 exact Vercel team/project IDs, local `git rev-parse HEAD`, `READY` deployment의 Git branch/SHA, exact deployment inspect의 `target=preview`, canonical admin alias의 deployment ID/URL, branch-scoped Preview env 이름과 target array, Neon branch/endpoint, 그리고 값 비공개 runtime boolean attestation을 검사합니다. 새 관리자 E2E는 canonical Preview URL, 10분 이내의 canonical-host Auth.js storage state, exact expected admin email, deterministic run ID, 그리고 `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 browser mutation을 시작하지 않습니다. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
+`scripts/verify-billing-preview.mts`는 audited `vercel@56.3.2`로 exact Vercel team ID와 scoped project ID를 확인합니다. local `git rev-parse HEAD`와 branch/SHA metadata로 `READY` deployment를 좁히고 pagination이 남으면 실패하며, canonical admin alias는 list 첫 페이지가 아니라 direct `vercel inspect <alias>`로 같은 deployment ID/URL인지 확인합니다. required Preview env metadata는 이름별 단일 branch/target record만 허용하고, Neon은 branch identity와 정확히 하나의 active read-write endpoint를 요구합니다. runtime boolean attestation은 caller `process.env`가 아니라 selected deployment의 `vercel env pull --id` 결과를 mode-600 temporary file에서만 읽고 즉시 삭제해 계산하며, child가 상속할 required values가 그 exact deployment와 일치하지 않으면 실패합니다. 새 관리자 E2E는 canonical Preview URL, 10분 이내의 canonical-host Auth.js storage state, exact expected admin email, deterministic run ID, 그리고 `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 browser mutation을 시작하지 않습니다. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
 
 다음 5개 시나리오는 조건이 없으면 강제로 skip합니다.
 
-1. `BILLING_E2E_RUN_ID`에서 복구 가능한 `.invalid` origin과 청구 담당자 없는 합성 고객사·사이트 생성, draft 계약 생성·활성화, local single-contract generation, 초안 청구서 승인과 `OPEN` 증거
+1. `BILLING_E2E_RUN_ID`에서 복구 가능한 `.invalid` origin과 청구 담당자 없는 합성 고객사·사이트 생성, draft 계약 생성·활성화, verifier를 mutation 직전에 다시 실행한 뒤 `react-server` condition과 repository TypeScript loader를 사용한 child Node process의 single-contract generation, 초안 청구서 승인과 `OPEN` 증거
 2. 합성 무통장 확인과 결제 운영 큐 (별도 fixture gate)
 3. 환불 확인 다이얼로그와 합성 환불 (별도 fixture gate)
 4. 결제 세션별 청구 범위와 미설정 계좌 비노출 (별도 fixture gate)
@@ -107,7 +107,7 @@ OAuth login으로 만든 storage state는 외부에 출력하거나 저장소에
 
 ```bash
 umask 077
-npx --yes vercel@latest env pull .env.billing-preview-e2e.local \
+npx --yes vercel@56.3.2 env pull .env.billing-preview-e2e.local \
   --environment=preview \
   --git-branch=codex/billing-preview-oauth \
   --project=kpopsoft-02 \
@@ -122,7 +122,7 @@ BILLING_E2E_RUN_ID="$BILLING_E2E_RUN_ID" \
   npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
 ```
 
-The `BILLING_E2E_RUN_ID` must be 8-25 lowercase letters, digits, or internal hyphens. The E2E checks unauthenticated deployed `/api/internal/billing/generate` and `/api/internal/billing/reconcile` for `401`, then calls only the local one-contract generator after attestation; it never sends a cron secret.
+The `BILLING_E2E_RUN_ID` must be 8-25 lowercase letters, digits, or internal hyphens. The E2E checks unauthenticated deployed `/api/internal/billing/generate` and `/api/internal/billing/reconcile` for `401`, then re-runs the verifier immediately before calling only the local one-contract generator in the child server runtime. The child receives `runDate` and the UUID contract ID as separate arguments, parses only target/created counts plus sanitized failure codes, and never sends a cron secret.
 
 ## 외부 HOLD
 

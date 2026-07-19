@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -76,16 +84,13 @@ function snapshot(): BillingPreviewSnapshot {
         key,
         targets: ["preview"],
       })),
-      project: {
-        id: config.projectId,
-        name: config.projectName,
-        teamId: config.teamId,
-      },
+      project: { id: config.projectId, name: config.projectName },
       team: { id: config.teamId, slug: config.teamSlug },
     },
     neon: {
       currentState: "ready",
       endpointHost,
+      endpointCount: 1,
       expiresAt: "2026-08-02T08:00:00Z",
       id: config.neonBranchId,
       isDefault: false,
@@ -93,17 +98,23 @@ function snapshot(): BillingPreviewSnapshot {
       parentId: config.neonParentId,
       projectId: config.neonProjectId,
     },
+    runtimeAttestation: {
+      bankTransferDisabled: true,
+      billingEnabled: true,
+      billingWidgetDisabled: true,
+      databaseUrlMatchesPreviewEndpoint: true,
+      requiredRuntimeEnvironmentPresent: true,
+      tossPaymentsDisabled: true,
+    },
+    childEnvironmentMatchesDeployment: true,
   } as unknown as BillingPreviewSnapshot;
 }
 
-function verify(
-  state = snapshot(),
-  environment: NodeJS.ProcessEnv = runtimeEnvironment,
-) {
+function verify(state = snapshot()) {
   return billingPreview.verifyBillingPreview(
     config,
     state,
-    { environment, now: new Date("2026-07-19T00:00:00Z") },
+    { now: new Date("2026-07-19T00:00:00Z") },
   );
 }
 
@@ -222,7 +233,7 @@ test("requires preview in Vercel's target array and the explicit branch", () => 
   });
 });
 
-test("attests runtime values only as booleans and accepts the endpoint pooler host", () => {
+test("attests exact deployment runtime values only as booleans and accepts the endpoint pooler host", () => {
   const attestation = billingPreview.attestBillingPreviewRuntime(
     {
       ...runtimeEnvironment,
@@ -257,17 +268,99 @@ test("fails closed when a required runtime value is empty or the database host i
 
   assert.equal(attestation.requiredRuntimeEnvironmentPresent, false);
   assert.equal(attestation.databaseUrlMatchesPreviewEndpoint, false);
-  assert.deepEqual(verify(snapshot(), {
-    ...runtimeEnvironment,
-    AUTH_GOOGLE_SECRET: "",
-  }), {
+  const state = snapshot() as unknown as {
+    runtimeAttestation: billingPreview.BillingPreviewRuntimeAttestation;
+  } & BillingPreviewSnapshot;
+  state.runtimeAttestation = attestation;
+  assert.deepEqual(verify(state), {
     ok: false,
     code: "runtime_attestation_failed",
   });
 });
 
-test("inspector parses Vercel and Neon JSON shapes without environment values", async () => {
+test("rejects duplicate or conflicting required Preview environment metadata", () => {
+  const state = snapshot() as unknown as {
+    vercel: {
+      environments: Array<{ gitBranch: string; key: string; targets: string[] }>;
+    };
+  } & BillingPreviewSnapshot;
+  state.vercel.environments.push({
+    gitBranch: config.branch,
+    key: "DATABASE_URL",
+    targets: ["preview"],
+  });
+
+  assert.deepEqual(verify(state), {
+    ok: false,
+    code: "environment_metadata_ambiguous",
+  });
+});
+
+test("rejects multiple active Preview Neon endpoints", () => {
+  const state = snapshot() as unknown as {
+    neon: { endpointHost: string; endpointCount: number };
+  } & BillingPreviewSnapshot;
+  state.neon.endpointCount = 2;
+
+  assert.deepEqual(verify(state), {
+    ok: false,
+    code: "neon_endpoint_ambiguous",
+  });
+});
+
+test("does not use caller process runtime values when deployment runtime evidence is absent", () => {
+  const state = snapshot() as unknown as {
+    runtimeAttestation?: billingPreview.BillingPreviewRuntimeAttestation;
+  } & BillingPreviewSnapshot;
+  Reflect.deleteProperty(state, "runtimeAttestation");
+
+  assert.deepEqual(
+    verify(state),
+    { ok: false, code: "runtime_attestation_failed" },
+  );
+});
+
+test("rejects a child environment that differs from the exact deployment runtime", () => {
+  const state = snapshot() as unknown as {
+    childEnvironmentMatchesDeployment: boolean;
+  } & BillingPreviewSnapshot;
+  state.childEnvironmentMatchesDeployment = false;
+
+  assert.deepEqual(verify(state), {
+    ok: false,
+    code: "runtime_attestation_failed",
+  });
+});
+
+test("reads exact deployment runtime values from a mode-600 temporary env file and removes it", () => {
+  const directory = mkdtempSync(join(tmpdir(), "billing-preview-runtime-"));
+  const path = join(directory, "deployment.env");
+  writeFileSync(path, [
+    "AUTH_SECRET=test-auth-secret",
+    "AUTH_GOOGLE_ID=test-google-id",
+    "AUTH_GOOGLE_SECRET=test-google-secret",
+    `DATABASE_URL=postgresql://user:password@${endpointHost}/preview`,
+    "BILLING_ENABLED=true",
+    "BILLING_CRON_SECRET=test-billing-cron-secret",
+    "BANK_TRANSFER_ENABLED=false",
+    "TOSS_PAYMENTS_ENABLED=false",
+    "BILLING_WIDGET_ENABLED=false",
+  ].join("\n"), { mode: 0o600 });
+
+  try {
+    const attestation = billingPreview.readBillingPreviewRuntimeAttestation(path, endpointHost);
+    assert.equal(attestation.databaseUrlMatchesPreviewEndpoint, true);
+    assert.equal(attestation.requiredRuntimeEnvironmentPresent, true);
+    assert.doesNotMatch(JSON.stringify(attestation), /password|postgresql|secret/i);
+  } finally {
+    rmSync(directory, { force: true, recursive: true });
+  }
+});
+
+test("inspector pins the audited Vercel CLI and exact scoped deployment commands", async () => {
   const calls: Array<{ command: string; args: string[] }> = [];
+  let runtimeEnvironmentPath: string | undefined;
+  let runtimeEnvironmentMode: number | undefined;
   const inspector = billingPreview.createBillingPreviewCliInspector(
     async (command, args) => {
       calls.push({ command, args });
@@ -280,22 +373,37 @@ test("inspector parses Vercel and Neon JSON shapes without environment values", 
           projects: [{ id: config.projectId, name: config.projectName }],
         });
       }
-      if (args.includes("alias")) {
-        return JSON.stringify({
-          aliases: [{
-            alias: "admin-kpopsoft-billing-preview-neo.vercel.app",
-            deploymentId: "dpl_exact_preview",
-            url: "kpopsoft-02-exact-preview.vercel.app",
-          }],
-        });
+      if (args.includes("env") && args.includes("pull")) {
+        runtimeEnvironmentPath = args[args.indexOf("pull") + 1];
+        runtimeEnvironmentMode = statSync(runtimeEnvironmentPath!).mode & 0o777;
+        writeFileSync(runtimeEnvironmentPath!, [
+          "AUTH_SECRET=test-auth-secret",
+          "AUTH_GOOGLE_ID=test-google-id",
+          "AUTH_GOOGLE_SECRET=test-google-secret",
+          `DATABASE_URL=postgresql://user:password@${endpointHost}/preview`,
+          "BILLING_ENABLED=true",
+          "BILLING_CRON_SECRET=test-billing-cron-secret",
+          "BANK_TRANSFER_ENABLED=false",
+          "TOSS_PAYMENTS_ENABLED=false",
+          "BILLING_WIDGET_ENABLED=false",
+        ].join("\n"), { mode: 0o600 });
+        return "";
       }
-      if (args.includes("env")) {
+      if (args.includes("env") && args.includes("ls")) {
         return JSON.stringify({
           envs: requiredEnvironmentNames.map((key) => ({
             gitBranch: config.branch,
             key,
             target: ["preview"],
           })),
+        });
+      }
+      if (args.includes("inspect") && args.includes(new URL(config.adminOrigin).hostname)) {
+        return JSON.stringify({
+          id: "dpl_exact_preview",
+          readyState: "READY",
+          target: "preview",
+          url: "kpopsoft-02-exact-preview.vercel.app",
         });
       }
       if (args.includes("inspect")) {
@@ -318,6 +426,7 @@ test("inspector parses Vercel and Neon JSON shapes without environment values", 
             uid: "dpl_exact_preview",
             url: "kpopsoft-02-exact-preview.vercel.app",
           }],
+          pagination: { count: 1, next: null, prev: null },
         });
       }
       if (args.includes("branches")) {
@@ -345,13 +454,42 @@ test("inspector parses Vercel and Neon JSON shapes without environment values", 
       throw new Error("unexpected command");
     },
     config,
+    runtimeEnvironment,
   );
 
-  assert.deepEqual(await inspector(), snapshot());
+  const inspected = await inspector();
+  assert.deepEqual(inspected, snapshot());
   assert.equal(calls.some(({ command }) => command === "git"), true);
-  for (const command of ["teams", "project", "list", "inspect", "alias", "env", "branches", "api"]) {
+  for (const command of ["teams", "project", "list", "inspect", "env", "branches", "api"]) {
     assert.equal(calls.some(({ args }) => args.includes(command)), true, command);
   }
+  for (const { args } of calls.filter(({ command }) => command === "npx")) {
+    if (args.includes("vercel@56.3.2")) continue;
+    assert.equal(args.includes("neonctl@2.35.0"), true, args.join(" "));
+  }
+  const deploymentList = calls.find(({ args }) => args.includes("list"));
+  assert.deepEqual(deploymentList?.args.slice(0, 6), [
+    "--yes",
+    "vercel@56.3.2",
+    "list",
+    config.projectName,
+    "--scope",
+    config.teamSlug,
+  ]);
+  assert.equal(deploymentList?.args.includes("--limit"), true);
+  assert.equal(deploymentList?.args.includes("100"), true);
+  assert.equal(deploymentList?.args.includes("--status"), true);
+  assert.equal(deploymentList?.args.includes("githubCommitRef=codex/billing-preview-oauth"), true);
+  assert.equal(deploymentList?.args.includes(`githubCommitSha=${localHead}`), true);
+  assert.equal(
+    calls.some(({ args }) => args.includes("inspect") && args.includes(new URL(config.adminOrigin).hostname)),
+    true,
+  );
+  const environmentPull = calls.find(({ args }) => args.includes("env") && args.includes("pull"));
+  assert.equal(environmentPull?.args.includes("--id"), true);
+  assert.equal(environmentPull?.args.includes("dpl_exact_preview"), true);
+  assert.equal(runtimeEnvironmentMode, 0o600);
+  assert.equal(existsSync(runtimeEnvironmentPath!), false);
 });
 
 test("CLI emits a specific safe environment failure and never prints values", async () => {
@@ -362,7 +500,6 @@ test("CLI emits a specific safe environment failure and never prints values", as
   state.vercel.environments = [];
   const exitCode = await billingPreview.runBillingPreviewCli({
     config,
-    environment: runtimeEnvironment,
     inspect: async () => state,
     output: captured.output,
   });
@@ -378,7 +515,6 @@ test("CLI main sets a non-zero exit code without importing or exiting eagerly", 
   await billingPreview.runBillingPreviewCliMain(
     {
       config,
-      environment: runtimeEnvironment,
       inspect: async () => {
         throw new Error("postgresql://account:secret@example.test/db");
       },
@@ -389,7 +525,7 @@ test("CLI main sets a non-zero exit code without importing or exiting eagerly", 
   assert.equal(exit.exitCode, 1);
 });
 
-test("Preview E2E requires attested identity and does not authorize the bulk generator", () => {
+test("Preview E2E requires attested identity and executes one targeted generator in a react-server child boundary", () => {
   const source = readFileSync(
     join(process.cwd(), "e2e/billing-admin.spec.ts"),
     "utf8",
@@ -407,4 +543,13 @@ test("Preview E2E requires attested identity and does not authorize the bulk gen
   assert.match(source, /api\/internal\/billing\/generate/);
   assert.match(source, /api\/internal\/billing\/reconcile/);
   assert.doesNotMatch(source, /BILLING_E2E_PREVIEW_CRON_SECRET|randomUUID/);
+  assert.doesNotMatch(
+    source,
+    /^import\s+\{\s*generateDueInvoiceForContract\s*\}\s+from\s+["'][^"']+["'];$/m,
+  );
+  assert.match(source, /"--conditions",\s*"react-server"/);
+  assert.match(source, /"--import",\s*resolve\(process\.cwd\(\), "node_modules\/tsx\/dist\/loader\.mjs"\)/);
+  assert.match(source, /runBillingPreviewVerifier\(\);\s*\n\s*const generation = await runTargetedInvoiceGenerator/);
+  assert.match(source, /process\.execPath,[\s\S]*runDate,[\s\S]*contractId/);
+  assert.match(source, /targetCount: number;\s*createdCount: number;\s*failed: Array<\{ code: string \}>/);
 });

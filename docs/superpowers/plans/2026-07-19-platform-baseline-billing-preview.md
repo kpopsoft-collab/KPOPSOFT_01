@@ -339,15 +339,15 @@ git push -u origin codex/billing-preview-oauth
 - `tests/billing-generator.test.mts`
 - `docs/billing/verification-report.md`
 
-**Boundary:** No readiness claim is valid until the current local HEAD resolves to one `READY` deployment on `codex/billing-preview-oauth`, its exact inspect reports `target=preview`, and the canonical admin alias resolves to that exact deployment ID and URL. Vercel env metadata remains value-free; runtime values are only reduced to boolean attestation checks. Production, Vercel aliases, Neon, Google, and payment providers are not mutated by this task.
+**Boundary:** No readiness claim is valid until the current local HEAD resolves to one `READY` deployment on `codex/billing-preview-oauth`, its exact inspect reports `target=preview`, and the canonical admin alias resolves to that exact deployment ID and URL. The verifier uses `vercel@56.3.2`, exact branch/SHA metadata filters, and a fail-closed pagination check; it verifies the team ID plus project ID through scoped commands without inventing a project-team field. Vercel env metadata remains value-free and unique per required name/scope; runtime values are reduced to booleans only after an exact-deployment `env pull --id` into a mode-600 temporary file that is immediately deleted, and the child-inherited required environment must exactly match that deployment. Production, Vercel aliases, Neon, Google, and payment providers are not mutated by this task.
 
 - [ ] **Step 1: Drive exact-control-plane and one-contract behavior with tests**
 
-Add RED tests for Vercel team `team_JyJcVEVDcq6Jg1DDgDTW99Su`, project `kpopsoft-02` / `prj_Xb6z5eGIOLTmrpWczO8zU9UYE9x0`, local HEAD match, inspect/alias linkage, array-shaped branch env scope, Neon endpoint host attestation, and single-contract invoice generation. Record the observed failures before implementing the boundary.
+Add RED tests for Vercel team `team_JyJcVEVDcq6Jg1DDgDTW99Su`, scoped project `kpopsoft-02` / `prj_Xb6z5eGIOLTmrpWczO8zU9UYE9x0`, local HEAD match, direct inspect/alias linkage, duplicate env metadata rejection, single active Neon endpoint, exact-deployment runtime attestation, and child-server-runtime single-contract invoice generation. Record the observed failures before implementing the boundary.
 
 - [ ] **Step 2: Implement the read-only Preview verifier**
 
-Query teams, projects, deployment list, exact deployment inspect, alias list, branch env list, local `git rev-parse HEAD`, Neon branch, and `/projects/red-smoke-09462401/endpoints`. Select only a `READY` deployment whose `meta.githubCommitRef` and `meta.githubCommitSha` match the branch and local HEAD. Require list `target: null`, inspect `target: preview`, and an alias record mapping the canonical bare hostname to the same deployment ID and URL. Return only stable safe codes.
+Use `vercel@56.3.2` to query the exact team, scoped project, branch/SHA-filtered `READY` deployment list, selected deployment inspect, direct canonical alias inspect, and branch env metadata; also query local `git rev-parse HEAD`, Neon branch, and `/projects/red-smoke-09462401/endpoints`. Reject a non-empty deployment next page, duplicate/conflicting required env metadata, and any active Preview Neon endpoint count other than one. Require list `target: null`, selected inspect `target: preview`, and direct canonical alias inspect mapping to the same deployment ID and URL. Pull the selected deployment environment with `env pull --id` only into a mode-600 temporary file, reduce it to boolean attestation, and remove it in `finally`. Return only stable safe codes.
 
 - [ ] **Step 3: Prepare the parent-owned secure inputs**
 
@@ -363,7 +363,7 @@ Pull the encrypted branch Preview env to an ignored, mode-600 local file. Create
 
 ```bash
 umask 077
-npx --yes vercel@latest env pull .env.billing-preview-e2e.local \
+npx --yes vercel@56.3.2 env pull .env.billing-preview-e2e.local \
   --environment=preview \
   --git-branch=codex/billing-preview-oauth \
   --project=kpopsoft-02 \
@@ -378,7 +378,7 @@ BILLING_E2E_RUN_ID="$BILLING_E2E_RUN_ID" \
   npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
 ```
 
-The E2E first runs the live verifier and runtime attestation, requires a fresh unexpired Auth.js session cookie scoped to the canonical host, checks the expected email after opening `/admin/billing`, and verifies unauthenticated bulk generate/reconcile return `401`. It then generates only the created contract locally, requires `targetCount=1` and `createdCount=1`, and retains recoverable disposable Preview evidence.
+The E2E first runs the live verifier and exact-deployment runtime attestation, requires a fresh unexpired Auth.js session cookie scoped to the canonical host, checks the expected email after opening `/admin/billing`, and verifies unauthenticated bulk generate/reconcile return `401`. Immediately before mutation it re-runs the verifier, then starts a `react-server` child Node process using the repository TypeScript loader with only `runDate` and the UUID contract ID as positional arguments. The child invokes only the targeted generator and returns only strict sanitized counts/failure codes; the test requires `targetCount=1` and `createdCount=1` and retains recoverable disposable Preview evidence.
 
 - [ ] **Step 5: Record only observed evidence**
 
