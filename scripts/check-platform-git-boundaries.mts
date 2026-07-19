@@ -27,6 +27,18 @@ type GitRepositoryState = {
   dirtyPaths: string[];
 };
 
+export type GitCommandRunner = (cwd: string, args: string[]) => Promise<string>;
+
+export type CliOutput = {
+  log: (line: string) => void;
+  error: (line: string) => void;
+};
+
+export type CliDependencies = {
+  check?: (boundary: RepositoryBoundary) => Promise<BoundaryResult>;
+  output?: CliOutput;
+};
+
 const platformBoundaries: RepositoryBoundary[] = [
   {
     name: "homepage",
@@ -40,7 +52,7 @@ const platformBoundaries: RepositoryBoundary[] = [
   },
 ];
 
-function parseDirtyPaths(status: string): string[] {
+export function parseDirtyPaths(status: string): string[] {
   const entries = status.split("\0");
   const paths: string[] = [];
 
@@ -51,7 +63,7 @@ function parseDirtyPaths(status: string): string[] {
     const statusCode = entry.slice(0, 2);
     paths.push(entry.slice(3));
 
-    if (statusCode[0] === "R" || statusCode[0] === "C") {
+    if (statusCode.includes("R") || statusCode.includes("C")) {
       const originalPath = entries[index + 1];
       if (originalPath) paths.push(originalPath);
       index += 1;
@@ -61,23 +73,34 @@ function parseDirtyPaths(status: string): string[] {
   return paths;
 }
 
-async function inspectGit(cwd: string): Promise<GitRepositoryState> {
-  const [topLevel, origin, status] = await Promise.all([
-    execFileAsync("git", ["rev-parse", "--show-toplevel"], { cwd }),
-    execFileAsync("git", ["remote", "get-url", "origin"], { cwd }),
-    execFileAsync(
-      "git",
-      ["status", "--porcelain=v1", "--untracked-files=all", "-z"],
-      { cwd },
-    ),
-  ]);
+const runGitCommand: GitCommandRunner = async (cwd, args) => {
+  const result = await execFileAsync("git", args, { cwd });
+  return result.stdout;
+};
 
-  return {
-    topLevel: topLevel.stdout.trim(),
-    origin: origin.stdout.trim(),
-    dirtyPaths: parseDirtyPaths(status.stdout),
+export function createGitInspector(runGit: GitCommandRunner = runGitCommand) {
+  return async (cwd: string): Promise<GitRepositoryState> => {
+    const [topLevel, origin, status] = await Promise.all([
+      runGit(cwd, ["rev-parse", "--show-toplevel"]),
+      runGit(cwd, ["remote", "get-url", "origin"]),
+      runGit(cwd, [
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all",
+        "--ignore-submodules=none",
+        "-z",
+      ]),
+    ]);
+
+    return {
+      topLevel: topLevel.trim(),
+      origin: origin.trim(),
+      dirtyPaths: parseDirtyPaths(status),
+    };
   };
 }
+
+const inspectGit = createGitInspector();
 
 export async function checkRepositoryBoundary(
   input: RepositoryBoundary,
@@ -104,20 +127,29 @@ export async function checkRepositoryBoundary(
   return { ok: true, repository: input.name };
 }
 
-async function runCli(): Promise<void> {
+export async function runPlatformBoundaryCli(
+  { check = checkRepositoryBoundary, output = console }: CliDependencies = {},
+): Promise<number> {
   try {
-    const results = await Promise.all(platformBoundaries.map(checkRepositoryBoundary));
+    const results = await Promise.all(platformBoundaries.map(check));
     for (const result of results) {
-      console.log(result.ok ? `${result.repository}: ok` : `${result.repository}: ${result.code}`);
+      output.log(result.ok ? `${result.repository}: ok` : `${result.repository}: ${result.code}`);
     }
-    if (results.some((result) => !result.ok)) process.exitCode = 1;
+    return results.some((result) => !result.ok) ? 1 : 0;
   } catch {
-    console.error("repository boundary check failed");
-    process.exitCode = 1;
+    output.error("repository boundary check failed");
+    return 1;
   }
+}
+
+export async function runPlatformBoundaryCliMain(
+  dependencies: CliDependencies = {},
+  exitCodeTarget: Pick<NodeJS.Process, "exitCode"> = process,
+): Promise<void> {
+  exitCodeTarget.exitCode = await runPlatformBoundaryCli(dependencies);
 }
 
 const invokedPath = process.argv[1];
 if (invokedPath && fileURLToPath(import.meta.url) === resolve(invokedPath)) {
-  void runCli();
+  void runPlatformBoundaryCliMain();
 }
