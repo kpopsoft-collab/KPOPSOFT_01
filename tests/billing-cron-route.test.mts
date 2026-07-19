@@ -114,17 +114,21 @@ test("internal failures never return stack, database, or secret details", async 
 });
 
 test("route and Vercel schedule preserve the protected Node contract", () => {
-  const routeSource = readFileSync(
-    join(process.cwd(), "src/app/api/internal/billing/generate/route.ts"),
-    "utf8",
+  const routeSources = [
+    "src/app/api/internal/billing/generate/route.ts",
+    "src/app/api/internal/billing/reconcile/route.ts",
+  ].map((routePath) =>
+    readFileSync(join(process.cwd(), routePath), "utf8"),
   );
   const vercel = JSON.parse(
     readFileSync(join(process.cwd(), "vercel.json"), "utf8"),
   );
 
-  assert.match(routeSource, /export const runtime = "nodejs"/);
-  assert.match(routeSource, /export const dynamic = "force-dynamic"/);
-  assert.doesNotMatch(routeSource, /searchParams|get\("CRON_SECRET"\)/);
+  for (const routeSource of routeSources) {
+    assert.match(routeSource, /export const runtime = "nodejs"/);
+    assert.match(routeSource, /export const dynamic = "force-dynamic"/);
+    assert.doesNotMatch(routeSource, /searchParams|get\("CRON_SECRET"\)/);
+  }
   assert.deepEqual(vercel.crons, [
     {
       path: "/api/internal/billing/generate",
