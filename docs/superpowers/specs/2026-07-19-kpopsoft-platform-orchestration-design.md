@@ -84,7 +84,8 @@ Hub 트랙:
 1. `codex/hub-linear-mirror`
 2. `codex/hub-linear-commands`
 3. `codex/hub-drive-project-data`
-4. `codex/hub-crm-billing-summary`
+4. `codex/hub-crm-conversion`
+5. `codex/hub-billing-summary`
 
 트랙 간 결합은 검증된 commit을 상위 통합 branch로 순서대로 merge한다.
 한 트랙의 미완성 작업을 다른 트랙에 cherry-pick하지 않는다. 두 저장소
