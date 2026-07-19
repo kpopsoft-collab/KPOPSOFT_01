@@ -241,3 +241,64 @@ test("the SQL advances next date only from an inserted draft", () => {
   assert.match(source, /insert into \$\{billingInvoiceItems\}/);
   assert.match(source, /for update/);
 });
+
+test("targeted generation validates inputs and processes only the requested contract", async () => {
+  const otherContractId = "88888888-8888-4888-8888-888888888888";
+  const calls: Array<{ contractId: string | undefined; runDate: string }> = [];
+  const drafts: string[] = [];
+  const { repository, completed } = fakeRepository(
+    [dueContract(), dueContract({ id: otherContractId })],
+    async (input) => {
+      drafts.push(input.contractId);
+      return true;
+    },
+  );
+  repository.listDueContracts = async (runDate, onlyContractId) => {
+    calls.push({ contractId: onlyContractId, runDate });
+    return [dueContract(), dueContract({ id: otherContractId })];
+  };
+  const generator = createInvoiceGenerator(repository) as unknown as {
+    generateDueInvoiceForContract: (
+      runDate: string,
+      contractId: string,
+    ) => Promise<{
+      createdCount: number;
+      failed: Array<{ contractId: string; code: string }>;
+      runId: string;
+      targetCount: number;
+    }>;
+  };
+
+  const result = await generator.generateDueInvoiceForContract(
+    "2026-01-31",
+    contractId,
+  );
+
+  assert.deepEqual(calls, [{ contractId, runDate: "2026-01-31" }]);
+  assert.deepEqual(drafts, [contractId]);
+  assert.deepEqual(result, {
+    runId,
+    targetCount: 1,
+    createdCount: 1,
+    failed: [],
+  });
+  assert.deepEqual(completed, [{ createdCount: 1, failed: [] }]);
+
+  await assert.rejects(
+    () => generator.generateDueInvoiceForContract("2026-02-30", contractId),
+    /invalid calendar date/,
+  );
+  await assert.rejects(
+    () => generator.generateDueInvoiceForContract("2026-01-31", "not-a-uuid"),
+    /invalid contract id/,
+  );
+});
+
+test("module exports the narrow targeted generator API", () => {
+  const source = readFileSync(
+    join(process.cwd(), "src/lib/billing/invoice-generator.ts"),
+    "utf8",
+  );
+  assert.match(source, /export async function generateDueInvoiceForContract/);
+  assert.match(source, /listDueContracts\(runDate, contractId\)/);
+});

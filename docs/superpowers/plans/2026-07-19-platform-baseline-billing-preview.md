@@ -332,101 +332,54 @@ git push -u origin codex/billing-preview-oauth
 ### Task 5: Connect Preview Google OAuth and Run the Synthetic Admin Smoke
 
 **Files:**
-- Create: `scripts/verify-billing-preview.mts`
-- Create: `tests/admin-oauth-preview.test.mts`
-- Modify: `e2e/billing-admin.spec.ts`
-- Modify: `docs/billing/verification-report.md`
+- `scripts/verify-billing-preview.mts`
+- `tests/admin-oauth-preview.test.mts`
+- `e2e/billing-admin.spec.ts`
+- `src/lib/billing/invoice-generator.ts`
+- `tests/billing-generator.test.mts`
+- `docs/billing/verification-report.md`
 
-**Interfaces:**
-- Consumes: callback `https://admin-kpopsoft-billing-preview-neo.vercel.app/api/auth/callback/google` and Vercel branch-scoped Preview env.
-- Produces: authenticated Preview evidence for customer → contract draft → activation → invoice draft → approval.
+**Boundary:** No readiness claim is valid until the current local HEAD resolves to one `READY` deployment on `codex/billing-preview-oauth`, its exact inspect reports `target=preview`, and the canonical admin alias resolves to that exact deployment ID and URL. Vercel env metadata remains value-free; runtime values are only reduced to boolean attestation checks. Production, Vercel aliases, Neon, Google, and payment providers are not mutated by this task.
 
-- [ ] **Step 1: Add a failing callback-host contract test**
+- [ ] **Step 1: Drive exact-control-plane and one-contract behavior with tests**
 
-```ts
-import assert from "node:assert/strict";
-import test from "node:test";
-import { buildGoogleCallbackUrl } from "../scripts/verify-billing-preview.mts";
+Add RED tests for Vercel team `team_JyJcVEVDcq6Jg1DDgDTW99Su`, project `kpopsoft-02` / `prj_Xb6z5eGIOLTmrpWczO8zU9UYE9x0`, local HEAD match, inspect/alias linkage, array-shaped branch env scope, Neon endpoint host attestation, and single-contract invoice generation. Record the observed failures before implementing the boundary.
 
-test("billing Preview OAuth callback stays on the admin host", () => {
-  const callback = buildGoogleCallbackUrl(
-    "https://admin-kpopsoft-billing-preview-neo.vercel.app",
-  );
-  assert.equal(
-    callback,
-    "https://admin-kpopsoft-billing-preview-neo.vercel.app/api/auth/callback/google",
-  );
-});
-```
+- [ ] **Step 2: Implement the read-only Preview verifier**
 
-- [ ] **Step 2: Run the focused test**
+Query teams, projects, deployment list, exact deployment inspect, alias list, branch env list, local `git rev-parse HEAD`, Neon branch, and `/projects/red-smoke-09462401/endpoints`. Select only a `READY` deployment whose `meta.githubCommitRef` and `meta.githubCommitSha` match the branch and local HEAD. Require list `target: null`, inspect `target: preview`, and an alias record mapping the canonical bare hostname to the same deployment ID and URL. Return only stable safe codes.
 
-Run:
+- [ ] **Step 3: Prepare the parent-owned secure inputs**
 
-```bash
-npm test -- --test-name-pattern="billing Preview OAuth callback"
-```
-
-Expected: FAIL because `scripts/verify-billing-preview.mts` does not exist.
-
-- [ ] **Step 3: Implement the Preview verifier**
-
-```ts
-export function buildGoogleCallbackUrl(adminOrigin: string): string {
-  const origin = new URL(adminOrigin);
-  if (origin.protocol !== "https:") throw new Error("admin_origin_must_use_https");
-  if (origin.pathname !== "/") throw new Error("admin_origin_must_not_include_path");
-  return new URL("/api/auth/callback/google", origin).href;
-}
-```
-
-The CLI checks Vercel project/team identity, deployment target `preview`,
-required environment-variable names without reading values, callback URL, and
-Neon branch ID. It exits non-zero if the target is Production or the Neon
-branch is primary/default.
-
-- [ ] **Step 4: Select the Google Cloud project without exposing secrets**
-
-Use the existing company-owned Google Cloud project when its owner is
-`kpopsoft@gmail.com`. If more than one eligible project exists, stop this task
-and ask the user to select the project name. Register exactly:
+Register only this callback in the selected company-owned Google OAuth client:
 
 ```text
 https://admin-kpopsoft-billing-preview-neo.vercel.app/api/auth/callback/google
 ```
 
-Add `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` through the Vercel encrypted
-Preview branch UI or `vercel env add`; never pass the secret as a command-line
-argument.
+Pull the encrypted branch Preview env to an ignored, mode-600 local file. Create a fresh Auth.js storage state for the canonical admin host, set `BILLING_E2E_EXPECTED_ADMIN_EMAIL`, and choose a unique 8-25 character lowercase `BILLING_E2E_RUN_ID`. Do not pass or create a cron secret for the E2E.
 
-- [ ] **Step 5: Redeploy Preview and run the browser flow**
+- [ ] **Step 4: Run the guarded Preview browser flow**
 
 ```bash
-npx vercel@latest --scope kpopsoft-2075s-projects
+umask 077
+npx --yes vercel@latest env pull .env.billing-preview-e2e.local \
+  --environment=preview \
+  --git-branch=codex/billing-preview-oauth \
+  --project=kpopsoft-02 \
+  --scope=kpopsoft-2075s-projects
+
 BILLING_E2E_DISPOSABLE_PREVIEW=true \
-  BILLING_E2E_BASE_URL=https://admin-kpopsoft-billing-preview-neo.vercel.app \
-  npx playwright test e2e/billing-admin.spec.ts --project=chromium
+BILLING_E2E_BASE_URL=https://admin-kpopsoft-billing-preview-neo.vercel.app \
+BILLING_E2E_STORAGE_STATE_PATH="$BILLING_E2E_STORAGE_STATE_PATH" \
+BILLING_E2E_EXPECTED_ADMIN_EMAIL="$BILLING_E2E_EXPECTED_ADMIN_EMAIL" \
+BILLING_E2E_RUN_ID="$BILLING_E2E_RUN_ID" \
+./node_modules/.bin/dotenv -e .env.billing-preview-e2e.local -- \
+  npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
 ```
 
-Expected: login succeeds for the active admin, the synthetic customer workflow passes, and real customer data is not used.
+The E2E first runs the live verifier and runtime attestation, requires a fresh unexpired Auth.js session cookie scoped to the canonical host, checks the expected email after opening `/admin/billing`, and verifies unauthenticated bulk generate/reconcile return `401`. It then generates only the created contract locally, requires `targetCount=1` and `createdCount=1`, and retains recoverable disposable Preview evidence.
 
-- [ ] **Step 6: Verify fail-closed payment entry points**
+- [ ] **Step 5: Record only observed evidence**
 
-Expected browser/API state:
-
-```text
-BANK_TRANSFER_ENABLED=false
-TOSS_PAYMENTS_ENABLED=false
-BILLING_WIDGET_ENABLED=false
-unauthenticated /api/internal/billing/reconcile = 401
-```
-
-- [ ] **Step 7: Record, commit, and push the Preview evidence**
-
-```bash
-git add scripts/verify-billing-preview.mts tests/admin-oauth-preview.test.mts e2e/billing-admin.spec.ts docs/billing/verification-report.md
-git commit -m "test: verify billing preview admin workflow"
-git push origin codex/billing-preview-oauth
-```
-
-Expected: the report marks Preview administrator flow PASS and keeps Production activation HOLD.
+Keep the live OAuth smoke `HOLD` until all boundaries and the browser flow pass. Never mark Preview administrator readiness from skipped tests, stale aliases, old deployments, missing env metadata, or absent runtime attestation.

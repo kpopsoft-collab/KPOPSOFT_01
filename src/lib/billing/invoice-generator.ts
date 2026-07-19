@@ -120,6 +120,16 @@ function parseDate(value: string): Date {
   return date;
 }
 
+function validateContractId(value: string): void {
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value,
+    )
+  ) {
+    throw new Error("invalid contract id");
+  }
+}
+
 function formatDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
@@ -263,6 +273,29 @@ export function createInvoiceGenerator(
     );
   }
 
+  async function generateContracts(
+    runDate: string,
+    contracts: DueInvoiceContract[],
+  ): Promise<GenerateDueInvoicesResult> {
+    const runId = await repository.createRun(runDate, contracts.length);
+    const failed: GenerateDueInvoicesResult["failed"] = [];
+    let createdCount = 0;
+
+    for (const contract of contracts) {
+      try {
+        if (await processContract(contract, runDate)) createdCount += 1;
+      } catch {
+        failed.push({
+          contractId: contract.id,
+          code: "GENERATION_FAILED",
+        });
+      }
+    }
+
+    await repository.finishRun(runId, { createdCount, failed });
+    return { runId, targetCount: contracts.length, createdCount, failed };
+  }
+
   return {
     async generateDueInvoices(
       runDate: string,
@@ -271,23 +304,22 @@ export function createInvoiceGenerator(
       const due = (await repository.listDueContracts(runDate)).filter(
         (contract) => isEligible(contract, runDate),
       );
-      const runId = await repository.createRun(runDate, due.length);
-      const failed: GenerateDueInvoicesResult["failed"] = [];
-      let createdCount = 0;
+      return generateContracts(runDate, due);
+    },
 
-      for (const contract of due) {
-        try {
-          if (await processContract(contract, runDate)) createdCount += 1;
-        } catch {
-          failed.push({
-            contractId: contract.id,
-            code: "GENERATION_FAILED",
-          });
-        }
-      }
-
-      await repository.finishRun(runId, { createdCount, failed });
-      return { runId, targetCount: due.length, createdCount, failed };
+    async generateDueInvoiceForContract(
+      runDate: string,
+      contractId: string,
+    ): Promise<GenerateDueInvoicesResult> {
+      parseDate(runDate);
+      validateContractId(contractId);
+      const due = (await repository.listDueContracts(runDate, contractId))
+        .filter(
+          (contract) =>
+            contract.id === contractId && isEligible(contract, runDate),
+        )
+        .slice(0, 1);
+      return generateContracts(runDate, due);
     },
 
     async retryFailedContract(
@@ -553,6 +585,13 @@ export async function generateDueInvoices(
   runDate: string,
 ): Promise<GenerateDueInvoicesResult> {
   return defaultInvoiceGenerator.generateDueInvoices(runDate);
+}
+
+export async function generateDueInvoiceForContract(
+  runDate: string,
+  contractId: string,
+): Promise<GenerateDueInvoicesResult> {
+  return defaultInvoiceGenerator.generateDueInvoiceForContract(runDate, contractId);
 }
 
 export async function retryFailedContract(

@@ -1,14 +1,29 @@
-import { randomUUID } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { resolve } from "node:path";
+import { promisify } from "node:util";
 
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+
+import { generateDueInvoiceForContract } from "../src/lib/billing/invoice-generator.ts";
+
+const execFileAsync = promisify(execFile);
 
 const previewAdminHost = "admin-kpopsoft-billing-preview-neo.vercel.app";
+const maxStorageStateAgeMs = 10 * 60 * 1000;
 const disposable = process.env.BILLING_E2E_DISPOSABLE_PREVIEW === "true";
-const cronSecret = process.env.BILLING_E2E_PREVIEW_CRON_SECRET;
 const storageStatePath = process.env.BILLING_E2E_STORAGE_STATE_PATH;
-const legacyPreviewUrl = process.env.BILLING_E2E_PREVIEW_URL;
-const previewUrlInput = process.env.BILLING_E2E_BASE_URL ?? legacyPreviewUrl;
+const previewUrlInput = process.env.BILLING_E2E_BASE_URL;
+const expectedAdminEmail = process.env.BILLING_E2E_EXPECTED_ADMIN_EMAIL?.trim();
+const runIdInput = process.env.BILLING_E2E_RUN_ID;
+
+type SyntheticEvidenceCodes = {
+  customerCode: string;
+  customerName: string;
+  siteCode: string;
+  siteName: string;
+  siteOrigin: string;
+};
 
 function previewBaseUrl(input: string | undefined): string | undefined {
   if (!input) return undefined;
@@ -36,17 +51,68 @@ function previewBaseUrl(input: string | undefined): string | undefined {
   return url.origin;
 }
 
-function hasAuthenticatedStorageState(path: string | undefined): path is string {
+function isFreshAuthStorageState(path: string | undefined): path is string {
   if (!path || !existsSync(path)) return false;
+
   try {
+    const age = Date.now() - statSync(path).mtimeMs;
+    if (age < 0 || age > maxStorageStateAgeMs) return false;
+
     const state = JSON.parse(readFileSync(path, "utf8")) as {
-      cookies?: unknown[];
-      origins?: unknown[];
+      cookies?: Array<{
+        domain?: unknown;
+        expires?: unknown;
+        name?: unknown;
+      }>;
     };
-    return (state.cookies?.length ?? 0) > 0 || (state.origins?.length ?? 0) > 0;
+    const nowInSeconds = Date.now() / 1000;
+    return Boolean(
+      state.cookies?.some(
+        (cookie) =>
+          cookie.domain === previewAdminHost &&
+          typeof cookie.expires === "number" &&
+          cookie.expires > nowInSeconds &&
+          (cookie.name === "authjs.session-token" ||
+            cookie.name === "__Secure-authjs.session-token" ||
+            cookie.name === "next-auth.session-token" ||
+            cookie.name === "__Secure-next-auth.session-token"),
+      ),
+    );
   } catch {
     return false;
   }
+}
+
+function syntheticEvidenceCodes(runId: string | undefined): SyntheticEvidenceCodes | undefined {
+  if (!runId) return undefined;
+  if (!/^[a-z0-9](?:[a-z0-9-]{6,23}[a-z0-9])$/.test(runId)) {
+    throw new Error("billing_e2e_run_id_invalid");
+  }
+
+  const code = runId.toUpperCase();
+  return {
+    customerCode: `E2E_${code}`,
+    customerName: `E2E Preview evidence ${code}`,
+    siteCode: `E2ES_${code}`,
+    siteName: `E2E Preview site ${code}`,
+    siteOrigin: `https://e2e-${runId}.invalid`,
+  };
+}
+
+function previewPath(path: string): string {
+  if (!previewUrl || !path.startsWith("/") || path.startsWith("//")) {
+    throw new Error("billing_e2e_fixture_path_rejected");
+  }
+  const target = new URL(path, previewUrl);
+  if (target.origin !== previewUrl) {
+    throw new Error("billing_e2e_fixture_path_rejected");
+  }
+  return target.href;
+}
+
+function fixturePath(path: string | undefined): string {
+  if (!path) throw new Error("billing_e2e_fixture_path_rejected");
+  return previewPath(path);
 }
 
 function todayInSeoul(): string {
@@ -61,10 +127,51 @@ function todayInSeoul(): string {
   return `${value("year")}-${value("month")}-${value("day")}`;
 }
 
+async function runBillingPreviewVerifier(): Promise<void> {
+  try {
+    const result = await execFileAsync(
+      process.execPath,
+      [
+        resolve(process.cwd(), "node_modules/tsx/dist/cli.mjs"),
+        "scripts/verify-billing-preview.mts",
+      ],
+      { encoding: "utf8", env: process.env },
+    );
+    expect(result.stdout.trim()).toBe("billing_preview_ready");
+    expect(result.stderr.trim()).toBe("");
+  } catch {
+    throw new Error("billing_e2e_preview_verifier_failed");
+  }
+}
+
+async function assertUnauthenticatedBillingEndpoints(
+  request: APIRequestContext,
+): Promise<void> {
+  for (const path of [
+    "/api/internal/billing/generate",
+    "/api/internal/billing/reconcile",
+  ]) {
+    const response = await request.get(previewPath(path));
+    expect(response.status()).toBe(401);
+  }
+}
+
+async function assertActiveExpectedAdmin(page: Page): Promise<void> {
+  await page.goto(previewPath("/admin/billing"));
+  await expect(page).not.toHaveURL(/\/admin\/login/);
+  await expect(page).toHaveURL(new RegExp(`${previewAdminHost}/admin/billing(?:[/?#]|$)`));
+  await expect(page.getByText(expectedAdminEmail!, { exact: true })).toBeVisible();
+}
+
 const previewUrl = previewBaseUrl(previewUrlInput);
-const authenticatedStorageState = hasAuthenticatedStorageState(storageStatePath);
+const authenticatedStorageState = isFreshAuthStorageState(storageStatePath);
+const syntheticEvidence = syntheticEvidenceCodes(runIdInput);
 const canRunDisposableWorkflow =
-  disposable && Boolean(previewUrl) && Boolean(cronSecret) && authenticatedStorageState;
+  disposable &&
+  Boolean(previewUrl) &&
+  Boolean(expectedAdminEmail) &&
+  Boolean(syntheticEvidence) &&
+  authenticatedStorageState;
 const specializedFixtures =
   canRunDisposableWorkflow && process.env.BILLING_E2E_SPECIALIZED_FIXTURES === "true";
 
@@ -72,28 +179,33 @@ if (authenticatedStorageState) {
   test.use({ storageState: storageStatePath });
 }
 
+async function prepareAttestedAdmin(page: Page, request: APIRequestContext): Promise<void> {
+  await runBillingPreviewVerifier();
+  await assertUnauthenticatedBillingEndpoints(request);
+  await assertActiveExpectedAdmin(page);
+}
+
 test.describe("disposable Preview billing workflow", () => {
   test.skip(
     !canRunDisposableWorkflow,
-    "BILLING_E2E_DISPOSABLE_PREVIEW=true, 승인된 Preview URL, 인증된 ephemeral storage state, Preview cron secret이 필요합니다.",
+    "BILLING_E2E_DISPOSABLE_PREVIEW=true, canonical Preview URL, fresh Auth.js storage state, expected admin email, and a valid run ID are required.",
   );
 
-  test("admin creates, activates, generates, and approves an isolated synthetic invoice", async ({ page }) => {
-    const suffix = randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase();
-    const customerCode = `E2E${suffix}`;
-    const customerName = `E2E Synthetic ${suffix}`;
-    const siteCode = `E2E_SITE_${suffix}`;
-    const siteOrigin = `https://${suffix.toLowerCase()}.invalid`;
+  test.beforeEach(async ({ page, request }) => {
+    await prepareAttestedAdmin(page, request);
+  });
+
+  test("admin creates, activates, generates, and approves recoverable disposable Preview evidence", async ({ page }) => {
+    const evidence = syntheticEvidence!;
     const today = todayInSeoul();
 
-    await page.goto(new URL("/admin/billing/customers/new", previewUrl).href);
-    await expect(page).not.toHaveURL(/\/admin\/login/);
-    await page.getByLabel("고객사 코드").fill(customerCode);
-    await page.getByLabel("상호").fill(customerName);
+    await page.goto(previewPath("/admin/billing/customers/new"));
+    await page.getByLabel("고객사 코드").fill(evidence.customerCode);
+    await page.getByLabel("상호").fill(evidence.customerName);
     await page.getByLabel("대표자").fill("E2E");
-    await page.getByLabel("사이트 코드").fill(siteCode);
-    await page.getByLabel("사이트명").fill(`E2E Site ${suffix}`);
-    await page.getByLabel("HTTPS Origin").fill(siteOrigin);
+    await page.getByLabel("사이트 코드").fill(evidence.siteCode);
+    await page.getByLabel("사이트명").fill(evidence.siteName);
+    await page.getByLabel("HTTPS Origin").fill(evidence.siteOrigin);
     await page.getByRole("button", { name: "고객사 저장" }).click();
     await page.waitForURL(/\/admin\/billing\/customers\/[^/]+$/);
     await expect(page.getByText("등록된 담당자가 없습니다.")).toBeVisible();
@@ -110,18 +222,24 @@ test.describe("disposable Preview billing workflow", () => {
     await page.getByRole("button", { name: "ACTIVE", exact: true }).click();
     await expect(page.getByText(/ACTIVE · MONTHLY/)).toBeVisible();
 
-    const generation = await page.request.get(
-      new URL("/api/internal/billing/generate", previewUrl).href,
-      { headers: { authorization: `Bearer ${cronSecret}` } },
+    const contractMatch = new URL(page.url()).pathname.match(
+      /^\/admin\/billing\/contracts\/([^/]+)$/,
     );
-    expect(generation.status()).toBe(200);
-    await expect(generation).toBeOK();
-    await expect(await generation.json()).toMatchObject({ ok: true });
+    expect(contractMatch?.[1]).toBeTruthy();
+    const generation = await generateDueInvoiceForContract(
+      today,
+      decodeURIComponent(contractMatch![1]!),
+    );
+    expect(generation.targetCount).toBe(1);
+    expect(generation.createdCount).toBe(1);
+    expect(generation.failed).toEqual([]);
 
     await page.goto(
-      new URL(`/admin/billing/invoices?query=${encodeURIComponent(customerCode)}&status=DRAFT`, previewUrl).href,
+      previewPath(
+        `/admin/billing/invoices?query=${encodeURIComponent(evidence.customerCode)}&status=DRAFT`,
+      ),
     );
-    const draftRow = page.locator("tr").filter({ hasText: customerCode });
+    const draftRow = page.locator("tr").filter({ hasText: evidence.customerCode });
     await expect(draftRow).toHaveCount(1);
     await draftRow.getByRole("link").click();
     await expect(page.getByText("등록된 청구 수신자가 없습니다.")).toBeVisible();
@@ -135,22 +253,26 @@ test.describe("disposable Preview billing workflow", () => {
 test.describe("specialized disposable Preview fixtures", () => {
   test.skip(
     !specializedFixtures,
-    "BILLING_E2E_SPECIALIZED_FIXTURES=true와 별도 합성 fixture가 필요합니다.",
+    "BILLING_E2E_SPECIALIZED_FIXTURES=true and separate synthetic fixture paths are required.",
   );
+
+  test.beforeEach(async ({ page, request }) => {
+    await prepareAttestedAdmin(page, request);
+  });
 
   test("bank confirmation and payment queue retain explicit confirmation", async ({ page }) => {
     const draftInvoiceId = process.env.BILLING_E2E_DRAFT_INVOICE_ID;
-    test.skip(!draftInvoiceId, "합성 draft invoice ID가 필요합니다.");
-    await page.goto(new URL(`/admin/billing/invoices/${draftInvoiceId}`, previewUrl).href);
+    test.skip(!draftInvoiceId, "A synthetic draft invoice ID is required.");
+    await page.goto(fixturePath(`/admin/billing/invoices/${encodeURIComponent(draftInvoiceId!)}`));
     await expect(page.getByRole("button", { name: /입금 확인/ })).toBeVisible();
-    await page.goto(new URL("/admin/billing/payments", previewUrl).href);
+    await page.goto(previewPath("/admin/billing/payments"));
     await expect(page.getByRole("heading", { name: /결제 운영/ })).toBeVisible();
   });
 
   test("refund requires a confirmation and never runs against Production", async ({ page }) => {
     const paidInvoiceId = process.env.BILLING_E2E_PAID_INVOICE_ID;
-    test.skip(!paidInvoiceId, "합성 paid invoice ID가 필요합니다.");
-    await page.goto(new URL(`/admin/billing/payments/${paidInvoiceId}`, previewUrl).href);
+    test.skip(!paidInvoiceId, "A synthetic paid invoice ID is required.");
+    await page.goto(fixturePath(`/admin/billing/payments/${encodeURIComponent(paidInvoiceId!)}`));
     await expect(page.getByRole("button", { name: /환불/ })).toBeVisible();
     page.once("dialog", (dialog) => dialog.dismiss());
     await page.getByRole("button", { name: /환불/ }).click();
@@ -158,15 +280,15 @@ test.describe("specialized disposable Preview fixtures", () => {
 
   test("payment session scopes invoices and hides unconfigured bank details", async ({ page }) => {
     const sessionPath = process.env.BILLING_E2E_PAYMENT_SESSION_PATH;
-    test.skip(!sessionPath, "합성 결제 세션 경로가 필요합니다.");
-    await page.goto(new URL(sessionPath!, previewUrl).href);
+    test.skip(!sessionPath, "A synthetic payment session path is required.");
+    await page.goto(fixturePath(sessionPath));
     await expect(page.getByRole("main")).not.toContainText(/다른 고객사|계좌번호 없음/);
   });
 
   test("Toss success cancel and fail use test fixtures only", async ({ page }) => {
     const tossFixturePath = process.env.BILLING_E2E_TOSS_FIXTURE_PATH;
-    test.skip(!tossFixturePath, "토스 테스트 키 전용 fixture 경로가 필요합니다.");
-    await page.goto(new URL(tossFixturePath!, previewUrl).href);
+    test.skip(!tossFixturePath, "A Toss test fixture path is required.");
+    await page.goto(fixturePath(tossFixturePath));
     await expect(page.getByText(/성공|취소|실패/)).toBeVisible();
   });
 });

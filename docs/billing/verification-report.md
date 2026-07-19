@@ -2,10 +2,10 @@
 
 ## 판정
 
-- **로컬 코드 게이트:** `PASS`
-- **합성 고객 위젯 브라우저 게이트:** `PASS`
-- **격리 Preview DB·배포·기본 라우트:** `PASS`
-- **격리 Preview 관리자/결제 게이트:** `HOLD` (코드·preflight 준비 완료, live OAuth/admin smoke 대기)
+- **로컬 코드 게이트:** `HOLD` (이 보고서의 과거 실행 수치는 현재 변경 기준이 아님)
+- **합성 고객 위젯 브라우저 게이트:** `HOLD` (현재 변경 기준 재실행 대기)
+- **격리 Preview DB·배포·기본 라우트:** `HOLD` (exact HEAD/alias/env/runtime 경계 통과 대기)
+- **격리 Preview 관리자/결제 게이트:** `HOLD` (live OAuth/admin smoke 대기)
 - **Production 활성화:** `HOLD`
 
 코드와 합성 브라우저 검증에 더해 의도한 neo 계정의 Vercel Pro 팀, 격리 Neon Preview branch, 결제 마이그레이션·시드, Preview 배포와 fail-closed 기본 라우트를 확인했습니다. Google OAuth, 관리자 브라우저 시나리오, Toss 가맹점/Test·Live 설정, DNS·인증서, 운영 계좌, 고객사 백엔드는 아직 확인되지 않았으므로 운영 배포 완료를 주장하지 않습니다.
@@ -14,12 +14,12 @@
 
 | 항목 | 값 |
 |---|---|
-| 실행 시각 | 2026-07-16 17:13:09 KST |
-| 저장소 | `/Users/mac-mini/Documents/kpopsoft-homepage` |
-| branch | `codex/kpopsoft-maxonomy-concept-wind` |
-| 코드 기준 SHA | `f3bc6a3e252b1a2ddf224190a1a05ccc3cb2d2c4` + 아래 Cron 작업 트리 변경 |
+| 실행 시각 | 과거 기록; 현재 변경 기준은 별도 재검증 필요 |
+| 저장소 | `/Users/mac-mini/Documents/kpopsoft-homepage-billing-oauth` |
+| branch | `codex/billing-preview-oauth` |
+| 코드 기준 SHA | 현재 branch HEAD와 exact Preview deployment SHA가 일치해야 함 |
 | Neon Preview | `billing-preview-20260716` (`br-lingering-thunder-at6twb35`, 2026-08-02T08:00:00Z 만료) |
-| Preview deployment | `dpl_8G4JWQdvPpZx95TSgRDtY25ttzQZ` |
+| Preview deployment | verifier가 `READY` + branch + local HEAD로 선택한 deployment만 허용 |
 | Preview pay host | `kpopsoft-billing-preview-neo.vercel.app` |
 | Preview admin host | `admin-kpopsoft-billing-preview-neo.vercel.app` |
 
@@ -55,7 +55,7 @@ Preview에는 `0002_billing_foundation.sql` → `0003_billing_payments.sql` → 
 
 Pro 플랜의 분 단위 Cron 조건을 확인해 `/api/internal/billing/reconcile`의 `*/10 * * * *` 설정을 추가했습니다. Cron은 Preview에서 실행되지 않으며 Production DB 마이그레이션, `CRON_SECRET`/`BILLING_CRON_SECRET` 동기 설정과 모니터링 승인 전에는 Production 배포하지 않습니다.
 
-## 전체 로컬 게이트
+## 현재 변경의 로컬 게이트
 
 실행 명령:
 
@@ -69,15 +69,7 @@ npm audit --omit=dev
 git diff --check
 ```
 
-| 명령 | 종료 | 결과 |
-|---|---:|---|
-| `npm test` | 0 | `246 passed`, 실패·skip 없음 |
-| `npm run test:e2e:billing` | 0 | 실제 Chromium `18 passed`, 격리 Preview 전용 `5 skipped` |
-| `npm run lint` | 0 | ESLint 오류·경고 없음 |
-| `npx tsc --noEmit` | 0 | TypeScript 오류 없음 |
-| `npm run build` | 0 | Next.js 16.2.10 webpack Production build 성공, 결제 관리자·pay·Toss·widget·reconcile 라우트 생성 확인 |
-| `npm audit --omit=dev` | 0 | Production 의존성 취약점 `0` |
-| `git diff --check` | 0 | 공백 오류 없음 |
+이 표의 이전 test count와 `PASS` 결과는 현재 verifier/E2E 경계의 증거가 아닙니다. 현재 변경은 focused RED/GREEN, 전체 `npm test`, billing E2E HOLD mode, lint, typecheck, build, audit, live read-only verifier, 그리고 diff check를 모두 새로 통과한 뒤에만 로컬 코드 게이트를 갱신합니다. live OAuth smoke가 통과되기 전에는 Preview 관리자/결제 게이트를 `PASS`로 바꾸지 않습니다.
 
 Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `postcss@8.5.19`를 사용하게 했고 빌드를 재검증했습니다. 전체 개발 의존성 감사에는 Drizzle Kit의 구형 esbuild loader 경로로 moderate 4건이 남습니다. Production 의존성에는 포함되지 않으며 npm의 자동 수정은 Drizzle Kit를 역다운그레이드하므로 적용하지 않았습니다. 개발 DB 도구를 외부 네트워크에 노출하지 않고 후속 Drizzle Kit 릴리스에서 재검토합니다.
 
@@ -97,17 +89,40 @@ Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `p
 
 ## Preview 전용 브라우저 시나리오
 
-코드/preflight는 준비되었습니다. `scripts/verify-billing-preview.mts`는 Preview 프로젝트·팀·배포·branch-scoped 환경변수 이름·Neon branch 상태를 값 비공개로 검사하고, 새 관리자 E2E는 canonical Preview URL, ephemeral 인증 storage state, Preview 전용 cron secret, `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 강제로 skip합니다. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
+`scripts/verify-billing-preview.mts`는 exact Vercel team/project IDs, local `git rev-parse HEAD`, `READY` deployment의 Git branch/SHA, exact deployment inspect의 `target=preview`, canonical admin alias의 deployment ID/URL, branch-scoped Preview env 이름과 target array, Neon branch/endpoint, 그리고 값 비공개 runtime boolean attestation을 검사합니다. 새 관리자 E2E는 canonical Preview URL, 10분 이내의 canonical-host Auth.js storage state, exact expected admin email, deterministic run ID, 그리고 `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 browser mutation을 시작하지 않습니다. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
 
 다음 5개 시나리오는 조건이 없으면 강제로 skip합니다.
 
-1. `.invalid` origin과 청구 담당자 없는 합성 고객사·사이트 생성, draft 계약 생성·활성화, Preview protected generation, 초안 청구서 승인과 `OPEN` 증거
+1. `BILLING_E2E_RUN_ID`에서 복구 가능한 `.invalid` origin과 청구 담당자 없는 합성 고객사·사이트 생성, draft 계약 생성·활성화, local single-contract generation, 초안 청구서 승인과 `OPEN` 증거
 2. 합성 무통장 확인과 결제 운영 큐 (별도 fixture gate)
 3. 환불 확인 다이얼로그와 합성 환불 (별도 fixture gate)
 4. 결제 세션별 청구 범위와 미설정 계좌 비노출 (별도 fixture gate)
 5. Toss Test 키 기반 성공·취소·실패 fixture (별도 fixture gate)
 
-운영 DB·Production host·실제 고객·실제 이메일 수신자·무통장/Toss/위젯 활성화를 대상으로 자동 실행하지 않았으며 이 범위는 `HOLD`입니다.
+생성된 고객사·사이트·계약·청구서 레코드는 명시적으로 disposable Preview evidence이며 retained 상태입니다. 운영 DB·Production host·실제 고객·실제 이메일 수신자·무통장/Toss/위젯 활성화를 대상으로 자동 실행하지 않았으며 이 범위는 `HOLD`입니다.
+
+### Parent-Owned Live Command
+
+OAuth login으로 만든 storage state는 외부에 출력하거나 저장소에 추가하지 않습니다. branch env는 권한 있는 parent가 private file로 pull하고, command line에는 cron secret을 넣지 않습니다.
+
+```bash
+umask 077
+npx --yes vercel@latest env pull .env.billing-preview-e2e.local \
+  --environment=preview \
+  --git-branch=codex/billing-preview-oauth \
+  --project=kpopsoft-02 \
+  --scope=kpopsoft-2075s-projects
+
+BILLING_E2E_DISPOSABLE_PREVIEW=true \
+BILLING_E2E_BASE_URL=https://admin-kpopsoft-billing-preview-neo.vercel.app \
+BILLING_E2E_STORAGE_STATE_PATH="$BILLING_E2E_STORAGE_STATE_PATH" \
+BILLING_E2E_EXPECTED_ADMIN_EMAIL="$BILLING_E2E_EXPECTED_ADMIN_EMAIL" \
+BILLING_E2E_RUN_ID="$BILLING_E2E_RUN_ID" \
+./node_modules/.bin/dotenv -e .env.billing-preview-e2e.local -- \
+  npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
+```
+
+The `BILLING_E2E_RUN_ID` must be 8-25 lowercase letters, digits, or internal hyphens. The E2E checks unauthenticated deployed `/api/internal/billing/generate` and `/api/internal/billing/reconcile` for `401`, then calls only the local one-contract generator after attestation; it never sends a cron secret.
 
 ## 외부 HOLD
 
