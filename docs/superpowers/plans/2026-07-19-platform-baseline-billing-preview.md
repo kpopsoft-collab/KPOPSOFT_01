@@ -299,7 +299,9 @@ npx --yes neonctl@2.35.0 branches get br-lingering-thunder-at6twb35 \
 
 Expected: name `billing-preview-20260716`, `current_state=ready`, `primary=false`, `default=false`.
 
-- [ ] **Step 2: Extend only the Preview branch when fewer than 48 hours remain**
+- [ ] **Step 2: Extend only the Preview branch when fewer than 48 hours remain or the current expiry does not cover the required seven-day OAuth validation window**
+
+Preview-only extension is allowed when either the remaining expiry is under 48 hours or the current expiry does not cover the required seven-day OAuth validation window. Do not extend Production or the main branch.
 
 ```bash
 npx --yes neonctl@2.35.0 branches set-expiration br-lingering-thunder-at6twb35 \
@@ -308,7 +310,7 @@ npx --yes neonctl@2.35.0 branches set-expiration br-lingering-thunder-at6twb35 \
   --output json
 ```
 
-Expected: `expires_at=2026-08-02T08:00:00Z`; the main branch ID is unchanged.
+Expected: `expires_at=2026-08-02T08:00:00Z`; the Production/main branch ID is unchanged.
 
 - [ ] **Step 3: Record only non-secret branch evidence**
 

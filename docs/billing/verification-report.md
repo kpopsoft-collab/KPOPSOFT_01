@@ -18,7 +18,7 @@
 | 저장소 | `/Users/mac-mini/Documents/kpopsoft-homepage` |
 | branch | `codex/kpopsoft-maxonomy-concept-wind` |
 | 코드 기준 SHA | `f3bc6a3e252b1a2ddf224190a1a05ccc3cb2d2c4` + 아래 Cron 작업 트리 변경 |
-| Neon Preview | `billing-preview-20260716` (`br-lingering-thunder-at6twb35`, 2026-07-23 만료) |
+| Neon Preview | `billing-preview-20260716` (`br-lingering-thunder-at6twb35`, 2026-08-02T08:00:00Z 만료) |
 | Preview deployment | `dpl_8G4JWQdvPpZx95TSgRDtY25ttzQZ` |
 | Preview pay host | `kpopsoft-billing-preview-neo.vercel.app` |
 | Preview admin host | `admin-kpopsoft-billing-preview-neo.vercel.app` |
@@ -32,7 +32,7 @@ Preview에는 `0002_billing_foundation.sql` → `0003_billing_payments.sql` → 
 | Preview branch 재확인 | `br-lingering-thunder-at6twb35`, ready, non-primary, non-default, parent `br-lingering-salad-atyk2pqm`, 만료 `2026-08-02T08:00:00Z` |
 | Main branch 재확인 | `br-lingering-salad-atyk2pqm`, ready, primary, default, 변경 없음 |
 | 연장 전 만료 | `2026-07-23T08:00:00Z` |
-| 연장 사유 | 즉시 OAuth smoke 기간 이후에도 최소 7일의 Preview 검증 창을 유지해야 하는 승인된 기준. 48시간 긴급 임계값이 아닌 이 검증 창 기준으로 Preview branch만 연장함. |
+| 연장 사유 | Task 4 Step 2의 Preview 전용 연장 조건(남은 만료 기간이 48시간 미만이거나, 현재 만료가 OAuth smoke 이후 필요한 최소 7일 검증 창을 충족하지 않음)에 따라, 후자의 조건으로 Preview branch만 연장함. |
 
 `2026-07-19`에 Neon metadata를 연장 전후로 재조회했습니다. Preview branch를 재생성하지 않았고, Production/main의 만료·기본·primary 설정을 변경하지 않았습니다.
 
