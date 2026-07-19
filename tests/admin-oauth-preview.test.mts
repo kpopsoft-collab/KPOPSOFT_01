@@ -486,6 +486,9 @@ test("inspector pins the audited Vercel CLI and exact scoped deployment commands
     true,
   );
   const environmentPull = calls.find(({ args }) => args.includes("env") && args.includes("pull"));
+  assert.equal(environmentPull?.args.includes("--yes"), true);
+  assert.equal(environmentPull?.args.at(-2), "--yes");
+  assert.equal(environmentPull?.args.at(-1), "--non-interactive");
   assert.equal(environmentPull?.args.includes("--id"), true);
   assert.equal(environmentPull?.args.includes("dpl_exact_preview"), true);
   assert.equal(runtimeEnvironmentMode, 0o600);

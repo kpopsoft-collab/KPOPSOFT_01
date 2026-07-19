@@ -1,5 +1,12 @@
 import { execFile } from "node:child_process";
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -464,12 +471,21 @@ async function pullExactDeploymentRuntimeAttestation(
       config.projectName,
       "--scope",
       config.teamSlug,
+      "--yes",
+      "--non-interactive",
     ]);
     chmodSync(environmentPath, 0o600);
     return exactDeploymentEnvironment(environmentPath, endpointHost, childEnvironment);
   } finally {
-    process.umask(previousUmask);
-    rmSync(directory, { force: true, recursive: true });
+    try {
+      if (existsSync(environmentPath)) {
+        writeFileSync(environmentPath, "");
+        rmSync(environmentPath, { force: true });
+      }
+    } finally {
+      process.umask(previousUmask);
+      rmSync(directory, { force: true, recursive: true });
+    }
   }
 }
 
