@@ -25,6 +25,17 @@
 
 Preview에는 `0002_billing_foundation.sql` → `0003_billing_payments.sql` → `0004_billing_widget.sql`을 순서대로 적용했고, 결제 관리자와 기본 상품을 시드했습니다. Production Neon branch에는 적용하지 않았습니다.
 
+## Preview 만료 연장 확인
+
+| 항목 | 결과 |
+|---|---|
+| Preview branch 재확인 | `br-lingering-thunder-at6twb35`, ready, non-primary, non-default, parent `br-lingering-salad-atyk2pqm`, 만료 `2026-08-02T08:00:00Z` |
+| Main branch 재확인 | `br-lingering-salad-atyk2pqm`, ready, primary, default, 변경 없음 |
+| 연장 전 만료 | `2026-07-23T08:00:00Z` |
+| 연장 사유 | 즉시 OAuth smoke 기간 이후에도 최소 7일의 Preview 검증 창을 유지해야 하는 승인된 기준. 48시간 긴급 임계값이 아닌 이 검증 창 기준으로 Preview branch만 연장함. |
+
+`2026-07-19`에 Neon metadata를 연장 전후로 재조회했습니다. Preview branch를 재생성하지 않았고, Production/main의 만료·기본·primary 설정을 변경하지 않았습니다.
+
 ## Preview 인프라·라우트 확인
 
 | 항목 | 결과 |
