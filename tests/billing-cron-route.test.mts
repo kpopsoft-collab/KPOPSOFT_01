@@ -130,5 +130,9 @@ test("route and Vercel schedule preserve the protected Node contract", () => {
       path: "/api/internal/billing/generate",
       schedule: "15 15 * * *",
     },
+    {
+      path: "/api/internal/billing/reconcile",
+      schedule: "*/10 * * * *",
+    },
   ]);
 });

@@ -4,22 +4,45 @@
 
 - **로컬 코드 게이트:** `PASS`
 - **합성 고객 위젯 브라우저 게이트:** `PASS`
+- **격리 Preview DB·배포·기본 라우트:** `PASS`
 - **격리 Preview 관리자/결제 게이트:** `HOLD`
 - **Production 활성화:** `HOLD`
 
-코드와 합성 브라우저 검증은 완료했지만 외부 DB, Vercel 소유 계정, Toss 가맹점/Test·Live 설정, DNS·인증서, 운영 계좌, 고객사 백엔드가 확인되지 않았습니다. 따라서 이 보고서는 운영 배포 완료를 주장하지 않습니다.
+코드와 합성 브라우저 검증에 더해 의도한 neo 계정의 Vercel Pro 팀, 격리 Neon Preview branch, 결제 마이그레이션·시드, Preview 배포와 fail-closed 기본 라우트를 확인했습니다. Google OAuth, 관리자 브라우저 시나리오, Toss 가맹점/Test·Live 설정, DNS·인증서, 운영 계좌, 고객사 백엔드는 아직 확인되지 않았으므로 운영 배포 완료를 주장하지 않습니다.
 
 ## 검증 좌표
 
 | 항목 | 값 |
 |---|---|
-| 실행 시각 | 2026-07-16 12:14:42 KST |
+| 실행 시각 | 2026-07-16 17:13:09 KST |
 | 저장소 | `/Users/mac-mini/Documents/kpopsoft-homepage` |
 | branch | `codex/kpopsoft-maxonomy-concept-wind` |
-| 코드 기준 SHA | `fd76a74a60c4bdbc6c0cea14ffadc89b0568720f` |
-| DB/배포 변경 | 없음 |
+| 코드 기준 SHA | `f3bc6a3e252b1a2ddf224190a1a05ccc3cb2d2c4` + 아래 Cron 작업 트리 변경 |
+| Neon Preview | `billing-preview-20260716` (`br-lingering-thunder-at6twb35`, 2026-07-23 만료) |
+| Preview deployment | `dpl_8G4JWQdvPpZx95TSgRDtY25ttzQZ` |
+| Preview pay host | `kpopsoft-billing-preview-neo.vercel.app` |
+| Preview admin host | `admin-kpopsoft-billing-preview-neo.vercel.app` |
 
-기준 SHA 이후의 변경은 이 보고서·런북·개발 상태 문서뿐입니다.
+Preview에는 `0002_billing_foundation.sql` → `0003_billing_payments.sql` → `0004_billing_widget.sql`을 순서대로 적용했고, 결제 관리자와 기본 상품을 시드했습니다. Production Neon branch에는 적용하지 않았습니다.
+
+## Preview 인프라·라우트 확인
+
+| 항목 | 결과 |
+|---|---|
+| Vercel identity/team | neo 세션의 `kpopsoft@gmail.com`, `kpopsoft-2075s-projects`, Pro |
+| Neon identity/project | `kpopsoft@gmail.com`, Vercel 관리 조직, `red-smoke-09462401` |
+| Preview schema | 결제 테이블 22, FK 35, index 78; 기존 앱 테이블 DROP 없음 |
+| `/pay` | `200` |
+| 인증 없는 `/api/pay/session` | `401` |
+| 인증 없는 `/api/internal/billing/reconcile` | `401` |
+| Preview pay host `/` | `/pay`로 rewrite 후 `200` |
+| Preview admin host `/login` | `/admin/login`으로 rewrite 후 `200` |
+| Preview admin host 인증 없는 `/` | 같은 호스트의 `/admin/login`으로 `307` |
+| Google OAuth callback 계산 | Preview admin host의 `/api/auth/callback/google` |
+| Preview error log | smoke 시점 error log 없음 |
+| 기능 플래그 | Billing 기반만 ON, 무통장·Toss·위젯 OFF |
+
+Pro 플랜의 분 단위 Cron 조건을 확인해 `/api/internal/billing/reconcile`의 `*/10 * * * *` 설정을 추가했습니다. Cron은 Preview에서 실행되지 않으며 Production DB 마이그레이션, `CRON_SECRET`/`BILLING_CRON_SECRET` 동기 설정과 모니터링 승인 전에는 Production 배포하지 않습니다.
 
 ## 전체 로컬 게이트
 
@@ -77,15 +100,14 @@ Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `p
 
 | 항목 | 해제 증거 |
 |---|---|
-| 의도한 Vercel 계정·팀·프로젝트 | 로그인 identity, project 연결, Preview deployment ID |
-| Vercel cron 적합성 | 연결 플랜 확인, 10분 일정 허용 증거, cron 롤백 절차 승인 |
-| 격리 Neon Preview | branch ID, 복구 지점, `0002 -> 0003 -> 0004` 적용·복원 증거 |
 | Toss 가맹점 | 심사·계약 결제수단, Test/Live client/secret와 정확한 MID 확인 |
 | Toss 웹훅 | 등록 URL, Test 전송·재전송, Payment API 대조 결과 |
 | 결제 도메인 | `pay.kpopsoft.com`, `admin.pay.kpopsoft.com` DNS·TLS·호스트 라우팅 증거 |
 | 운영 무통장 계좌 | 재무 승인자의 은행·번호·예금주 교차 검증 |
 | 고객사 사이트 | 서버 백엔드 접근, 로그인 인증 토큰 endpoint, exact origin, staging smoke |
-| Production 관리자 | Google 계정과 2FA, 결제 역할, 최근 재인증 증거 |
+| Production 관리자 | Google OAuth client/secret, callback, 계정과 2FA, 결제 역할, 최근 재인증 증거 |
+| Preview 운영 흐름 | Google OAuth 설정 후 합성 고객사·계약·청구 승인·입금 확인 브라우저 증거 |
+| Production DB/Cron | 복구 지점, `0002 -> 0003 -> 0004`, `CRON_SECRET`/`BILLING_CRON_SECRET`, 첫 실행 모니터링 |
 | 실제 결제 | 승인된 소액 Live 결제·전체 취소와 24시간 큐 관찰 |
 
 모든 HOLD가 해제되기 전에는 Production 기능 플래그를 켜지 않습니다.
