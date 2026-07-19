@@ -36,7 +36,7 @@ async function withRuntimeEnvironment(
   const original = new Map(runtimeKeys.map((key) => [key, process.env[key]]));
   try {
     for (const key of runtimeKeys) {
-      const value = overrides[key] ?? runtimeEnvironment[key];
+      const value = Object.hasOwn(overrides, key) ? overrides[key] : runtimeEnvironment[key];
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
     }
@@ -115,6 +115,7 @@ test("attestation route fails closed for missing values, flags, and a wrong data
 
   for (const [overrides, field] of [
     [{ AUTH_GOOGLE_SECRET: "" }, "requiredRuntimeEnvironmentPresent"],
+    [{ AUTH_GOOGLE_SECRET: undefined }, "requiredRuntimeEnvironmentPresent"],
     [{ BILLING_ENABLED: "false" }, "billingEnabled"],
     [{ BANK_TRANSFER_ENABLED: "true" }, "bankTransferDisabled"],
     [{ TOSS_PAYMENTS_ENABLED: "true" }, "tossPaymentsDisabled"],

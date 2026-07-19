@@ -1,5 +1,7 @@
 import { execFile } from "node:child_process";
-import { resolve } from "node:path";
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
@@ -148,7 +150,11 @@ export type CliOutput = {
   log: (line: string) => void;
 };
 
-export type CliCommandRunner = (command: string, args: string[]) => Promise<string>;
+export type CliCommandRunner = (
+  command: string,
+  args: string[],
+  options?: { cwd?: string },
+) => Promise<string>;
 
 export type BillingPreviewCliDependencies = {
   config?: BillingPreviewConfig;
@@ -293,8 +299,11 @@ export function verifyBillingPreview(
   return { ok: true, code: "billing_preview_ready" };
 }
 
-const runCliCommand: CliCommandRunner = async (command, args) => {
-  const result = await execFileAsync(command, args, { encoding: "utf8" });
+const runCliCommand: CliCommandRunner = async (command, args, options) => {
+  const result = await execFileAsync(command, args, {
+    cwd: options?.cwd,
+    encoding: "utf8",
+  });
   return result.stdout;
 };
 
@@ -435,23 +444,46 @@ async function fetchDeploymentRuntimeAttestation(
   deploymentId: string,
   gitCommitSha: string,
 ): Promise<BillingPreviewRuntimeAttestation> {
-  const response = await run("npx", [
-    "--yes",
-    "vercel@56.3.2",
-    "curl",
-    BILLING_PREVIEW_ATTESTATION_PATH,
-    "--deployment",
-    deploymentUrl(deploymentUrlValue),
-    "--scope",
-    config.teamSlug,
-    "--non-interactive",
-    "--",
-    "--header",
-    `${billingPreviewAttestationDeploymentHeader}: ${deploymentId}`,
-    "--header",
-    `${billingPreviewAttestationGitShaHeader}: ${gitCommitSha}`,
-  ]);
-  return parseBillingPreviewRuntimeAttestation(response);
+  const directory = mkdtempSync(join(tmpdir(), "billing-preview-vercel-"));
+  const linkDirectory = join(directory, ".vercel");
+  const projectPath = join(linkDirectory, "project.json");
+
+  try {
+    chmodSync(directory, 0o700);
+    mkdirSync(linkDirectory, { mode: 0o700 });
+    writeFileSync(
+      projectPath,
+      JSON.stringify({
+        orgId: config.teamId,
+        projectId: config.projectId,
+        projectName: config.projectName,
+      }),
+      { flag: "wx", mode: 0o600 },
+    );
+    chmodSync(projectPath, 0o600);
+
+    const response = await run(
+      "npx",
+      [
+        "--yes",
+        "vercel@56.3.2",
+        "curl",
+        BILLING_PREVIEW_ATTESTATION_PATH,
+        "--deployment",
+        deploymentUrl(deploymentUrlValue),
+        "--yes",
+        "--",
+        "--header",
+        `${billingPreviewAttestationDeploymentHeader}: ${deploymentId}`,
+        "--header",
+        `${billingPreviewAttestationGitShaHeader}: ${gitCommitSha}`,
+      ],
+      { cwd: directory },
+    );
+    return parseBillingPreviewRuntimeAttestation(response);
+  } finally {
+    rmSync(directory, { force: true, recursive: true });
+  }
 }
 
 export function createBillingPreviewCliInspector(
@@ -567,7 +599,6 @@ export function createBillingPreviewCliInspector(
       throw new BillingPreviewInspectionError("deployment_ambiguous");
     }
     const selectedDeployment = matchingDeployments[0]!;
-    const selectedDeploymentId = string(selectedDeployment.uid);
     const selectedMeta = deploymentMeta(selectedDeployment.meta);
     const selectedUrl = string(selectedDeployment.url);
     const selectedCreatedAt = timestamp(selectedDeployment.createdAt);
@@ -608,7 +639,7 @@ export function createBillingPreviewCliInspector(
       run,
       config,
       selectedUrl,
-      selectedDeploymentId,
+      inspectedDeploymentId,
       selectedMeta.gitCommitSha,
     );
 
@@ -624,7 +655,7 @@ export function createBillingPreviewCliInspector(
           createdAt: selectedCreatedAt,
           gitCommitRef: selectedMeta.gitCommitRef,
           gitCommitSha: selectedMeta.gitCommitSha,
-          id: selectedDeploymentId,
+          id: inspectedDeploymentId,
           inspectedId: inspectedDeploymentId,
           inspectedStatus: string(inspectedDeployment.readyState),
           inspectedTarget: string(inspectedDeployment.target),

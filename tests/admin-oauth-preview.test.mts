@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -293,10 +293,13 @@ test("parses only the exact boolean deployment-runtime attestation contract", ()
 });
 
 test("inspector rejects unsupported READY env pull and requires deployment curl runtime attestation", async () => {
-  const calls: Array<{ command: string; args: string[] }> = [];
+  const calls: Array<{ command: string; args: string[]; cwd?: string }> = [];
+  let runtimeLink:
+    | { contents: unknown; directoryMode: number; fileMode: number; path: string }
+    | undefined;
   const inspector = billingPreview.createBillingPreviewCliInspector(
-    async (command, args) => {
-      calls.push({ command, args });
+    async (command, args, options?: { cwd?: string }) => {
+      calls.push({ command, args, cwd: options?.cwd });
       if (command === "git") return `${localHead}\n`;
       if (args.includes("teams")) {
         return JSON.stringify({ teams: [{ id: config.teamId, slug: config.teamSlug }] });
@@ -307,6 +310,14 @@ test("inspector rejects unsupported READY env pull and requires deployment curl 
         });
       }
       if (args.includes("curl")) {
+        assert.ok(options?.cwd, "runtime attestation must use an isolated linked project cwd");
+        const linkPath = join(options.cwd, ".vercel", "project.json");
+        runtimeLink = {
+          contents: JSON.parse(readFileSync(linkPath, "utf8")),
+          directoryMode: statSync(options.cwd).mode & 0o777,
+          fileMode: statSync(linkPath).mode & 0o777,
+          path: options.cwd,
+        };
         return JSON.stringify(snapshot().runtimeAttestation);
       }
       if (args.includes("env") && args.includes("ls")) {
@@ -345,7 +356,6 @@ test("inspector rejects unsupported READY env pull and requires deployment curl 
             },
             state: "READY",
             target: null,
-            uid: "dpl_exact_preview",
             url: "kpopsoft-02-exact-preview.vercel.app",
           }],
           pagination: { count: 1, next: null, prev: null },
@@ -422,6 +432,17 @@ test("inspector rejects unsupported READY env pull and requires deployment curl 
   ]);
   assert.equal(runtimeCurl?.args.includes("--"), true);
   assert.equal(runtimeCurl?.args.includes("--header"), true);
+  assert.equal(runtimeCurl?.args.includes("--scope"), false);
+  assert.equal(runtimeCurl?.args.includes("--non-interactive"), false);
+  assert.equal(runtimeCurl?.args[6], "--yes");
+  assert.deepEqual(runtimeLink?.contents, {
+    orgId: config.teamId,
+    projectId: config.projectId,
+    projectName: config.projectName,
+  });
+  assert.equal(runtimeLink?.directoryMode, 0o700);
+  assert.equal(runtimeLink?.fileMode, 0o600);
+  assert.equal(existsSync(runtimeLink!.path), false);
 });
 
 test("CLI emits a specific safe environment failure and never prints values", async () => {

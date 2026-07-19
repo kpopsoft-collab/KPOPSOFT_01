@@ -2,8 +2,8 @@
 
 ## 판정
 
-- **로컬 코드 게이트:** `HOLD` (이 보고서의 과거 실행 수치는 현재 변경 기준이 아님)
-- **합성 고객 위젯 브라우저 게이트:** `HOLD` (현재 변경 기준 재실행 대기)
+- **로컬 코드 게이트:** `PASS` (2026-07-19, 현재 working tree)
+- **합성 고객 위젯 브라우저 게이트:** `PASS` (18/18)
 - **격리 Preview DB·배포·기본 라우트:** `HOLD` (exact HEAD/alias/env/runtime 경계 통과 대기)
 - **격리 Preview 관리자/결제 게이트:** `HOLD` (live OAuth/admin smoke 대기)
 - **Production 활성화:** `HOLD`
@@ -14,7 +14,7 @@
 
 | 항목 | 값 |
 |---|---|
-| 실행 시각 | 과거 기록; 현재 변경 기준은 별도 재검증 필요 |
+| 실행 시각 | 2026-07-19 KST |
 | 저장소 | `/Users/mac-mini/Documents/kpopsoft-homepage-billing-oauth` |
 | branch | `codex/billing-preview-oauth` |
 | 코드 기준 SHA | 현재 branch HEAD와 exact Preview deployment SHA가 일치해야 함 |
@@ -69,7 +69,17 @@ npm audit --omit=dev
 git diff --check
 ```
 
-이 표의 이전 test count와 `PASS` 결과는 현재 verifier/E2E 경계의 증거가 아닙니다. 현재 변경은 focused RED/GREEN, 전체 `npm test`, billing E2E HOLD mode, lint, typecheck, build, audit, live read-only verifier, 그리고 diff check를 모두 새로 통과한 뒤에만 로컬 코드 게이트를 갱신합니다. live OAuth smoke가 통과되기 전에는 Preview 관리자/결제 게이트를 `PASS`로 바꾸지 않습니다.
+| 명령 | 관찰 결과 |
+|---|---|
+| `npm test` | 289/289 PASS |
+| `npm run test:e2e:billing` | 위젯 18 PASS, live Preview 관리자/결제 5 HOLD skip |
+| `npm run lint` | PASS |
+| `npx tsc --noEmit` | PASS |
+| `npm run build` | PASS |
+| `npm audit --omit=dev` | 취약점 0 |
+| live read-only verifier | exact `aabcef8` READY runtime attestation 실행 후 OAuth env 누락으로 의도한 fail-closed |
+
+focused RED/GREEN으로 실제 Vercel list record의 deployment ID 부재와 `vercel curl` 프로젝트 링크/옵션 경계를 재현하고 수정했습니다. live OAuth smoke가 통과되기 전에는 Preview 관리자/결제 게이트를 `PASS`로 바꾸지 않습니다.
 
 Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `postcss@8.5.19`를 사용하게 했고 빌드를 재검증했습니다. 전체 개발 의존성 감사에는 Drizzle Kit의 구형 esbuild loader 경로로 moderate 4건이 남습니다. Production 의존성에는 포함되지 않으며 npm의 자동 수정은 Drizzle Kit를 역다운그레이드하므로 적용하지 않았습니다. 개발 DB 도구를 외부 네트워크에 노출하지 않고 후속 Drizzle Kit 릴리스에서 재검토합니다.
 
@@ -89,7 +99,7 @@ Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `p
 
 ## Preview 전용 브라우저 시나리오
 
-`scripts/verify-billing-preview.mts`는 audited `vercel@56.3.2`로 exact Vercel team ID와 scoped project ID를 확인합니다. local `git rev-parse HEAD`와 branch/SHA metadata로 `READY` deployment를 좁히고 pagination이 남으면 실패하며, canonical admin alias는 list 첫 페이지가 아니라 direct `vercel inspect <alias>`로 같은 deployment ID/URL인지 확인합니다. required Preview env metadata는 이름별 단일 branch/target record만 허용하고 각 record가 selected deployment보다 늦게 갱신되면 실패합니다. Neon은 branch identity와 정확히 하나의 active read-write endpoint를 요구합니다. runtime boolean attestation은 caller `process.env`나 READY deployment `env pull`이 아니라 selected deployment URL의 protected `vercel curl` 요청으로만 얻으며, route는 exact Preview branch/deployment/SHA header checks 뒤 fixed boolean contract만 반환합니다. 새 관리자 E2E는 canonical Preview URL, 10분 이내의 canonical-host Auth.js storage state, exact expected admin email, deterministic run ID, 그리고 `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 browser mutation을 시작하지 않습니다. Its child validates its parent-owned local Preview `DATABASE_URL` hostname immediately before targeted generation. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
+`scripts/verify-billing-preview.mts`는 audited `vercel@56.3.2`로 exact Vercel team ID와 scoped project ID를 확인합니다. local `git rev-parse HEAD`와 branch/SHA metadata로 `READY` deployment를 좁히고 pagination이 남으면 실패하며, list JSON에 없는 deployment ID는 selected URL의 exact inspect에서 얻습니다. canonical admin alias는 list 첫 페이지가 아니라 direct `vercel inspect <alias>`로 같은 deployment ID/URL인지 확인합니다. required Preview env metadata는 이름별 단일 branch/target record만 허용하고 각 record가 selected deployment보다 늦게 갱신되면 실패합니다. Neon은 branch identity와 정확히 하나의 active read-write endpoint를 요구합니다. runtime boolean attestation은 caller `process.env`나 READY deployment `env pull`이 아니라 selected deployment URL의 protected `vercel curl` 요청으로만 얻습니다. 이 호출은 pinned team/project ID만 담은 mode-600 `.vercel/project.json`을 mode-700 임시 디렉터리에 만들고 해당 cwd에서 실행한 뒤 `finally`에서 전체 삭제합니다. route는 exact Preview branch/deployment/SHA header checks 뒤 fixed boolean contract만 반환합니다. 새 관리자 E2E는 canonical Preview URL, 10분 이내의 canonical-host Auth.js storage state, exact expected admin email, deterministic run ID, 그리고 `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 browser mutation을 시작하지 않습니다. Its child validates its parent-owned local Preview `DATABASE_URL` hostname immediately before targeted generation. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
 
 다음 5개 시나리오는 조건이 없으면 강제로 skip합니다.
 
@@ -117,6 +127,8 @@ npx playwright test e2e/billing-admin.spec.ts --project=billing-chromium
 The `BILLING_E2E_RUN_ID` must be 8-25 lowercase letters, digits, or internal hyphens. The E2E checks unauthenticated deployed `/api/internal/billing/generate` and `/api/internal/billing/reconcile` for `401`, then re-runs the verifier immediately before validating its parent-owned local Preview `DATABASE_URL` hostname and calling only the local one-contract generator in the child server runtime. The child receives `runDate` and the UUID contract ID as separate arguments, parses only target/created counts plus sanitized failure codes, and never sends a cron secret.
 
 ## 외부 HOLD
+
+진단 과정에서 Preview `DATABASE_URL` 자격증명이 도구 출력에 노출된 이력이 재확인됐습니다. 값 자체는 문서화하지 않습니다. 동일 Neon role을 기존 배포 또는 Production이 공유할 가능성이 있으므로 즉흥 회전은 금지합니다. Production 활성화 전에는 영향을 받는 Vercel 환경을 먼저 목록화하고, 교체 자격증명을 모든 관련 환경에 동기 반영한 뒤 재배포·연결 검증·기존 자격증명 폐기를 한 작업 창에서 수행해야 합니다.
 
 | 항목 | 해제 증거 |
 |---|---|
