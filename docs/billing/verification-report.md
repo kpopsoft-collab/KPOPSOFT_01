@@ -5,7 +5,7 @@
 - **로컬 코드 게이트:** `PASS`
 - **합성 고객 위젯 브라우저 게이트:** `PASS`
 - **격리 Preview DB·배포·기본 라우트:** `PASS`
-- **격리 Preview 관리자/결제 게이트:** `HOLD`
+- **격리 Preview 관리자/결제 게이트:** `HOLD` (코드·preflight 준비 완료, live OAuth/admin smoke 대기)
 - **Production 활성화:** `HOLD`
 
 코드와 합성 브라우저 검증에 더해 의도한 neo 계정의 Vercel Pro 팀, 격리 Neon Preview branch, 결제 마이그레이션·시드, Preview 배포와 fail-closed 기본 라우트를 확인했습니다. Google OAuth, 관리자 브라우저 시나리오, Toss 가맹점/Test·Live 설정, DNS·인증서, 운영 계좌, 고객사 백엔드는 아직 확인되지 않았으므로 운영 배포 완료를 주장하지 않습니다.
@@ -97,15 +97,17 @@ Next.js 16.2.10 하위의 취약한 PostCSS 고정 버전은 root override로 `p
 
 ## Preview 전용 브라우저 시나리오
 
-다음 5개 시나리오는 테스트 코드가 존재하지만 `BILLING_E2E_DISPOSABLE_PREVIEW=true`와 격리 fixture가 없으면 강제로 skip합니다.
+코드/preflight는 준비되었습니다. `scripts/verify-billing-preview.mts`는 Preview 프로젝트·팀·배포·branch-scoped 환경변수 이름·Neon branch 상태를 값 비공개로 검사하고, 새 관리자 E2E는 canonical Preview URL, ephemeral 인증 storage state, Preview 전용 cron secret, `BILLING_E2E_DISPOSABLE_PREVIEW=true`가 모두 없으면 강제로 skip합니다. Google OAuth 설정과 실제 관리자 브라우저 smoke는 아직 실행하지 않았으므로 이 항목은 `HOLD`입니다.
 
-1. 합성 청구 초안 검토·승인
-2. 합성 무통장 확인과 결제 운영 큐
-3. 환불 확인 다이얼로그와 합성 환불
-4. 결제 세션별 청구 범위와 미설정 계좌 비노출
-5. Toss Test 키 기반 성공·취소·실패 fixture
+다음 5개 시나리오는 조건이 없으면 강제로 skip합니다.
 
-운영 DB를 대상으로 자동 실행하지 않았으며 이 범위는 `HOLD`입니다.
+1. `.invalid` origin과 청구 담당자 없는 합성 고객사·사이트 생성, draft 계약 생성·활성화, Preview protected generation, 초안 청구서 승인과 `OPEN` 증거
+2. 합성 무통장 확인과 결제 운영 큐 (별도 fixture gate)
+3. 환불 확인 다이얼로그와 합성 환불 (별도 fixture gate)
+4. 결제 세션별 청구 범위와 미설정 계좌 비노출 (별도 fixture gate)
+5. Toss Test 키 기반 성공·취소·실패 fixture (별도 fixture gate)
+
+운영 DB·Production host·실제 고객·실제 이메일 수신자·무통장/Toss/위젯 활성화를 대상으로 자동 실행하지 않았으며 이 범위는 `HOLD`입니다.
 
 ## 외부 HOLD
 
