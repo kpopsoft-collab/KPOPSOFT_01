@@ -47,7 +47,16 @@ next-env.d.ts
 
 # root-level debug screenshots (not app assets)
 /*.png
+/*.jpg
+/*.jpeg
 
-# 세미나 원본 사진 — 검토 전 원본(55MB, 얼굴·고객사 로고 포함).
+# 검토 전 원본 사진 — 얼굴·고객사 로고가 그대로 담겨 있고 용량이 크다.
 # 로컬에만 두고 배포하지 않는다. 최적화·선별본은 public/education/ 에 있다.
 /public/세미나 사진/
+/public/강의 및 세미나 사진/
+
+# 아직 어디에 쓸지 정하지 않은 이미지. 쓰기로 하면 최적화해서 제 위치로 옮긴다.
+/public/미정리/
+
+# 포트폴리오 콘텐츠 반영 스크립트가 남기는 DB 백업 (운영 데이터라 커밋 금지)
+scripts/.work-content-backup.json

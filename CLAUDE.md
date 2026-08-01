@@ -6,9 +6,33 @@
 
 작업 전 반드시 아래 문서를 기준으로 판단한다. 문서 내용과 코드가 어긋나면 문서를 우선한다.
 
-- [docs/기획서.md](docs/기획서.md) — 페이지 전체 구성(16개 섹션), 섹션별 목적, 카피
+문서는 **아래로 갈수록 오래된 것**이다. 같은 화면을 두 문서가 다르게 지시하면 위쪽을 따른다.
+
+**최신 기준 — 수정 요청서 3종**
+
+- [docs/KPOPSOFT_education_page_revision_request.md](docs/KPOPSOFT_education_page_revision_request.md) — **Education 최신 기준**. 9섹션 재편, 기업교육·정규과정 상세 페이지 신설
+- [docs/KPOPSOFT_home_4th_revision_request.md](docs/KPOPSOFT_home_4th_revision_request.md) — **홈 최신 기준**. 사례·핵심사업·레이더·프로세스 4개 영역 보강
+- [docs/KPOPSOFT_homepage_revision_request.md](docs/KPOPSOFT_homepage_revision_request.md) — 홈 섹션 순서 확정(OUR IDENTITY·WHY KPOPSOFT 신설). 확정 카피의 출처
+
+**그 앞 단계 — ver3**
+
+- [docs/IA_ver3_요약.md](docs/IA_ver3_요약.md) — ver3 전체 개편 한 장 요약(확정 결정·미결 항목 포함)
+- [docs/KPOPSOFT_Home_Landing_ver3.md](docs/KPOPSOFT_Home_Landing_ver3.md) — 홈 ver3. IA 기반 7섹션 구성
+- [docs/KPOPSOFT_Education_Page_ver3.md](docs/KPOPSOFT_Education_Page_ver3.md) — Education ver3. 교육 3분류 체계
+- [docs/KPOPSOFT HOMEPAGE IA .png](docs/KPOPSOFT%20HOMEPAGE%20IA%20.png) — 전체 IA 원본. 위 두 ver3 문서의 출처
+
+**상시 유효**
+
 - [docs/디자인.md](docs/디자인.md) — 디자인 시스템 전체(컬러, 타이포, 그리드, 도형/컴포넌트 체계, 모션, 접근성)
 - [docs/스펙.md](docs/스펙.md) — 기술 스펙
+- [docs/개발상태.md](docs/개발상태.md) · [docs/작업로그.md](docs/작업로그.md) — 현재 상태와 판단 근거, 남은 결정 사항
+- [docs/기획서.md](docs/기획서.md) — 초기 16섹션 기획. 대부분 대체됨(참고용)
+
+ver2 기획서 2종은 상단에 대체 안내가 붙어 있다. ver3가 "ver2 유지"로 지정한 항목
+(디자인 방향·이미지 원칙·반응형·접근성)은 여전히 ver2를 참조한다.
+
+**교육 3분류 체계** — 조직·기업 맞춤 교육 / 정규 클래스(4과정) / 지식 공유 커뮤니티 클럽(바이브데이즈).
+홈과 `/education` 전 영역에 동일한 명칭으로 적용한다. `AI Prototype Lab`은 폐지됐다.
 
 ## 기술 스택
 

@@ -1,5 +1,10 @@
 # KPOPSOFT Education 페이지 개발 기획서
 
+> **⚠️ 이 문서는 `KPOPSOFT_Education_Page_ver3.md`로 대체되었습니다.**
+> ver3와 충돌하는 내용(프로그램 분류 체계, 섹션 구성, VIBEDAYS, FAQ, CONTACT,
+> AI Prototype Lab)은 **ver3를 따릅니다.** ver3 §4가 "ver2 유지"로 명시한
+> 항목(§22~§33 디자인·이미지·반응형·접근성·SEO 등)만 여기서 참조하세요.
+
 현재 KPOPSOFT 웹사이트에 독립된 `/education` 페이지를 추가해 주세요.
 
 기존 홈페이지에 포함된 교육 프로그램, 강사진, 기업 맞춤형 교육, 교육 후기, 교육 상담 등의 콘텐츠를 별도 Education 페이지로 분리합니다.

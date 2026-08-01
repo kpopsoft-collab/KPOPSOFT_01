@@ -1,5 +1,10 @@
 # KPOPSOFT 홈 랜딩페이지 변경 기획안
 
+> **⚠️ 이 문서는 `KPOPSOFT_Home_Landing_ver3.md`로 대체되었습니다.**
+> ver3와 충돌하는 내용(섹션 순서, 통계바 위치, 교육 문의 세부 유형,
+> AI Prototype Lab)은 **ver3를 따릅니다.** ver3가 "ver2 유지"라고 명시한
+> 항목(Hero 카피, 반응형, 디자인 방향, Admin 원칙)만 여기서 참조하세요.
+
 ## 1. 개편 목적
 
 현재 홈은 Software, AI Solutions, Education, 강사진, Work, Insights 등 모든 내용을 한 페이지에서 설명하고 있어 길고 핵심이 분산되어 보입니다.
