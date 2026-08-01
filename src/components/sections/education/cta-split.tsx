@@ -23,7 +23,7 @@ export function CtaSplit() {
             프로그램을 확인하세요.
           </h3>
           <p className="mt-4 max-w-sm text-body-lg text-ink/70">
-            AI 업무 활용, Vibe Coding, AI Prototype Lab 등의 모집 일정을
+            AI 활용, Vibe Coding, 웹·앱 제작 등의 모집 일정을
             확인할 수 있습니다.
           </p>
           <div className="mt-8">

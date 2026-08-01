@@ -22,15 +22,16 @@ export function Instructors({ experts }: { experts: PublicExpert[] }) {
   return (
     <Section id={eduSectionId.instructors} className="bg-ivory">
       <div className="max-w-2xl">
-        <Eyebrow dotClassName="bg-brand-navy">INSTRUCTORS</Eyebrow>
+        <Eyebrow dotClassName="bg-brand-navy">강사진</Eyebrow>
         <h2 className="text-section mt-6 text-ink">
-          현업에서 직접 만들고
+          가르치는 사람도
           <br />
-          적용해 본 전문가가 함께합니다.
+          현업의 전문가
         </h2>
         <p className="mt-6 max-w-xl text-body-lg text-ink/70">
-          소프트웨어 개발, AI 자동화, 디지털 프로덕트와 프로토타입 제작
-          경험을 바탕으로 실제 프로젝트 중심의 교육을 진행합니다.
+          실제 프로젝트를 만들어온 강사진이,
+          <br />
+          현장에서 검증한 경험을 그대로 전달합니다.
         </p>
       </div>
 
@@ -44,7 +45,7 @@ export function Instructors({ experts }: { experts: PublicExpert[] }) {
               accent={expert.accent}
               imageUrl={expert.image}
               alt={expert.image ? `${expert.name} 프로필 사진` : ""}
-              ratio="3/4"
+              ratio="1/1"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               monogram={expert.name.charAt(0)}
               label={expert.role}

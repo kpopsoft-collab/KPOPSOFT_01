@@ -95,6 +95,8 @@ export function InquiryForm() {
     {},
   );
   const [status, setStatus] = useState<"idle" | "success">("idle");
+  /** ver3 §09 — 이메일을 먼저 받고 나머지 필드를 펼친다. */
+  const [expanded, setExpanded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -141,7 +143,8 @@ export function InquiryForm() {
         type: "교육 문의",
         subtype: program,
         sender: `${contactName.trim()} (${company.trim()})`,
-        contact: `${email.trim()} / ${phone.trim()}`,
+        email: email.trim(),
+        phone: phone.trim(),
         message: messageLines.join("\n"),
         honeypot: hpFax,
       });
@@ -189,16 +192,20 @@ export function InquiryForm() {
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
           <Eyebrow className="justify-center" dotClassName="bg-brand-blue">
-            기업 교육 문의
+            교육 문의
           </Eyebrow>
           <h2 className="text-section mt-6 text-ink">
-            기업 맞춤형 교육,
+            어떤 교육이 필요한지
             <br />
-            지금 상담을 요청하세요.
+            함께 고민해 드립니다.
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-body-lg text-ink/70">
-            교육 대상, 인원, 업무 과제를 남겨주시면 담당자가 확인 후 빠르게
-            연락드립니다.
+          {/* 두 문장이라 문장 경계에서 끊는다 — 자동 줄바꿈에 맡기면
+              "제안해 / 드립니다."처럼 서술어 한가운데가 갈라진다. 모바일은
+              한 줄에 문장이 다 안 들어가므로 강제 개행 없이 흘려보낸다. */}
+          <p className="mx-auto mt-6 max-w-xl text-body-lg text-balance text-ink/70">
+            개인이든 조직이든 먼저 이야기해 주세요.
+            <br className="hidden sm:inline" />{" "}
+            현황에 맞는 방향을 제안해 드립니다.
           </p>
         </div>
 
@@ -229,10 +236,50 @@ export function InquiryForm() {
                 새로 작성하기
               </button>
             </div>
+          ) : !expanded ? (
+            /*
+              ver3 §09 — 1차 진입은 이메일 단일 입력.
+              처음부터 9개 필드를 펼치면 "먼저 이야기해 주세요"라는 제안과 화면이
+              어긋난다. 이메일을 받은 뒤 나머지를 펼치고, 입력값은 그대로 넘긴다.
+            */
+            <div className="flex flex-col gap-4">
+              <label className={labelClass}>
+                이메일 주소를 입력하세요
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setExpanded(true);
+                    }
+                  }}
+                  inputMode="email"
+                  className={inputClass}
+                  placeholder="hello@example.com"
+                />
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="group inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-brand-blue px-7 font-semibold text-white transition-colors hover:bg-brand-navy focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              >
+                무료 상담 신청하기
+                <Send
+                  className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </button>
+
+              <p className="text-center text-sm text-ink/50">
+                이어서 교육 대상과 인원을 물어봅니다. 1분이면 충분합니다.
+              </p>
+            </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate>
               <fieldset className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <legend className="sr-only">기업 교육 문의</legend>
+                <legend className="sr-only">교육 문의</legend>
 
                 <label className={labelClass}>
                   회사명 <span aria-hidden className="text-brand-red">*</span>

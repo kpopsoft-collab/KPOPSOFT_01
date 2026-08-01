@@ -27,21 +27,34 @@ export function VibedaysClub() {
         className="pointer-events-none absolute -top-6 right-[8%] hidden size-16 rotate-12 text-brand-yellow md:block"
       />
 
-      <div className="max-w-2xl">
-        <Eyebrow dotClassName="bg-brand-coral">VIBEDAYS CLUB</Eyebrow>
-        <h2 className="text-section mt-6 text-ink">
-          서로 다른 바이브가 만나,
-          <br />
-          배우고 만든 날들이 쌓입니다.
-        </h2>
-        <p className="mt-6 max-w-xl text-body-lg text-ink/70">
-          VIBEDAYS CLUB은 서로 다른 경험과 수준을 가진 사람들이 배우고,
-          만들고, 자신의 결과를 나누는 KPOPSOFT의 실습형 러닝 커뮤니티입니다.
-        </p>
-        <p className="mt-4 max-w-xl text-body-lg text-ink/70">
-          처음 시작하는 사람도, 직접 만드는 사람도, 경험을 나누는 사람도 각자의
-          방식으로 함께 성장합니다.
-        </p>
+      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="max-w-2xl">
+          <Eyebrow dotClassName="bg-brand-coral">VIBEDAYS CLUB</Eyebrow>
+          <h2 className="text-section mt-6 text-ink">
+            서로 다른 바이브가 만나,
+            <br />
+            배우고 만든 날들이 쌓입니다.
+          </h2>
+          <p className="mt-6 max-w-xl text-body-lg text-ink/70">
+            VIBEDAYS CLUB은 서로 다른 경험과 수준을 가진 사람들이 배우고,
+            만들고, 자신의 결과를 나누는 KPOPSOFT의 실습형 러닝 커뮤니티입니다.
+          </p>
+          <p className="mt-4 max-w-xl text-body-lg text-ink/70">
+            처음 시작하는 사람도, 직접 만드는 사람도, 경험을 나누는 사람도 각자의
+            방식으로 함께 성장합니다.
+          </p>
+        </div>
+
+        <div className="relative w-full overflow-hidden rounded-3xl">
+          <Image
+            src="/vibedays_main_01.png"
+            alt="VIBEDAYS CLUB 활동 이미지"
+            width={822}
+            height={500}
+            className="h-auto w-full object-cover"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
+        </div>
       </div>
 
       <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:mt-20">
