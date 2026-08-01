@@ -167,6 +167,16 @@
   }
 }
 
+/* 앵커 메뉴(헤더·히어로·푸터 CTA)가 해당 섹션으로 부드럽게 스크롤되게 한다
+   (수정 요청서 §3·§17). 모션 감소를 선호하면 즉시 점프로 되돌린다.
+   `@layer base` 밖에 두는 이유 — 레이어 안에 넣으면 Tailwind 프리플라이트의
+   html 규칙에 밀려 적용되지 않는다. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* ---- Editorial typography scale (docs/디자인.md §3) ---- */
 @utility text-display {
   font-weight: 800;

@@ -9,11 +9,11 @@ export const site = {
   name: "KPOPSOFT",
   tagline: "SOFTWARE · AI SOLUTIONS · EDUCATION",
   /**
-   * Hero 설명 (docs/KPOPSOFT_Home_Landing_ver2.md §3). 두 문장을 "\n\n"으로
+   * Hero 설명 (수정 요청서 §4 보조 문구 — 확정 카피). 두 문장을 "\n\n"으로
    * 구분 — Hero가 이 구분자로 문단을 나눠 렌더한다.
    */
   description:
-    "개발팀이 없어도, AI 도입이 막막해도 시작할 수 있습니다.\n\nKPOPSOFT는 아이디어와 업무 문제를 웹·앱·내부 운영 도구와 AI 솔루션으로 구현합니다.",
+    "개발팀이 없어도, AI 도입이 막막해도 시작할 수 있습니다.\n\nKPOPSOFT는 아이디어와 비즈니스 과제를 실제로 작동하는 소프트웨어와 AI 솔루션으로 구현합니다.",
   email: "hello@kpopsoft.com", // 더미
 } as const;
 
@@ -21,12 +21,22 @@ export const site = {
 export const route = {
   home: "/",
   education: "/education",
+  /** 전체 프로젝트 목록. 홈 PROJECTS 섹션 하단 CTA가 여기로 온다. */
+  work: "/work",
 } as const;
 
 /** Section anchor ids — shared by nav links and section elements. */
 export const sectionId = {
   hero: "top",
+  /**
+   * 헤더 `ABOUT` 앵커. 수정 요청서 §6에서 OUR IDENTITY 섹션이 신설되면서
+   * 이 앵커의 주인이 통계바 → OUR IDENTITY로 옮겨졌다. "회사가 어떤
+   * 곳인지"를 설명하는 블록이 실제로 그쪽이기 때문이다. 통계바는 아래
+   * `numbers` 앵커를 쓴다.
+   */
   about: "about",
+  /** WHY KPOPSOFT — 역량 구조도 (수정 요청서 §13). 포트폴리오와 프로세스 사이. */
+  why: "why",
   business: "business",
   software: "software",
   aiSolutions: "ai-solutions",
@@ -40,7 +50,8 @@ export const sectionId = {
   testimonials: "testimonials",
   contact: "contact",
   /** ver2 홈 — Software·AI Solutions를 묶은 통합 섹션. 두 블록은 위의
-   *  software/aiSolutions id를 그대로 유지해 헤더 앵커가 계속 동작한다. */
+   *  software/aiSolutions id를 그대로 유지해 헤더 앵커가 계속 동작한다.
+   *  ver3에서 Education까지 더해 "핵심 비즈니스" 3축이 됐다. */
   whatWeDo: "what-we-do",
 } as const;
 
@@ -61,14 +72,41 @@ export const educationSectionId = {
  * INSIGHTS는 ver2에서 제외했다(기획서 §6: 실제 콘텐츠가 쌓인 뒤 추가).
  * `/insights/[slug]` 라우트 자체는 살아 있어 기존 링크는 깨지지 않는다.
  */
+/*
+ * 순서는 홈의 섹션 순서(about → what-we-do → work → contact)를 그대로 따른다.
+ * 스크롤 스파이가 메뉴를 위에서 아래로 훑으며 활성 표시를 옮기므로, 메뉴
+ * 순서가 페이지와 어긋나면 활성 항목이 앞뒤로 튀는 것처럼 보인다.
+ */
 export const navItems = [
-  { label: "WORK", href: `/#${sectionId.work}` },
-  { label: "SOFTWARE", href: `/#${sectionId.software}` },
-  { label: "AI SOLUTIONS", href: `/#${sectionId.aiSolutions}` },
-  { label: "EDUCATION", href: route.education },
   { label: "ABOUT", href: `/#${sectionId.about}` },
+  {
+    /**
+     * 3개 사업을 한 메뉴로 묶는다. 상위 항목 자체도 이동 가능한 링크로
+     * 둔다(핵심 비즈니스 섹션) — 하위가 열리지 않는 상황(키보드·터치)에서도
+     * 막다른 메뉴가 되지 않게 하기 위해서다.
+     */
+    label: "CORE BUSINESS",
+    href: `/#${sectionId.whatWeDo}`,
+    children: [
+      { label: "SOFTWARE", href: `/#${sectionId.software}` },
+      { label: "AI SOLUTIONS", href: `/#${sectionId.aiSolutions}` },
+      { label: "EDUCATION", href: route.education },
+    ],
+  },
+  { label: "WORK", href: `/#${sectionId.work}` },
   { label: "CONTACT", href: `/#${sectionId.contact}` },
 ] as const;
+
+export type NavItem = (typeof navItems)[number];
+export type NavLeaf = { label: string; href: string };
+
+/**
+ * 상위·하위를 한 줄로 편 목록. 드롭다운이 없는 곳(푸터)과 스크롤 스파이용
+ * 앵커 추출에서 쓴다.
+ */
+export const flatNavItems: NavLeaf[] = navItems.flatMap<NavLeaf>((item) =>
+  "children" in item ? [item, ...item.children] : [item],
+);
 
 /**
  * Header CTA — 페이지마다 방문자가 할 "다음 행동"이 다르다.
@@ -81,9 +119,19 @@ export const headerCta = {
     href: `${route.education}#${educationSectionId.inquiry}`,
   },
   default: {
-    label: "프로젝트 의뢰",
+    label: "프로젝트 문의",
     href: `/#${sectionId.contact}`,
   },
+} as const;
+
+/**
+ * Hero / Footer CTA — 둘 다 문의 섹션으로 가지만 문구가 헤더와 다르다
+ * (수정 요청서 §3·§4·§16). 헤더는 `프로젝트 문의`, 나머지 둘은
+ * `프로젝트 상담하기`로 상담의 문턱을 낮춘 표현을 쓴다.
+ */
+export const consultCta = {
+  label: "프로젝트 상담하기",
+  href: `/#${sectionId.contact}`,
 } as const;
 
 /**
@@ -98,7 +146,14 @@ export const headerCta = {
  */
 export const inquiryOptions = [
   {
-    type: "프로젝트 문의",
+    /**
+     * ver3 — IA의 "소프트웨어" 분류.
+     *
+     * IA는 세부 유형을 `웹/앱 · 어드민 · 기타` 3개로 적었지만, 웹과 앱은
+     * 견적·기간이 크게 달라 한 항목으로 묶으면 문의 라우팅에 필요한 정보가
+     * 사라진다. 사용자 확인을 거쳐 웹과 앱을 분리해 유지한다.
+     */
+    type: "소프트웨어 개발",
     subtypes: [
       {
         label: "웹 프로젝트",
@@ -111,9 +166,9 @@ export const inquiryOptions = [
           "예) iOS·안드로이드 앱을 만들고 싶습니다. 핵심 기능은 ○○○이고, 오픈 희망 시기는 △△입니다.",
       },
       {
-        label: "내부 운영 도구",
+        label: "어드민",
         placeholder:
-          "예) 팀 업무를 관리할 사내 도구가 필요합니다. 지금은 엑셀·수기로 처리 중이고, 사용 인원은 △명입니다.",
+          "예) 팀 업무를 관리할 관리자 시스템이 필요합니다. 지금은 엑셀·수기로 처리 중이고, 사용 인원은 △명입니다.",
       },
       {
         label: "기타",
@@ -122,56 +177,7 @@ export const inquiryOptions = [
     ],
   },
   {
-    type: "교육 문의",
-    subtypes: [
-      {
-        label: "AI 활용 입문",
-        placeholder:
-          "예) AI를 처음 접하는 팀원 대상 입문 교육을 찾습니다. 인원 △명, 희망 일정은 ○월입니다.",
-      },
-      {
-        label: "AI 업무 활용",
-        placeholder:
-          "예) 실무에 AI를 바로 활용하는 교육을 원합니다. 대상은 ○○팀 △명, 목표는 업무 효율화입니다.",
-      },
-      {
-        label: "Vibe Coding",
-        placeholder:
-          "예) 비개발자도 AI로 직접 만들어보는 실습 교육을 원합니다. 인원 △명, 희망 일정은 ○월입니다.",
-      },
-      {
-        label: "Software Development",
-        placeholder:
-          "예) 개발 실무 역량을 키우는 교육이 필요합니다. 대상 수준은 ○○, 인원 △명입니다.",
-      },
-      {
-        label: "Web & App Development",
-        placeholder:
-          "예) 웹·앱 개발 실무 교육을 찾습니다. 대상 수준은 ○○, 인원 △명입니다.",
-      },
-      {
-        label: "AI Automation",
-        placeholder:
-          "예) 업무 자동화를 직접 구축해보는 교육을 원합니다. 대상은 ○○팀 △명입니다.",
-      },
-      {
-        label: "AI Prototype Lab",
-        placeholder:
-          "예) 아이디어를 AI 프로토타입으로 만들어보는 실습 과정을 찾습니다. 인원 △명입니다.",
-      },
-      {
-        label: "기업 맞춤형 교육",
-        placeholder:
-          "예) 우리 회사 상황에 맞춘 커리큘럼이 필요합니다. 대상·목표·희망 일정은 ○○입니다.",
-      },
-      {
-        label: "기타",
-        placeholder: "예) 교육 대상·인원·목표·희망 일정을 자유롭게 적어 주세요.",
-      },
-    ],
-  },
-  {
-    type: "AI 솔루션 문의",
+    type: "AI 솔루션",
     subtypes: [
       {
         label: "AI 업무 자동화",
@@ -179,35 +185,51 @@ export const inquiryOptions = [
           "예) 반복되는 문서·데이터 처리를 자동화하고 싶습니다. 지금은 ○○ 방식으로 처리 중입니다.",
       },
       {
-        label: "AI 에이전트",
-        placeholder:
-          "예) 여러 단계를 스스로 처리하는 AI 에이전트를 만들고 싶습니다. 맡기고 싶은 업무는 ○○입니다.",
-      },
-      {
         label: "AI 챗봇",
         placeholder:
           "예) 고객(또는 사내) 문의에 답하는 AI 챗봇이 필요합니다. 대상과 참고 데이터는 ○○입니다.",
       },
       {
-        label: "콘텐츠 자동화",
-        placeholder:
-          "예) 블로그·SNS 등 콘텐츠 제작을 자동화하고 싶습니다. 현재 제작량은 ○○입니다.",
-      },
-      {
-        label: "사내 AI Tool",
-        placeholder:
-          "예) 우리 팀 업무에 맞는 사내 AI 도구가 필요합니다. 해결하려는 문제는 ○○입니다.",
-      },
-      {
-        label: "AI Prototype",
-        placeholder:
-          "예) 아이디어가 실제로 되는지 먼저 검증(PoC)해보고 싶습니다. 검증할 아이디어는 ○○입니다.",
-      },
-      {
         label: "기타",
-        placeholder: "예) 어떤 문제를 AI로 풀고 싶은지, 현재 상황과 목표를 자유롭게 적어 주세요.",
+        placeholder:
+          "예) AI 에이전트·콘텐츠 자동화·사내 AI Tool 등 어떤 문제를 AI로 풀고 싶은지 자유롭게 적어 주세요.",
       },
     ],
+  },
+  {
+    /**
+     * ver3에서 교육 세부 유형이 9개 → **3분류 3개**로 압축됐다
+     * (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 06).
+     * 라벨은 `eduCategories`(education-content.ts)의 `name`과 반드시 일치시킨다 —
+     * 홈에서 고른 값이 `/education`의 같은 이름 블록으로 이어져야 하기 때문이다.
+     */
+    type: "교육 문의",
+    subtypes: [
+      {
+        label: "조직·기업 맞춤 교육",
+        placeholder:
+          "예) 우리 회사 상황에 맞춘 커리큘럼이 필요합니다. 대상·인원·목표·희망 일정은 ○○입니다.",
+      },
+      {
+        label: "정규 클래스",
+        placeholder:
+          "예) AI 활용 / Vibe Coding / 웹·앱 제작 / 업무 자동화 중 관심 있는 과정과 희망 일정을 적어 주세요.",
+      },
+      {
+        label: "지식 공유 커뮤니티 클럽 / 바이브데이즈",
+        placeholder:
+          "예) 바이브데이즈 클럽 참여를 희망합니다. 현재 AI 활용 수준과 기대하는 점은 ○○입니다.",
+      },
+    ],
+  },
+  {
+    /**
+     * 수정 요청서 §15가 지정한 네 번째 분야. 위 셋 중 어디에도 딱 맞지 않는
+     * 문의(제휴·채용·취재 등)가 갈 곳이 없어 이탈하던 것을 받는다.
+     * 세부 유형은 두지 않는다 — 무엇을 물어볼지 모르는 분야라 미리 쪼갤 수 없다.
+     */
+    type: "기타 문의",
+    subtypes: [],
   },
 ] as const;
 
@@ -243,7 +265,7 @@ export const businesses = [
       "AI Workflow",
       "사내 AI Tool",
       "데이터 기반 업무 도구",
-      "AI Prototype",
+      "AI 에이전트",
     ],
   },
   {
@@ -251,16 +273,142 @@ export const businesses = [
     title: "EDUCATION",
     accent: "mint",
     summary: "팀이 직접 구축하고 활용해야 한다면.",
+    /** ver3 교육 3분류 그대로 (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 03). */
     items: [
-      "AI 활용 입문",
-      "AI 업무 활용",
-      "Vibe Coding",
-      "웹 제작 실습",
-      "AI Prototype Lab",
-      "기업 맞춤형",
+      "조직·기업 맞춤 교육",
+      "정규 클래스",
+      "지식 공유 커뮤니티 클럽 (VIBEDAYS)",
     ],
   },
 ] as const;
+
+/**
+ * What We Do 사례 (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 05).
+ *
+ * Software / AI Solutions 카드가 "결과물 타입" 탭으로 큰 대표 화면 1개를
+ * 노출하고, 클릭하면 Sheet 모달에서 사례 스토리를 보여주기 위한 소스다.
+ * 탭(`tab`)은 실제 보유한 목업 이미지와 1:1로 매칭한다. 모달 본문
+ * (problem/approach/result/stack)은 실제 사례 확정 시 교체할 **플레이스홀더**
+ * 초안이다 — 카드/탭은 tab/image만, 모달은 나머지 필드까지 읽는다.
+ */
+export type BusinessCase = {
+  key: string;
+  /** 탭 라벨 — 짧게 (모바일 한 줄). */
+  tab: string;
+  accent: Accent;
+  image: string;
+  alt: string;
+  /** 모달 헤더 제목. */
+  title: string;
+  summary: string;
+  problem: string;
+  approach: string;
+  result: string;
+  stack: string[];
+};
+
+export const businessCases: Record<"software" | "ai", BusinessCase[]> = {
+  software: [
+    {
+      key: "web",
+      tab: "Web",
+      accent: "blue",
+      image: "/work/web-portfolio.jpg",
+      alt: "웹 대시보드 화면 — 활성 사용자, 전환율, 주간 트래픽 지표",
+      title: "웹 서비스 · 관리형 대시보드",
+      summary: "핵심 지표를 한 화면에서 확인하고 운영까지 이어지는 웹 서비스.",
+      problem:
+        "지표가 여러 도구에 흩어져 있어 매번 취합에 시간이 들고, 의사결정이 늦어지는 상황이었습니다.",
+      approach:
+        "필요한 지표와 업무 흐름을 함께 정리해, 로그인부터 대시보드·상세 화면까지 하나의 반응형 웹으로 설계·구현했습니다.",
+      result:
+        "흩어진 데이터를 한 화면으로 모아 확인 시간을 크게 줄이고, 팀이 같은 숫자를 보며 빠르게 판단하도록 했습니다.",
+      stack: ["Next.js", "Supabase", "Tailwind CSS", "Vercel"],
+    },
+    {
+      key: "app",
+      tab: "App",
+      accent: "navy",
+      image: "/work/app-portfolio.jpg",
+      alt: "모바일 앱 화면 — 학습 진행률과 진행 중 코스 목록",
+      title: "모바일 앱 · 학습/온보딩",
+      summary: "사용자가 앱처럼 매끄럽게 쓰는 모바일 중심 서비스.",
+      problem:
+        "웹만으로는 사용자가 자주 돌아오지 않았고, 진행 상황을 손안에서 확인하기 어려웠습니다.",
+      approach:
+        "모바일 우선으로 화면을 다시 설계하고, 진행률·다음 할 일을 한눈에 보여주는 홈을 중심으로 구성했습니다.",
+      result:
+        "설치 없이도 앱처럼 동작하는 경험으로 재방문 흐름을 만들고, 이탈 지점을 줄였습니다.",
+      stack: ["Next.js", "PWA", "Supabase", "Tailwind CSS"],
+    },
+    {
+      key: "admin",
+      tab: "Admin",
+      accent: "sky",
+      image: "/work/admin-portfolio.jpg",
+      alt: "관리자 콘솔 화면 — 문의 관리 대시보드와 데이터 테이블",
+      title: "관리자 시스템 · 운영 콘솔",
+      summary: "문의·회원·콘텐츠를 한곳에서 운영하는 내부 관리 도구.",
+      problem:
+        "운영을 스프레드시트와 수작업으로 처리해 실수가 잦고, 담당자별로 기준이 달랐습니다.",
+      approach:
+        "문의 접수부터 상태 관리·권한까지 하나의 어드민으로 통합하고, 목록·상세·필터를 표준화했습니다.",
+      result:
+        "운영 작업을 한 시스템으로 모아 처리 속도를 높이고, 누락과 중복 없이 관리하도록 했습니다.",
+      stack: ["Next.js", "Supabase", "RLS", "shadcn/ui"],
+    },
+  ],
+  ai: [
+    {
+      key: "chatbot",
+      tab: "챗봇",
+      accent: "coral",
+      image: "/work/ai-chatbot.jpg",
+      alt: "AI 챗봇 대화 화면 — 매출 리포트를 요약해 응답하는 어시스턴트",
+      title: "AI 챗봇 · 업무 어시스턴트",
+      summary: "사내 데이터를 이해하고 바로 답하는 대화형 업무 도구.",
+      problem:
+        "필요한 정보가 여러 문서에 흩어져 있어, 질문 하나에도 담당자를 거쳐야 답을 얻을 수 있었습니다.",
+      approach:
+        "사내 자료를 근거로 답하도록 구성하고, 자주 묻는 업무를 대화 흐름으로 설계했습니다.",
+      result:
+        "반복 질문을 챗봇이 먼저 처리하도록 해, 담당자의 응대 부담을 줄였습니다.",
+      stack: ["Claude API", "RAG", "Next.js", "Supabase"],
+    },
+    {
+      key: "agent",
+      tab: "에이전트",
+      accent: "red",
+      image: "/work/ai-agent.jpg",
+      alt: "AI 에이전트 실행 콘솔 — 문의 분류·배정 작업을 단계별로 처리",
+      title: "AI 에이전트 · 자동 처리",
+      summary: "정해진 절차를 스스로 판단해 단계별로 처리하는 에이전트.",
+      problem:
+        "들어오는 요청을 분류하고 배정하는 반복 작업에 사람이 계속 매여 있었습니다.",
+      approach:
+        "요청을 이해해 분류·배정·처리까지 단계별로 실행하고, 사람은 확인만 하도록 설계했습니다.",
+      result:
+        "단순 판단·분배를 자동으로 넘겨, 사람이 진짜 중요한 일에 집중하도록 했습니다.",
+      stack: ["Claude API", "Tool Use", "Workflow", "Next.js"],
+    },
+    {
+      key: "automation",
+      tab: "자동화",
+      accent: "mint",
+      image: "/work/ai-automation.jpg",
+      alt: "자동화 워크플로우 대시보드 — 문의 접수부터 알림까지 자동 실행",
+      title: "업무 자동화 · 워크플로우",
+      summary: "접수부터 알림까지 사람 손 없이 흐르는 자동화 파이프라인.",
+      problem:
+        "접수·정리·알림이 각각 수작업이라, 사이에서 누락과 지연이 반복됐습니다.",
+      approach:
+        "업무 흐름을 하나의 워크플로우로 연결하고, 조건에 따라 자동으로 다음 단계가 실행되게 했습니다.",
+      result:
+        "반복 업무를 자동 흐름으로 바꿔 처리 시간과 실수를 함께 줄였습니다.",
+      stack: ["Workflow", "Webhook", "Supabase", "Cron"],
+    },
+  ],
+};
 
 /**
  * Education programs (docs/디자인.md §Program Cards).
@@ -449,27 +597,27 @@ export const softwareCategories = [
   {
     title: "Web",
     desc: "반응형 웹 서비스와 디지털 플랫폼",
-    inquiry: { type: "프로젝트 문의", subtype: "웹 프로젝트" },
+    inquiry: { type: "소프트웨어 개발", subtype: "웹 프로젝트" },
   },
   {
     title: "App",
     desc: "iOS · Android 하이브리드 모바일 앱",
-    inquiry: { type: "프로젝트 문의", subtype: "앱 프로젝트" },
+    inquiry: { type: "소프트웨어 개발", subtype: "앱 프로젝트" },
   },
   {
     title: "AI Automation",
     desc: "업무 자동화 및 AI Workflow",
-    inquiry: { type: "프로젝트 문의", subtype: "AI 자동화" },
+    inquiry: { type: "소프트웨어 개발", subtype: "AI 자동화" },
   },
   {
     title: "Internal Tools",
     desc: "관리자 · 내부 운영 도구",
-    inquiry: { type: "프로젝트 문의", subtype: "내부 운영 도구" },
+    inquiry: { type: "소프트웨어 개발", subtype: "내부 운영 도구" },
   },
   {
     title: "Digital Product",
     desc: "MVP · Prototype · 신규 서비스",
-    inquiry: { type: "프로젝트 문의", subtype: "기타" },
+    inquiry: { type: "소프트웨어 개발", subtype: "기타" },
   },
 ] as const;
 
@@ -477,17 +625,41 @@ export const softwareCategories = [
 export const labSteps = ["Idea", "Prototype", "Test", "Build"] as const;
 
 /** KPOPSOFT process (docs/디자인.md §Process Diagram). */
+/**
+ * 우리의 프로세스 5단계 (IA 개정안 — 홈 포트폴리오와 Contact 사이).
+ *
+ * ver1의 `Learn(실습 중심 교육) → Scale(조직 확장)`은 교육이 홈 안에 있던
+ * 시절의 흐름이라, 교육이 별도 페이지로 빠진 지금은 맞지 않는다. WORK 섹션이
+ * 말하는 "기획부터 운영까지"와 같은 흐름으로 다시 잡았다. 기술 이전(교육)은
+ * 단계를 따로 두지 않고 운영 단계의 선택지로 붙인다.
+ */
+/** 단계명·설명은 수정 요청서 §14가 확정한 문구 그대로 쓴다. */
 export const processSteps = [
-  { index: "01", title: "Understand", desc: "문제와 목표 정의", accent: "blue" },
-  { index: "02", title: "Design", desc: "서비스 및 교육 구조 설계", accent: "sky" },
   {
-    index: "03",
-    title: "Build",
-    desc: "소프트웨어, 자동화, 프로토타입 개발",
-    accent: "red",
+    index: "01",
+    title: "Understand",
+    desc: "비즈니스 니즈 및 목표 정의",
+    accent: "blue",
   },
-  { index: "04", title: "Learn", desc: "실습 중심 교육 및 기술 이전", accent: "yellow" },
-  { index: "05", title: "Scale", desc: "조직과 서비스에 확장", accent: "mint" },
+  {
+    index: "02",
+    title: "Design",
+    desc: "서비스 구조 및 사용자 경험 설계",
+    accent: "sky",
+  },
+  { index: "03", title: "Build", desc: "디자인 및 개발", accent: "red" },
+  {
+    index: "04",
+    title: "Launch",
+    desc: "테스트 및 서비스 출시",
+    accent: "yellow",
+  },
+  {
+    index: "05",
+    title: "Operate",
+    desc: "운영 및 지속적인 개선",
+    accent: "mint",
+  },
 ] as const;
 
 /** Experts & instructors (docs/디자인.md §EXPERT NETWORK) — 더미 데이터. */
@@ -529,100 +701,116 @@ export const experts: Expert[] = [
 ] as const;
 
 /**
- * Selected work (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 04).
+ * 주요 프로젝트 (수정 요청서 §8~§12).
  *
- * 첫 항목은 실제 제작 사례(신도H렌탈)이고, 홈 Selected Work 레이아웃에서
- * 대표(featured) 카드로 노출된다 — 배열의 [0]번째를 featured, [1],[2]를
- * 보조, 나머지를 가로형으로 매핑한다(components/sections/selected-work.tsx).
- * 이후 항목은 실제 자산이 없는 더미 사례다.
+ * 세 건 모두 요청서가 카테고리·프로젝트명·요약을 **확정 문구**로 못박았다.
+ * 임의로 축약하거나 다른 표현으로 바꾸지 않는다(§18).
+ *
+ * `scope`(담당 범위)는 **실제 수행 내용이 확인된 경우에만** 채운다. 요청서
+ * §8이 `Planning`/`UX/UI Design`/`Web Development` 같은 역할을 임의로
+ * 추가하지 말라고 명시했고, 세 건 모두 아직 확인된 범위를 받지 못했으므로
+ * 비워 둔다 — 카드는 값이 있을 때만 이 줄을 렌더한다.
+ *
+ * `features`/`flow`는 요청서가 프로젝트별로 확정해 준 내용이라 상세 패널에서
+ * 보여준다. 요청서 §11 주의사항대로, 챗봇 스크린샷에 찍힌 특정 뉴스 제목과
+ * 날짜는 예시 데이터이므로 어떤 카피에도 넣지 않는다.
  */
 export const selectedWork = [
   {
-    // 실제 사례 — sindohr.com. 성과 수치는 확인된 바 없어 비워둔다(results: []).
-    client: "신도H렌탈",
-    title: "신도H렌탈 렌탈 서비스 랜딩페이지",
-    category: "Web",
+    /**
+     * 실제 사례 — sindohr.com. 요청서 §9: 채용 사이트나 단순 랜딩페이지가
+     * 아니라, 업종에 맞는 렌탈 상품을 탐색하고 상담까지 신청하는 **렌탈 서비스
+     * 웹사이트**다. 이전 카피의 "랜딩페이지" 표현은 이 지적에 따라 걷어냈다.
+     */
+    client: "신도렌탈",
+    title: "신도렌탈 복합기 렌탈 서비스",
+    category: "RENTAL · PRODUCT PLATFORM",
     accent: "blue",
     summary:
-      "사무용 복합기 렌탈 전문 기업 신도H렌탈의 랜딩페이지를 기획부터 개발까지 제작했습니다.",
+      "업종별 복합기 추천부터 상품 탐색과 상담 신청까지 연결한 렌탈 서비스 웹사이트입니다.",
     challenge:
-      "전문 컨설팅, 합리적인 렌탈료, 신속한 설치·AS라는 강점을 방문자에게 명확하게 전달하고, 업종에 맞는 렌탈 상품을 바로 찾을 수 있는 랜딩페이지가 필요했습니다.",
+      "복합기 렌탈은 사무실·학교·병원·관공서처럼 사용 환경에 따라 필요한 사양과 비용이 크게 달라집니다. 방문자가 자신의 환경에 맞는 상품을 스스로 찾고, 정보를 확인한 뒤 상담까지 이어갈 수 있는 흐름이 필요했습니다.",
     solution:
-      "업종별 추천 솔루션을 구성해 방문자가 자신에게 맞는 렌탈 상품을 바로 확인할 수 있도록 설계하고, 데스크톱과 모바일 모두에서 매끄럽게 동작하는 반응형 랜딩페이지로 구현했습니다.",
+      "업종별 렌탈 솔루션 추천을 입구로 두고, 추천 상품 목록에서 제품 이미지·주요 사양·월 렌탈료를 확인한 뒤 상세정보와 상담 신청으로 이어지도록 설계했습니다. 상담 진행 절차와 추가 비즈니스 상담까지 한 흐름 안에 배치했습니다.",
     results: [] as string[],
-    imageUrl: "/work/sindohr-desktop.jpg",
-  },
-  {
-    // 더미
-    client: "커머스 스타트업",
-    title: "주문 운영 자동화 어드민",
-    category: "Internal Tools · AI Automation",
-    accent: "blue",
-    summary:
-      "여러 판매 채널의 주문을 한 화면에서 처리하고, 반복 CS·정산 업무를 자동화한 내부 운영 어드민입니다.",
-    challenge:
-      "주문이 채널별로 흩어져 있어 매일 수 시간을 수작업 취합에 썼고, 오입력과 누락이 잦았습니다.",
-    solution:
-      "채널 주문을 단일 대시보드로 통합하고, AI로 문의 유형을 자동 분류·초안 응답을 생성했습니다. 정산 리포트는 자동으로 산출되도록 만들었습니다.",
-    results: [
-      "주문 처리 시간 70% 단축",
-      "CS 1차 응답 자동화율 60%",
-      "월 정산 마감 3일 → 반나절",
+    scope: [] as string[],
+    features: [
+      "사무실, 학교, 병원, 관공서 등 업종별 렌탈 솔루션 추천",
+      "추천 렌탈 상품 목록",
+      "제품 이미지, 주요 사양, 월 렌탈료 제공",
+      "상품 상세정보 확인",
+      "복합기 렌탈 상담 신청",
+      "상담 진행 절차 안내",
+      "추가 비즈니스 상담 연계",
     ],
+    flow: "사용자 환경 선택 → 적합한 상품 탐색 → 정보 확인 → 렌탈 상담 신청",
+    externalUrl: "https://www.sindohr.com/",
+    imageUrl: "/work/sindohr-mockup.png",
+    imageUrls: ["/work/sindohr-mockup.png", "/work/sindohr-desktop.jpg"],
   },
   {
-    // 더미
-    client: "교육 기관",
-    title: "AI 활용 사내 교육 플랫폼",
-    category: "Web · Education",
-    accent: "mint",
-    summary:
-      "임직원이 실제 업무 도구로 AI를 익히도록 커리큘럼·실습·진도관리를 담은 사내 러닝 플랫폼입니다.",
-    challenge:
-      "일회성 특강만으로는 현업 적용이 되지 않았고, 학습 이력과 성과를 추적할 수단이 없었습니다.",
-    solution:
-      "직무별 트랙과 실습 과제를 웹 플랫폼으로 제공하고, 수강·과제·수료 현황을 관리자 대시보드로 가시화했습니다.",
-    results: [
-      "수료율 92%",
-      "부서별 AI 실무 적용 사례 30건 이상",
-      "교육 운영 공수 50% 절감",
-    ],
-  },
-  {
-    // 더미
-    client: "핀테크",
-    title: "고객 문의 AI 챗봇",
-    category: "AI Solutions",
+    /**
+     * 요청서 §10. `관리자용 어드민 대시보드`라는 표현은 쓰지 않는다 — 서비스
+     * 운영자가 아니라 **고객이 자기 캠페인과 성과를 직접 관리하는** 사용자용
+     * 대시보드이기 때문이다.
+     *
+     * 대표 이미지가 아직 없다. 잘못된 화면을 붙이는 것보다 비워 두는 편이
+     * 나아서 `imageUrl`을 두지 않았고, 카드는 도형 폴백으로 렌더된다.
+     */
+    client: "BLUE EGG",
+    title: "셀프 마케팅 캠페인 운영 플랫폼",
+    category: "MARKETING · WEB PLATFORM",
     accent: "red",
     summary:
-      "금융 규정을 지키면서 24시간 1차 문의를 처리하는 사내 지식 기반 AI 챗봇입니다.",
+      "캠페인 운영부터 채널별 검색 순위 추적과 성과 확인까지 한 화면에서 관리할 수 있도록 구축한 웹 플랫폼입니다.",
     challenge:
-      "문의량 급증으로 상담 대기가 길어졌고, 반복 질문이 상담 인력을 크게 소모했습니다.",
+      "마케팅 캠페인을 직접 운영하는 고객은 집행 현황과 채널별 성과를 각각 다른 곳에서 확인해야 했습니다. 무엇이 얼마나 효과가 있었는지 판단할 근거가 한자리에 모이지 않았습니다.",
     solution:
-      "사내 문서·FAQ를 검색 기반(RAG)으로 연결해 근거 있는 답변을 제공하고, 민감한 문의는 상담원에게 자동 이관했습니다.",
-    results: [
-      "1차 문의 자동 해결 65%",
-      "평균 응답 대기 8분 → 즉시",
-      "상담원 반복 문의 처리량 40% 감소",
+      "고객이 직접 캠페인을 등록·운영하고, 네이버 플레이스·쇼핑 등 채널별 검색 순위와 키워드별 순위 변화를 한 화면에서 추적하도록 구성했습니다. 포인트와 캠페인 현황, 성과 사례, 고객 지원까지 하나의 셀프 운영 플랫폼으로 묶었습니다.",
+    results: [] as string[],
+    scope: [] as string[],
+    features: [
+      "사용자별 포인트 및 캠페인 현황 확인",
+      "마케팅 캠페인 등록 및 운영",
+      "진행 중·완료된 캠페인 관리",
+      "네이버 플레이스·쇼핑 등 채널별 검색 순위 추적",
+      "키워드별 순위 변화 시각화",
+      "캠페인 성과 및 고객 사례 제공",
+      "공지사항 및 고객 지원",
+      "광고대행 및 제휴 문의 연결",
     ],
+    flow: "캠페인 등록 → 진행 현황 확인 → 채널별 순위 추적 → 마케팅 성과 관리",
   },
   {
-    // 더미
-    client: "제조 기업",
-    title: "생산 데이터 대시보드 MVP",
-    category: "Digital Product · Prototype",
-    accent: "yellow",
+    /**
+     * 요청서 §11. 단순 고객 상담 챗봇이 아니라, 요청에 따라 외부 정보를
+     * 탐색하고 핵심을 요약해 주는 **정보 응답·업무 자동화** 챗봇이다.
+     * 스크린샷에 찍힌 뉴스 제목·날짜는 예시 데이터라 카피에 넣지 않는다.
+     */
+    client: "KPOPSOFT",
+    title: "카카오톡 기반 AI 정보 응답 챗봇",
+    category: "AI · CHATBOT AUTOMATION",
+    accent: "mint",
     summary:
-      "설비·생산 데이터를 한눈에 보고 이상을 빠르게 감지하는 실시간 모니터링 대시보드 MVP입니다.",
+      "사용자의 요청을 이해하고 필요한 정보를 수집·요약해 대화형 인터페이스로 제공하는 AI 챗봇입니다.",
     challenge:
-      "데이터가 여러 설비에 흩어져 있어 현황 파악이 늦었고, 이상 감지가 사후 대응에 그쳤습니다.",
+      "필요한 정보를 찾으려면 매번 여러 출처를 직접 돌아다니며 확인해야 했습니다. 반복적인 정보 탐색에 시간이 들고, 정작 핵심만 추려 보기는 어려웠습니다.",
     solution:
-      "핵심 지표를 실시간으로 수집·시각화하고 임계치 알림을 붙였습니다. 2주 만에 검증 가능한 프로토타입으로 제작했습니다.",
-    results: [
-      "2주 만에 동작하는 MVP 완성",
-      "이상 감지 리드타임 대폭 단축",
-      "본 개발 투자 결정 근거 확보",
+      "자연어 명령을 인식해 요청 주제에 맞는 정보를 검색하고, 핵심 내용만 요약해 카카오톡 채널에서 바로 응답하도록 구성했습니다. 별도 서비스에 접속하지 않고 쓰던 메신저에서 결과를 확인합니다.",
+    results: [] as string[],
+    scope: [] as string[],
+    features: [
+      "자연어 명령 및 질문 인식",
+      "요청 주제에 맞는 정보 검색",
+      "주요 뉴스와 정보 자동 수집",
+      "핵심 내용 요약 및 정리",
+      "카카오톡 채널 기반 대화형 응답",
+      "반복적인 정보 탐색 업무 자동화",
+      "별도 서비스 접속 없이 메신저에서 결과 확인",
     ],
+    flow: "사용자 질문 입력 → AI 정보 탐색 → 핵심 내용 요약 → 카카오톡 결과 제공",
+    imageUrl: "/work/ai-chatbot-hermes.jpg",
+    imageUrls: ["/work/ai-chatbot-hermes.jpg"],
   },
 ] as const;
 
@@ -645,7 +833,7 @@ export const insights = [
       "처음부터 완벽한 자동화를 노리기보다 절반만 자동화해도 시간은 크게 줄어듭니다. 작은 성공을 먼저 만든 뒤 범위를 넓히는 편이 안전하고 빠릅니다.",
       "중요한 건 도구 선택이 아니라 “어떤 업무를, 어디까지” 자동화할지 정하는 판단입니다. 그 판단만 서면 나머지는 생각보다 빠르게 붙습니다.",
     ],
-    inquiry: { type: "AI 솔루션 문의", subtype: "AI 업무 자동화" },
+    inquiry: { type: "AI 솔루션", subtype: "AI 업무 자동화" },
   },
   {
     tag: "Education",
@@ -675,21 +863,20 @@ export const insights = [
       "프로토타입의 목적은 완성이 아니라 학습입니다. 사용자가 실제로 어떻게 반응하는지, 가정이 맞았는지를 데이터로 확인하는 것이 목표입니다.",
       "검증 결과가 나오면 다음 판단이 쉬워집니다. 더 키울지, 방향을 틀지, 접을지. 오래 고민하는 대신 빠르게 확인하는 것이 결국 더 빠른 길입니다.",
     ],
-    inquiry: { type: "AI 솔루션 문의", subtype: "AI Prototype" },
+    inquiry: { type: "AI 솔루션", subtype: "AI Prototype" },
   },
 ] as const;
 
-/** Company numbers (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 03) — 더미 데이터. */
+/** 주요 성과 수치 (수정 요청서 §5 — 항목명·값 확정). */
 export const stats = [
-  { value: 120, suffix: "+", label: "주요 멤버 누적 프로젝트" },
-  { value: 40, suffix: "+", label: "프로젝트 참여 기업 및 기관" },
-  { value: 1800, suffix: "+", label: "강사진 누적 교육 수료생" },
-  { value: 96, suffix: "%", label: "프로젝트 및 교육 만족도" },
+  { value: 120, suffix: "+", label: "프로젝트 완료" },
+  { value: 40, suffix: "+", label: "파트너 기업" },
+  { value: 1800, suffix: "+", label: "교육 수료생" },
+  { value: 96, suffix: "%", label: "교육 만족도" },
 ] as const;
 
-/** Numbers 하단 주석 (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 03). */
-export const statsFootnote =
-  "주요 멤버와 강사진의 누적 수행 경험을 포함한 수치입니다.";
+/** 수치 하단 각주 (수정 요청서 §5). */
+export const statsFootnote = "2026년 7월 기준 누적 실적";
 
 /** Testimonials (docs/디자인.md §Testimonial) — 더미 데이터. */
 export const testimonials = [
@@ -751,6 +938,23 @@ export const accentText: Record<Accent, string> = {
   mint: "text-brand-mint",
   sky: "text-brand-sky",
   navy: "text-brand-navy",
+};
+
+/**
+ * 옅은 accent 면 — 카드가 여러 장 나란히 놓일 때 쓴다.
+ *
+ * 채도 높은 원색(`accentBg`)을 카드마다 꽉 채우면 색끼리 부딪혀 눈이 피로하고,
+ * 정작 읽어야 할 글자가 배경에 눌린다. 같은 색 계열을 유지하면서 배경은 물러나게
+ * 두는 용도다. 본문은 항상 ink로 두므로 대비는 충분하다(§접근성).
+ */
+export const accentTint: Record<Accent, string> = {
+  blue: "bg-brand-blue/10",
+  red: "bg-brand-red/10",
+  yellow: "bg-brand-yellow/20",
+  coral: "bg-brand-coral/15",
+  mint: "bg-brand-mint/15",
+  sky: "bg-brand-sky/15",
+  navy: "bg-brand-navy/10",
 };
 
 /** Accent surfaces that read AA against ink text (light tints) or need white text. */

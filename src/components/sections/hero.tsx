@@ -1,7 +1,7 @@
 import { CtaButton } from "@/components/ui/cta-button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Arch, Capsule, Circle, Ring, Star, Wave } from "@/components/shapes";
-import { sectionId, site } from "@/lib/site";
+import { consultCta, sectionId, site } from "@/lib/site";
 
 /**
  * Hero (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 02/§3, docs/디자인.md §7).
@@ -31,7 +31,10 @@ export function Hero() {
               작동하는 <span className="text-brand-blue">기술로.</span>
             </h1>
 
-            <div className="max-w-[46ch] space-y-4 text-body-lg text-ink/70">
+            {/* 요청서 §4: 데스크톱은 2줄 내외, 모바일은 문맥에 맞게 흘린다.
+                좁은 화면에서는 46ch로 묶어 한 줄이 지나치게 길어지지 않게 하고,
+                데스크톱에서는 컬럼 폭을 거의 다 써서 문장당 줄 수를 줄인다. */}
+            <div className="max-w-[46ch] space-y-4 text-body-lg text-ink/70 lg:max-w-[62ch]">
               {site.description.split("\n\n").map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
@@ -39,7 +42,7 @@ export function Hero() {
 
             <div className="pt-2">
               <CtaButton variant="primary" href={`#${sectionId.contact}`}>
-                프로젝트 의뢰하기
+                {consultCta.label}
               </CtaButton>
             </div>
           </div>
@@ -54,18 +57,27 @@ export function Hero() {
               교체한다. 그때까지 유일한 실사 자산은 §4가 실제로 요구하는
               자리인 Selected Work 대표 카드에서 쓴다. */}
           <div
-            className="relative mx-auto aspect-square w-full max-w-sm sm:max-w-md lg:col-span-5 lg:mx-0 lg:aspect-auto lg:h-[520px] lg:max-w-none"
+            className="relative mx-auto aspect-square w-full max-w-sm sm:max-w-md lg:col-span-5 lg:mx-0 lg:max-w-none"
             aria-hidden
           >
-            <Circle className="absolute top-0 right-6 size-24 text-brand-yellow sm:size-32 lg:top-2 lg:right-10 lg:size-40" />
-            <Ring className="absolute top-14 right-0 size-16 text-brand-sky sm:size-24 lg:top-24 lg:right-28 lg:size-28" />
-            <Star className="absolute top-[38%] left-[18%] size-16 rotate-12 text-brand-red sm:size-20 lg:size-24" />
+            {/* 아치 — 구성의 무게중심. 좌하단에 앉혀 프레임 밖으로 잘리게 둔다. */}
+            <Arch className="absolute -bottom-[5%] -left-[7%] h-auto w-[54%] text-brand-blue" />
+            {/* 별 — 아치의 어깨에 얹어 둘을 한 덩어리로 읽히게 한다. */}
+            <Star className="absolute top-[33%] left-[17%] h-auto w-[18%] rotate-12 text-brand-red" />
+            {/* 원 + 링 — 서로 겹쳐 우상단의 한 덩어리를 만든다. */}
+            <Circle className="absolute top-[4%] right-[10%] h-auto w-[30%] text-brand-yellow" />
+            <Ring className="absolute top-[17%] right-[1%] h-auto w-[19%] text-brand-sky" />
+            {/* 캡슐 — 링과 같은 세로축에 두어 우측 열을 만든다.
+                네이비는 이 구성에서 유일하게 검정에 가까운 색이라 100%로 두면
+                아치(주인공)보다 먼저 눈에 들어온다. 톤을 낮춰 같은 색 계열은
+                유지하되 무게만 뺀다. */}
             <Capsule
               variant="outline"
-              className="absolute right-2 bottom-28 w-24 text-brand-mint sm:w-32 lg:right-0 lg:bottom-36 lg:w-36"
+              className="absolute top-[47%] right-[5%] h-auto w-[26%] text-brand-navy/45"
             />
-            <Wave className="absolute bottom-6 left-0 w-40 text-brand-navy sm:w-56 lg:bottom-10 lg:w-60" />
-            <Arch className="absolute -bottom-6 -left-4 size-48 text-brand-blue sm:size-64 lg:bottom-0 lg:left-0 lg:size-80" />
+            {/* 물결 — 아치의 오른쪽 경사에 붙여 하단을 잇는다. 이전에는 아치
+                뒤에 깔려 아예 보이지 않았다. */}
+            <Wave className="absolute bottom-[14%] right-[18%] h-auto w-[36%] text-brand-mint" />
           </div>
         </div>
       </div>

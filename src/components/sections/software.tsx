@@ -63,7 +63,7 @@ export function Software() {
 
         {/* Section-level CTA (별개 버튼) — cards deep-link per category, this covers the whole section. */}
         <Link
-          href={`/?ct=${encodeURIComponent("프로젝트 문의")}#${sectionId.contact}`}
+          href={`/?ct=${encodeURIComponent("소프트웨어 개발")}#${sectionId.contact}`}
           className="group mt-10 inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-blue px-7 py-3 font-semibold text-white transition-colors hover:bg-brand-navy focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
         >
           제작 의뢰하기

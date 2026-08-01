@@ -92,7 +92,7 @@ export function AiSolutions() {
           <TagList tags={[...aiSolutions.items]} className="mt-4" />
 
           <Link
-            href={`/?ct=${encodeURIComponent("AI 솔루션 문의")}#${sectionId.contact}`}
+            href={`/?ct=${encodeURIComponent("AI 솔루션")}#${sectionId.contact}`}
             className="group mt-10 inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-blue px-7 py-3 font-semibold text-white transition-colors hover:bg-brand-navy focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
           >
             AI 도입 문의하기
