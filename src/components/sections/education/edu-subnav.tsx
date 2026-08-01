@@ -21,6 +21,10 @@ import { cn } from "@/lib/utils";
  *
  * 전역 헤더와 시각적으로 경쟁하지 않도록 높이·글자를 한 단계 낮추고, 활성
  * 표시는 Education Green(Mint) 밑줄로만 준다(§3). 그림자는 쓰지 않는다.
+ *
+ * 문의 CTA는 여기 두지 않는다 — 전역 헤더가 이미 `교육 문의` 버튼을 갖고
+ * 있어서(`headerCta`, site.ts) 같은 곳으로 가는 버튼이 위아래로 겹쳐 있었다.
+ * 하나면 충분하고, 둘이면 어느 쪽이 진짜인지 잠깐 멈춰서 판단하게 된다.
  */
 
 type NavItem = { label: string; id: string };
@@ -119,12 +123,20 @@ export function EduSubnav() {
           stuck ? "border-ink/10" : "border-transparent",
         )}
       >
-        <div className="container-editorial flex items-center gap-4">
+        <div className="container-editorial">
+          {/*
+            상위 메뉴가 가운데 정렬이라 하위도 가운데에 둔다 — 둘의 축이
+            어긋나면 서브바가 헤더에 딸린 것이 아니라 별개의 바처럼 보인다.
+
+            `w-max mx-auto`인 이유: 항목이 컨테이너보다 좁으면 가운데로 모이고,
+            넘치면(모바일) 왼쪽부터 시작해 가로 스크롤된다. `justify-center`만
+            쓰면 넘칠 때 앞쪽 항목이 스크롤로 닿지 않는 영역에 잘린다.
+          */}
           <div
             ref={scrollerRef}
-            className="-mx-1 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <ul className="flex items-center gap-1">
+            <ul className="mx-auto flex w-max items-center gap-1">
               {ITEMS.map((item) => {
                 const isActive = active === item.id;
 
@@ -160,13 +172,6 @@ export function EduSubnav() {
               })}
             </ul>
           </div>
-
-          <a
-            href={`#${educationSectionId.inquiry}`}
-            className="hidden h-9 shrink-0 items-center rounded-full bg-brand-blue px-4 text-sm font-semibold text-white transition-colors outline-none hover:bg-brand-navy focus-visible:ring-3 focus-visible:ring-brand-blue/40 sm:inline-flex"
-          >
-            교육 문의
-          </a>
         </div>
       </nav>
     </>

@@ -115,7 +115,13 @@ export const flatNavItems: NavLeaf[] = navItems.flatMap<NavLeaf>((item) =>
  */
 export const headerCta = {
   [route.education]: {
-    label: "기업 교육 문의",
+    /**
+     * `기업 교육 문의`에서 바꿨다. 문의 폼이 개인/기업 분기로 바뀌면서
+     * 기업만 받는 창구가 아니게 됐고, 교육 페이지에서 이 버튼이 유일한
+     * 문의 진입점이라 대상을 좁히는 라벨이면 개인 방문자가 자기 것이
+     * 아니라고 판단하고 지나친다.
+     */
+    label: "교육 문의",
     href: `${route.education}#${educationSectionId.inquiry}`,
   },
   default: {
