@@ -12,10 +12,15 @@ import { cn } from "@/lib/utils";
 /**
  * Education Hero (수정 요청서 §4).
  *
- * 큰 라운드형 컨테이너 하나에 카피와 사진을 함께 담는다. ver3에서는 히어로가
- * 3분류 소개까지 겸했지만, 그 역할은 이제 바로 아래 "교육 목적 선택" 섹션이
- * 가져갔다 — 같은 화면에서 세 갈래를 두 번 제시하면 어느 쪽이 진짜 입구인지
- * 알 수 없다.
+ * 카피 왼쪽 / 사진 오른쪽의 열린 편집형 배치. 요청서 §4는 "큰 라운드형
+ * 컨테이너"를 말하지만, 흰 박스로 감싸 보니 아이보리 배경 위에 카드 한 장이
+ * 얹힌 꼴이라 첫 화면이 좁아 보이고 제목이 네 줄로 접혔다. 라운드는 사진
+ * 프레임이 이미 갖고 있으므로 그쪽에 맡기고, 카피는 배경 위에 그대로 둔다
+ * (사용자 결정).
+ *
+ * ver3에서는 히어로가 3분류 소개까지 겸했지만, 그 역할은 이제 바로 아래
+ * "교육 목적 선택" 섹션이 가져갔다 — 같은 화면에서 세 갈래를 두 번 제시하면
+ * 어느 쪽이 진짜 입구인지 알 수 없다.
  *
  * 움직임은 세 가지뿐이고 전부 절제한다(§4·§15).
  *  - 장식 도형이 포인터를 따라 최대 8px. 사진이나 글자는 따라가지 않는다.
@@ -76,10 +81,7 @@ export function EduHero() {
       if (!frame) return;
 
       const rect = frame.getBoundingClientRect();
-      const progress = Math.min(
-        Math.max(-rect.top / window.innerHeight, 0),
-        1,
-      );
+      const progress = Math.min(Math.max(-rect.top / window.innerHeight, 0), 1);
       const max = window.innerWidth < 768 ? 0.015 : 0.03;
       setZoom(1 + progress * max);
     };
@@ -90,90 +92,95 @@ export function EduHero() {
   }, []);
 
   return (
-    <section className="px-4 pt-6 pb-16 md:px-6 md:pt-10 md:pb-24">
+    <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32">
       <div className="container-editorial">
-        <div className="relative overflow-hidden rounded-[2rem] bg-white px-6 py-14 md:rounded-[2.5rem] md:px-12 md:py-20">
-          <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-10">
-            <div className="max-w-2xl lg:col-span-6">
-              <Reveal show={mounted} delay={0}>
-                <Eyebrow dotClassName="bg-brand-mint">
-                  KPOPSOFT EDUCATION
-                </Eyebrow>
-              </Reveal>
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-7">
+            <Reveal show={mounted} delay={0}>
+              <Eyebrow dotClassName="bg-brand-mint">KPOPSOFT EDUCATION</Eyebrow>
+            </Reveal>
 
-              <Reveal show={mounted} delay={80}>
-                <h1 className="text-display mt-6 text-ink">
-                  AI를 배우고, 만들고,
-                  <br />
-                  <span className="text-brand-blue">실제 업무에 적용합니다.</span>
-                </h1>
-              </Reveal>
+            <Reveal show={mounted} delay={80}>
+              {/* 확정 카피가 두 줄로 읽혀야 해서 `text-display`가 아니라
+                  긴 헤드라인용 단계를 쓴다. 100px에서는 "실제 업무에
+                  적용합니다."가 한 줄에 들어가지 않아 네 줄로 접혔다. */}
+              <h1 className="text-display-long mt-6 text-ink">
+                AI를 배우고, 만들고,
+                <br />
+                <span className="text-brand-blue">실제 업무에 적용합니다.</span>
+              </h1>
+            </Reveal>
 
-              <Reveal show={mounted} delay={160}>
-                {/* 줄바꿈은 의미 단위로 고정한다 — "강의만 듣는 교육이
+            <Reveal show={mounted} delay={160}>
+              {/* 줄바꿈은 의미 단위로 고정한다 — "강의만 듣는 교육이
                     아닙니다"가 한 호흡으로 먼저 읽혀야 다음 문장이 그 반박으로
                     이어진다. */}
-                <p className="mt-7 text-body-lg max-w-[46ch] text-ink/70">
-                  강의만 듣는 교육이 아닙니다.
-                  <br className="hidden sm:inline" /> 직접 만들고 실습하며, AI를
-                  자신의 업무와 프로젝트에 활용할 수 있도록 돕습니다.
-                </p>
-              </Reveal>
+              <p className="mt-7 text-body-lg max-w-[46ch] text-ink/70">
+                강의만 듣는 교육이 아닙니다.
+                <br className="hidden sm:inline" /> 직접 만들고 실습하며, AI를
+                자신의 업무와 프로젝트에 활용할 수 있도록 돕습니다.
+              </p>
+            </Reveal>
 
-              <Reveal show={mounted} delay={240}>
-                <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <CtaButton
-                    variant="primary"
-                    href={`#${educationSectionId.programs}`}
-                  >
-                    프로그램 보기
-                  </CtaButton>
-                  <CtaButton
-                    variant="secondary"
-                    href={`#${educationSectionId.inquiry}`}
-                  >
-                    교육 문의
-                  </CtaButton>
-                </div>
-              </Reveal>
-            </div>
-
-            <Reveal show={mounted} delay={320} className="lg:col-span-6">
-              <div ref={frameRef} className="relative">
-                <div className="overflow-hidden rounded-[1.75rem]">
-                  <div
-                    style={{ transform: `scale(${zoom})` }}
-                    className="transition-transform duration-300 ease-out will-change-transform"
-                  >
-                    <CoverVisual
-                      accent="mint"
-                      imageUrl="/education/education-hero.jpg"
-                      alt="KPOPSOFT 교육 현장에서 참가자들이 노트북으로 실습하는 모습"
-                      ratio="4/3"
-                      priority
-                      sizes="(max-width: 1024px) 90vw, 45vw"
-                      className="rounded-none"
-                    />
-                  </div>
-                </div>
-
-                {/* 장식 그래픽 — 스크린리더에서 제외한다(§17). */}
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    transform: `translate3d(${pointer.x * PARALLAX_MAX}px, ${
-                      pointer.y * PARALLAX_MAX
-                    }px, 0)`,
-                    transition: "transform 400ms ease-out",
-                  }}
+            <Reveal show={mounted} delay={240}>
+              <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+                <CtaButton
+                  variant="primary"
+                  href={`#${educationSectionId.programs}`}
                 >
-                  <Circle className="absolute -top-7 -left-7 size-20 text-brand-blue sm:size-24" />
-                  <Wave className="absolute -right-6 -bottom-7 w-28 text-brand-mint sm:w-36" />
-                </div>
+                  프로그램 보기
+                </CtaButton>
+                <CtaButton
+                  variant="secondary"
+                  href={`#${educationSectionId.inquiry}`}
+                >
+                  교육 문의
+                </CtaButton>
               </div>
             </Reveal>
           </div>
+
+          <Reveal
+            show={mounted}
+            delay={320}
+            className="mx-auto w-full max-w-md lg:col-span-5 lg:mx-0 lg:max-w-none"
+          >
+            <div ref={frameRef} className="relative">
+              {/* 확대는 프레임 안에서만 일어나야 한다 — 넘침을 감추는 층과
+                    실제로 커지는 층을 나눠 둔다. */}
+              <div className="overflow-hidden rounded-[2rem] shadow-[0_24px_60px_-24px_rgba(41,37,34,0.35)]">
+                <div
+                  style={{ transform: `scale(${zoom})` }}
+                  className="transition-transform duration-300 ease-out will-change-transform"
+                >
+                  <CoverVisual
+                    accent="mint"
+                    imageUrl="/education/education-hero.jpg"
+                    alt="KPOPSOFT 교육 현장에서 참가자들이 노트북으로 실습하는 모습"
+                    ratio="4/3"
+                    priority
+                    sizes="(max-width: 1024px) 90vw, 40vw"
+                    className="rounded-none"
+                  />
+                </div>
+              </div>
+
+              {/* 장식 그래픽 — 스크린리더에서 제외한다(§17). */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  transform: `translate3d(${pointer.x * PARALLAX_MAX}px, ${
+                    pointer.y * PARALLAX_MAX
+                  }px, 0)`,
+                  transition: "transform 400ms ease-out",
+                }}
+              >
+                <Circle className="absolute -top-7 -left-7 size-20 text-brand-blue sm:size-24" />
+                <Wave className="absolute -right-6 -bottom-7 w-28 text-brand-mint sm:w-36" />
+              </div>
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>

@@ -185,6 +185,19 @@
   letter-spacing: -0.04em;
   word-break: keep-all;
 }
+/*
+ * 긴 헤드라인용 display. `text-display`(최대 100px)는 "아이디어를 / 작동하는
+ * 기술로."처럼 짧은 두 줄을 전제로 잡은 크기라, 문장이 길어지면 확정된
+ * 줄바꿈을 지키지 못하고 네 줄로 접힌다. 위계는 display 자리를 유지하되
+ * 상한만 낮춘다 — 섹션 제목(text-section)보다는 크게 남는다.
+ */
+@utility text-display-long {
+  font-weight: 800;
+  font-size: clamp(2.375rem, 5vw + 0.5rem, 4.75rem); /* 38 → 76px */
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
+}
 @utility text-section {
   font-weight: 700;
   font-size: clamp(2.125rem, 3.5vw + 1rem, 4.5rem); /* 34 → 72px */
