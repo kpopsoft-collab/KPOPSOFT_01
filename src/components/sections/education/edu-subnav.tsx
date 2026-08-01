@@ -13,11 +13,15 @@ import { cn } from "@/lib/utils";
  * 홈 요청서 §3이 전역 4메뉴를 확정했으므로, 둘을 **역할로 분리**한다 — 위쪽
  * 전역 헤더는 사이트를 오가고, 이 서브바는 페이지 안을 오간다(사용자 결정).
  *
- * 히어로 아래 일반 위치에 놓이고, 스크롤이 그 지점을 지나면 전역 헤더 바로
- * 아래에 붙는다. 이건 CSS `position: sticky`가 그대로 해 주는 동작이라
- * 스크롤 위치를 재서 흉내 내지 않는다 — 흉내 내면 스크롤 도중 한 프레임씩
- * 어긋나 바가 튄다. 붙었는지 여부는 시각 효과(테두리)에만 쓰고, 그 판정도
- * 스크롤 이벤트가 아니라 센티넬 하나를 관찰해서 얻는다.
+ * **프로그램 섹션에 닿을 때부터 나타난다.** 처음에는 히어로 아래 일반 위치에
+ * 놓아 뒀는데, 히어로와 목적 선택 사이 여백에 메뉴 줄 하나가 덩그러니 떠
+ * 있어서 어느 쪽에도 속하지 않는 것처럼 보였다. 목적 선택까지는 방문자가
+ * "무엇을 찾는지" 정하는 구간이라 페이지 안을 건너뛸 이유도 아직 없다.
+ *
+ * 그래서 흐름에서 빼고(`fixed`) 프로그램 섹션이 헤더 아래로 올라오는 순간
+ * 헤더에 붙어 나타난다. 위로 되돌아가면 다시 사라진다 — 숨어 있는 동안에는
+ * 탭 순서에서도 빠져야 해서 `invisible`로 감춘다(`opacity-0`만으로는 키보드
+ * 포커스가 보이지 않는 링크에 걸린다).
  *
  * 전역 헤더와 시각적으로 경쟁하지 않도록 높이·글자를 한 단계 낮추고, 활성
  * 표시는 Education Green(Mint) 밑줄로만 준다(§3). 그림자는 쓰지 않는다.
@@ -40,27 +44,35 @@ const ITEMS: NavItem[] = [
 /** 전역 헤더 높이 — 서브바가 붙을 위치. header.tsx의 h-16 / md:h-[76px]와 같다. */
 const STUCK_TOP = "top-16 md:top-[76px]";
 
+/** 서브바가 나타나기 시작하는 기준선(px) — 전역 헤더 아래 언저리. */
+const REVEAL_OFFSET = 90;
+
 export function EduSubnav() {
   const [active, setActive] = useState<string | null>(null);
-  const [stuck, setStuck] = useState(false);
+  const [visible, setVisible] = useState(false);
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLAnchorElement>());
 
-  // 붙었는지 판정 — 서브바 바로 위에 놓인 0px 센티넬이 화면 밖으로 나가면
-  // 붙은 것이다.
+  // 프로그램 섹션이 헤더 아래로 올라오면 나타나고, 위로 되돌아가면 사라진다.
+  // 스크롤 위치 하나만 보면 되는 판정이라 스크롤 스파이와 같은 핸들러에서
+  // 처리해도 되지만, 관심사가 달라 따로 둔다.
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    const onScroll = () => {
+      const anchor = document.getElementById(educationSectionId.programs);
+      if (!anchor) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setStuck(!entry.isIntersecting),
-      // 전역 헤더에 가려지는 높이만큼 위쪽을 잘라내고 관찰한다.
-      { rootMargin: "-76px 0px 0px 0px", threshold: 0 },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+      const reached = anchor.getBoundingClientRect().top <= REVEAL_OFFSET;
+      setVisible((prev) => (prev === reached ? prev : reached));
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   // 스크롤 스파이 — 헤더+서브바에 가려지는 영역을 뺀 나머지 화면에서,
@@ -112,19 +124,21 @@ export function EduSubnav() {
   };
 
   return (
-    <>
-      <div ref={sentinelRef} aria-hidden className="h-0" />
-
-      <nav
-        aria-label="교육 페이지 내비게이션"
-        className={cn(
-          "sticky z-40 border-b bg-ivory/85 backdrop-blur-md transition-colors",
-          STUCK_TOP,
-          stuck ? "border-ink/10" : "border-transparent",
-        )}
-      >
-        <div className="container-editorial">
-          {/*
+    <nav
+      aria-label="교육 페이지 내비게이션"
+      // 흐름에서 빠져 있으므로 아래 섹션들의 위치에 영향을 주지 않는다.
+      // 숨어 있는 동안은 화면에서도 탭 순서에서도 빠진다.
+      className={cn(
+        "fixed inset-x-0 z-40 border-b border-ink/10 bg-ivory/85 backdrop-blur-md",
+        "transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none",
+        STUCK_TOP,
+        visible
+          ? "translate-y-0 opacity-100"
+          : "pointer-events-none invisible -translate-y-2 opacity-0",
+      )}
+    >
+      <div className="container-editorial">
+        {/*
             상위 메뉴가 가운데 정렬이라 하위도 가운데에 둔다 — 둘의 축이
             어긋나면 서브바가 헤더에 딸린 것이 아니라 별개의 바처럼 보인다.
 
@@ -132,48 +146,47 @@ export function EduSubnav() {
             넘치면(모바일) 왼쪽부터 시작해 가로 스크롤된다. `justify-center`만
             쓰면 넘칠 때 앞쪽 항목이 스크롤로 닿지 않는 영역에 잘린다.
           */}
-          <div
-            ref={scrollerRef}
-            className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            <ul className="mx-auto flex w-max items-center gap-1">
-              {ITEMS.map((item) => {
-                const isActive = active === item.id;
+        <div
+          ref={scrollerRef}
+          className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <ul className="mx-auto flex w-max items-center gap-1">
+            {ITEMS.map((item) => {
+              const isActive = active === item.id;
 
-                return (
-                  <li key={item.id}>
-                    <a
-                      ref={(el) => {
-                        if (el) itemRefs.current.set(item.id, el);
-                        else itemRefs.current.delete(item.id);
-                      }}
-                      href={`#${item.id}`}
-                      onClick={() => handleClick(item.id)}
-                      aria-current={isActive ? "true" : undefined}
+              return (
+                <li key={item.id}>
+                  <a
+                    ref={(el) => {
+                      if (el) itemRefs.current.set(item.id, el);
+                      else itemRefs.current.delete(item.id);
+                    }}
+                    href={`#${item.id}`}
+                    onClick={() => handleClick(item.id)}
+                    aria-current={isActive ? "true" : undefined}
+                    className={cn(
+                      // 최소 44px 터치 타깃(§16). 글자는 절대 두 줄로
+                      // 넘기지 않는다(§3).
+                      "relative flex h-12 items-center rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors outline-none",
+                      "focus-visible:ring-3 focus-visible:ring-brand-blue/40",
+                      isActive ? "text-ink" : "text-ink/55 hover:text-ink",
+                    )}
+                  >
+                    {item.label}
+                    <span
+                      aria-hidden
                       className={cn(
-                        // 최소 44px 터치 타깃(§16). 글자는 절대 두 줄로
-                        // 넘기지 않는다(§3).
-                        "relative flex h-12 items-center rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors outline-none",
-                        "focus-visible:ring-3 focus-visible:ring-brand-blue/40",
-                        isActive ? "text-ink" : "text-ink/55 hover:text-ink",
+                        "absolute inset-x-3 bottom-2 h-0.5 rounded-full bg-brand-mint transition-transform duration-200",
+                        isActive ? "scale-x-100" : "scale-x-0",
                       )}
-                    >
-                      {item.label}
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "absolute inset-x-3 bottom-2 h-0.5 rounded-full bg-brand-mint transition-transform duration-200",
-                          isActive ? "scale-x-100" : "scale-x-0",
-                        )}
-                      />
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                    />
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }
