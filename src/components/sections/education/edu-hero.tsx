@@ -1,124 +1,215 @@
-import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 
 import { CtaButton } from "@/components/ui/cta-button";
 import { CoverVisual } from "@/components/ui/cover-visual";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { Ring, Star, Wave } from "@/components/shapes";
-import { eduCategories } from "@/lib/education-content";
+import { Circle, Wave } from "@/components/shapes";
 import { educationSectionId } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 /**
- * SECTION 02 — Hero (docs/KPOPSOFT_Education_Page_ver2.md §7).
+ * Education Hero (수정 요청서 §4).
  *
- * Same editorial split as the home Hero (copy left, visual right — docs
- * §11 mobile rule: typography first, graphic recomposes below) but the
- * visual is a real training photo, not pure shapes: "Hero는 캐릭터보다
- * 실제 교육과 결과물이 중심이어야 합니다." VIBEDAYS characters + brand
- * shapes appear only as small supporting accents layered on the photo frame
- * (§3.2 — KPOPSOFT is the lead identity in the Hero).
+ * 큰 라운드형 컨테이너 하나에 카피와 사진을 함께 담는다. ver3에서는 히어로가
+ * 3분류 소개까지 겸했지만, 그 역할은 이제 바로 아래 "교육 목적 선택" 섹션이
+ * 가져갔다 — 같은 화면에서 세 갈래를 두 번 제시하면 어느 쪽이 진짜 입구인지
+ * 알 수 없다.
+ *
+ * 움직임은 세 가지뿐이고 전부 절제한다(§4·§15).
+ *  - 장식 도형이 포인터를 따라 최대 8px. 사진이나 글자는 따라가지 않는다.
+ *  - 스크롤에 따라 사진이 최대 1.03배. 그 이상은 사진이 프레임을 넘어
+ *    "떠 있는" 인상이 된다.
+ *  - 텍스트·CTA·이미지가 순차 등장. 한 번만 재생하고 끝난다.
+ *
+ * 모바일에서는 포인터 패럴랙스가 애초에 의미가 없고(터치), 확대도 절반으로
+ * 줄인다. `prefers-reduced-motion`에서는 셋 다 꺼지고 최종 상태만 남는다.
  */
+
+/** 장식 도형이 포인터를 따라가는 최대 거리(px) — §4의 4~8px 상한. */
+const PARALLAX_MAX = 8;
+
 export function EduHero() {
+  const [mounted, setMounted] = useState(false);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+
+  const frameRef = useRef<HTMLDivElement>(null);
+  const reducedRef = useRef(false);
+
+  useEffect(() => {
+    reducedRef.current = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    // 다음 프레임에 켠다. 마운트와 같은 프레임에 상태를 바꾸면 브라우저가
+    // 시작 상태를 한 번도 그리지 않아 트랜지션이 통째로 생략되고, 등장
+    // 애니메이션이 아예 재생되지 않는다.
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  // 포인터 패럴랙스. 화면 중심 기준 -1~1로 정규화해 도형에만 적용한다.
+  useEffect(() => {
+    if (reducedRef.current) return;
+    // 정밀 포인터(마우스)가 없는 기기에서는 붙이지 않는다 — 터치에서는
+    // 마지막으로 누른 지점에 도형이 멈춰 서서 어긋난 것처럼 보인다.
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
+    const onMove = (event: PointerEvent) => {
+      const x = (event.clientX / window.innerWidth - 0.5) * 2;
+      const y = (event.clientY / window.innerHeight - 0.5) * 2;
+      setPointer({ x, y });
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+
+  // 스크롤 확대 — 히어로가 화면을 벗어나는 만큼만 비례해서 키운다.
+  useEffect(() => {
+    if (reducedRef.current) return;
+
+    const onScroll = () => {
+      const frame = frameRef.current;
+      if (!frame) return;
+
+      const rect = frame.getBoundingClientRect();
+      const progress = Math.min(
+        Math.max(-rect.top / window.innerHeight, 0),
+        1,
+      );
+      const max = window.innerWidth < 768 ? 0.015 : 0.03;
+      setZoom(1 + progress * max);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32">
+    <section className="px-4 pt-6 pb-16 md:px-6 md:pt-10 md:pb-24">
       <div className="container-editorial">
-        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-12 lg:gap-10">
-          <div className="max-w-2xl space-y-8 lg:col-span-7">
-            <Eyebrow dotClassName="bg-brand-mint">KPOPSOFT EDUCATION</Eyebrow>
+        <div className="relative overflow-hidden rounded-[2rem] bg-white px-6 py-14 md:rounded-[2.5rem] md:px-12 md:py-20">
+          <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-10">
+            <div className="max-w-2xl lg:col-span-6">
+              <Reveal show={mounted} delay={0}>
+                <Eyebrow dotClassName="bg-brand-mint">
+                  KPOPSOFT EDUCATION
+                </Eyebrow>
+              </Reveal>
 
-            <h1 className="text-display text-ink">
-              배우며, 만들고
-              <br />
-              <span className="text-brand-blue">적용까지.</span>
-            </h1>
+              <Reveal show={mounted} delay={80}>
+                <h1 className="text-display mt-6 text-ink">
+                  AI를 배우고, 만들고,
+                  <br />
+                  <span className="text-brand-blue">실제 업무에 적용합니다.</span>
+                </h1>
+              </Reveal>
 
-            {/* 줄바꿈은 의미 단위로 고정한다 — "AI를 알고 / 시작할 수 있게"가
-                한 호흡씩 읽히도록. */}
-            <p className="text-body-lg max-w-[46ch] text-ink/70">
-              누구나 쉽게 AI를 알고
-              <br />
-              시작할 수 있게 교육합니다.
-            </p>
+              <Reveal show={mounted} delay={160}>
+                {/* 줄바꿈은 의미 단위로 고정한다 — "강의만 듣는 교육이
+                    아닙니다"가 한 호흡으로 먼저 읽혀야 다음 문장이 그 반박으로
+                    이어진다. */}
+                <p className="mt-7 text-body-lg max-w-[46ch] text-ink/70">
+                  강의만 듣는 교육이 아닙니다.
+                  <br className="hidden sm:inline" /> 직접 만들고 실습하며, AI를
+                  자신의 업무와 프로젝트에 활용할 수 있도록 돕습니다.
+                </p>
+              </Reveal>
 
-            <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center">
-              <CtaButton
-                variant="primary"
-                href={`#${educationSectionId.inquiry}`}
-              >
-                무료 상담 신청하기
-              </CtaButton>
-              <CtaButton
-                variant="secondary"
-                href={`#${educationSectionId.programs}`}
-              >
-                교육 프로그램 보기
-              </CtaButton>
+              <Reveal show={mounted} delay={240}>
+                <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <CtaButton
+                    variant="primary"
+                    href={`#${educationSectionId.programs}`}
+                  >
+                    프로그램 보기
+                  </CtaButton>
+                  <CtaButton
+                    variant="secondary"
+                    href={`#${educationSectionId.inquiry}`}
+                  >
+                    교육 문의
+                  </CtaButton>
+                </div>
+              </Reveal>
             </div>
-          </div>
 
-          {/* 실제 교육 현장 사진 — 캐릭터와 도형은 프레임 모서리에 얹히는
-              보조 그래픽으로만 사용한다(§7). */}
-          <div className="relative mx-auto w-full max-w-md lg:col-span-5 lg:mx-0 lg:max-w-none">
-            <CoverVisual
-              accent="mint"
-              imageUrl="/education/education-hero.jpg"
-              alt="KPOPSOFT 교육 현장에서 참가자들이 노트북으로 실습하는 모습"
-              ratio="4/3"
-              priority
-              sizes="(max-width: 1024px) 90vw, 40vw"
-              className="rounded-[2rem] shadow-[0_24px_60px_-24px_rgba(41,37,34,0.35)]"
-            />
+            <Reveal show={mounted} delay={320} className="lg:col-span-6">
+              <div ref={frameRef} className="relative">
+                <div className="overflow-hidden rounded-[1.75rem]">
+                  <div
+                    style={{ transform: `scale(${zoom})` }}
+                    className="transition-transform duration-300 ease-out will-change-transform"
+                  >
+                    <CoverVisual
+                      accent="mint"
+                      imageUrl="/education/education-hero.jpg"
+                      alt="KPOPSOFT 교육 현장에서 참가자들이 노트북으로 실습하는 모습"
+                      ratio="4/3"
+                      priority
+                      sizes="(max-width: 1024px) 90vw, 45vw"
+                      className="rounded-none"
+                    />
+                  </div>
+                </div>
 
-            <div aria-hidden className="pointer-events-none contents">
-              <Star className="absolute -top-6 -right-4 size-14 rotate-12 text-brand-yellow sm:size-16" />
-              <Ring className="absolute top-1/3 -left-8 size-16 text-brand-sky sm:size-20" />
-              <Wave className="absolute -bottom-8 left-1/4 w-28 text-brand-mint sm:w-32" />
-
-              {/* SVG는 next/image 최적화를 태우지 않는다 — 옵티마이저가
-                  `dangerouslyAllowSVG` 없이는 SVG를 거부한다. 우리 자산이므로
-                  `unoptimized`로 원본을 그대로 내보낸다. */}
-              <Image
-                src="/assets/vibedays-role-master.svg"
-                alt=""
-                width={333}
-                height={511}
-                unoptimized
-                className="absolute -right-6 -bottom-7 size-20 w-auto drop-shadow-[0_8px_20px_rgba(41,37,34,0.25)] sm:size-24"
-              />
-            </div>
+                {/* 장식 그래픽 — 스크린리더에서 제외한다(§17). */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    transform: `translate3d(${pointer.x * PARALLAX_MAX}px, ${
+                      pointer.y * PARALLAX_MAX
+                    }px, 0)`,
+                    transition: "transform 400ms ease-out",
+                  }}
+                >
+                  <Circle className="absolute -top-7 -left-7 size-20 text-brand-blue sm:size-24" />
+                  <Wave className="absolute -right-6 -bottom-7 w-28 text-brand-mint sm:w-36" />
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
-
-        {/*
-          3분류 소개 (docs/KPOPSOFT_Education_Page_ver3.md §02).
-          Hero가 소개 섹션을 겸하므로, 세 분류를 여기서 동일 비중으로 노출하고
-          각각 프로그램 정보의 해당 앵커로 보낸다.
-        */}
-        <ul className="mt-20 grid grid-cols-1 gap-5 md:mt-24 md:grid-cols-3">
-          {eduCategories.map((category) => (
-            <li key={category.id}>
-              <a
-                href={`#${category.anchor}`}
-                className="group flex h-full flex-col gap-3 rounded-3xl border border-ink/10 bg-white p-7 transition-transform duration-200 outline-none hover:-translate-y-1 focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
-              >
-                <h2 className="text-lg font-extrabold tracking-tight text-ink">
-                  {category.name}
-                </h2>
-                <p className="flex-1 text-base text-ink/70">
-                  {category.description}
-                </p>
-                <span className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-ink">
-                  자세히 보기
-                  <ArrowRight
-                    className="size-4 transition-transform duration-200 group-hover:translate-x-1"
-                    aria-hidden
-                  />
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
+  );
+}
+
+/**
+ * 순차 등장 (§4). 마운트 이후에 한 번만 재생한다 — 스크롤할 때마다 다시
+ * 나타나면 히어로로 돌아올 때마다 읽던 화면이 사라진다.
+ *
+ * 서버 렌더 결과에는 이미 최종 상태가 들어 있고(투명도만 CSS로 낮춤),
+ * JS가 꺼져 있어도 내용은 그대로 보인다.
+ */
+function Reveal({
+  show,
+  delay,
+  className,
+  children,
+}: {
+  show: boolean;
+  delay: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "motion-safe:transition-all motion-safe:duration-700 motion-safe:ease-out",
+        show
+          ? "opacity-100 motion-safe:translate-y-0"
+          : "motion-safe:translate-y-3 motion-safe:opacity-0",
+        className,
+      )}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
   );
 }

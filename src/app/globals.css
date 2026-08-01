@@ -249,3 +249,31 @@
     transform: none;
   }
 }
+
+/*
+ * 가로 마키 (교육 페이지 수정 요청서 §9·§11).
+ *
+ * 트랙에 같은 목록을 두 벌 넣고 정확히 절반만큼 밀면 이음매 없이 이어진다.
+ * 두 번째 벌은 `aria-hidden`이라 스크린리더는 목록을 한 번만 읽는다.
+ *
+ * `-50%`가 아니라 `calc(-50% - <gap>/2)`인 이유 — 트랙의 gap이 두 벌 사이에도
+ * 하나 들어가므로, 정확히 절반을 밀면 그 gap만큼 어긋나 이음매에서 카드가
+ * 튄다.
+ */
+@keyframes kps-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - var(--marquee-gap, 1.5rem) / 2));
+  }
+}
+
+@keyframes kps-marquee-reverse {
+  from {
+    transform: translateX(calc(-50% - var(--marquee-gap, 1.5rem) / 2));
+  }
+  to {
+    transform: translateX(0);
+  }
+}

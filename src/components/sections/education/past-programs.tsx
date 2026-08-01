@@ -15,11 +15,18 @@ import {
 } from "@/lib/education-content";
 
 /**
- * SECTION 06 — 지난 프로그램 (docs/KPOPSOFT_Education_Page_ver3.md §06).
+ * 교육 사례 및 결과물 (수정 요청서 §9).
  *
- * ver3 신설. ver2 "교육 사례"(edu-cases.tsx)의 가로 리스트형 카드 구조를
- * 계승하되, 3분류 배지와 진행 시기를 앞세운다 — 이 섹션의 목적이 "무엇을
- * 해냈는가"보다 "언제 어떤 분류의 교육이 실제로 돌았는가"를 보여주는 데 있다.
+ * ver3의 "지난 프로그램"이 이 섹션으로 흡수됐다. 제목과 앵커가 바뀐 이유는
+ * 담을 것이 늘어서다 — 지난 프로그램뿐 아니라 기업교육 사례, 정규 교육 사례,
+ * 클럽 활동과 세미나, 수강생 결과물까지 한 곳에서 보여주기로 했다(§9).
+ *
+ * **다만 지금 실제로 있는 자료는 지난 프로그램 3건뿐이다.** 요청서가 지정한
+ * 두 줄 마키 갤러리는 카드가 양쪽으로 흐를 만큼 쌓였을 때 의미가 있고,
+ * 3건으로 돌리면 같은 카드가 반복해서 지나가며 오히려 사례가 적다는 사실만
+ * 강조된다. 그래서 카테고리 축과 섹션 자리를 먼저 잡아 두고, 마키는 자료가
+ * 채워지면 켠다 — §18이 "확인되지 않은 사례를 만들지 말 것"을 못 박고 있어
+ * 빈 카테고리를 그럴듯한 더미로 메우지 않는다.
  *
  * Desktop은 고정폭 이미지 열 + 정보, Mobile은 이미지 상단형으로 마크업 자체를
  * 바꾼다(데스크톱 행을 좁게 눌러 담지 않는다).
@@ -28,12 +35,14 @@ export function PastPrograms() {
   if (pastPrograms.length === 0) return null;
 
   return (
-    <Section id={eduSectionId.pastPrograms} className="bg-ivory">
+    <Section id={eduSectionId.cases} className="scroll-mt-36 bg-ivory">
       <div className="max-w-2xl">
-        <Eyebrow dotClassName="bg-brand-yellow">지난 프로그램</Eyebrow>
-        <h2 className="text-section mt-6 text-ink">지난 프로그램</h2>
+        <Eyebrow dotClassName="bg-brand-yellow">교육 사례</Eyebrow>
+        <h2 className="text-section mt-6 text-ink">배우고, 직접 만든 결과들</h2>
         <p className="mt-6 text-body-lg text-ink/70">
-          실제로 진행했던 교육의 기록입니다.
+          기업교육과 정규 과정, 바이브데이즈에서
+          <br className="hidden sm:inline" /> 함께 배우고 만든 실제 과정과
+          결과물을 확인해보세요.
         </p>
       </div>
 

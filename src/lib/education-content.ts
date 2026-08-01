@@ -87,6 +87,138 @@ export const eduCategories: EduCategory[] = [
 ];
 
 /* ------------------------------------------------------------------ *
+ * 교육 목적 선택 — 3분류로 가는 탐색 장치
+ * ------------------------------------------------------------------ */
+
+/**
+ * 목적 카드 (수정 요청서 §5). 카드를 고르면 프로그램 섹션으로 스크롤하면서
+ * `category`가 가리키는 블록이 활성화되고, `track`이 있으면 정규 클래스 중
+ * 그 트랙의 과정이 앞으로 정렬된다.
+ *
+ * 카드가 3장인데 목적지가 2곳(조직·기업 / 정규 클래스)인 건 의도된 것이다 —
+ * "AI 입문"과 "실무 활용"은 같은 정규 클래스로 가되 **먼저 보이는 과정이
+ * 다르다.** 방문자에게 자기 언어로 두 갈래를 주면서 상품 체계는 건드리지
+ * 않는 방법이다. 바이브데이즈는 목적이 아니라 지속형 활동이라 여기 없다.
+ */
+export type EduPurpose = {
+  id: string;
+  index: string;
+  title: string;
+  description: string;
+  /** 이 목적이 도달할 프로그램 분류. */
+  category: EduCategoryId;
+  /** 정규 클래스로 갈 때 앞세울 트랙. 조직·기업은 해당 없음. */
+  track?: EduTrack;
+  accent: Accent;
+};
+
+export const eduPurposes: EduPurpose[] = [
+  {
+    id: "beginner",
+    index: "01",
+    title: "AI 입문",
+    description: "AI를 처음 접하는 입문자를 위한 기초 실습 교육",
+    category: "regular",
+    track: "beginner",
+    accent: "sky",
+  },
+  {
+    id: "practical",
+    index: "02",
+    title: "실무 활용",
+    description: "반복 업무를 줄이고 생산성을 높이는 직무별 AI 교육",
+    category: "regular",
+    track: "practical",
+    accent: "blue",
+  },
+  {
+    id: "org",
+    index: "03",
+    title: "기업·조직 교육",
+    description: "조직의 목표와 업무 환경에 맞춰 설계하는 맞춤형 교육",
+    category: "org",
+    accent: "navy",
+  },
+];
+
+/**
+ * 선택한 목적에 맞춰 정규 클래스를 재정렬한다. **거르지 않고 순서만 바꾼다** —
+ * 4과정뿐이라 한 화면에 다 들어오고, 감추면 "고른 것 말고는 없다"는 인상만
+ * 남는다. 같은 트랙 안에서는 원래 순서(01~04)를 지켜 목록이 매번 다르게
+ * 보이지 않게 한다.
+ */
+export function sortRegularClassesByTrack(track?: EduTrack): RegularClass[] {
+  if (!track) return regularClasses;
+
+  return [...regularClasses].sort((a, b) => {
+    const aMatch = a.tracks.includes(track) ? 0 : 1;
+    const bMatch = b.tracks.includes(track) ? 0 : 1;
+    return aMatch - bMatch;
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * 프로그램 섹션 — 분류별 요약 (Sticky 패널이 읽는 공통 형식)
+ * ------------------------------------------------------------------ */
+
+/**
+ * 세 분류를 같은 형식으로 요약한다 (수정 요청서 §7 "오른쪽: 실제 교육 사진,
+ * 대상, 방식, 결과물").
+ *
+ * 분류마다 데이터 모양이 다르다 — 조직·기업은 단일 객체, 정규는 4과정 배열,
+ * 클럽은 기수·티어 구조다. Sticky 패널이 그 셋을 각각 분해해서 그리면 분기가
+ * 패널 안에 쌓이므로, **읽는 쪽이 원하는 형식으로 한 번만 정리**해 둔다.
+ * 아래 값은 각 분류 데이터에서 뽑은 것이지 새로 지어낸 사실이 아니다.
+ */
+export type ProgramHighlight = {
+  category: EduCategoryId;
+  /** 누가 듣는가 */
+  audience: string;
+  /** 어떻게 진행하는가 */
+  format: string;
+  /** 무엇이 남는가 */
+  outcome: string;
+  image: EduImage;
+};
+
+export const programHighlights: ProgramHighlight[] = [
+  {
+    category: "org",
+    audience: "팀 단위 5명 이상의 조직·기업",
+    format: "인원·직무·기간에 맞춘 맞춤 설계, 방문 또는 온라인",
+    outcome: "조직의 실제 과제를 다룬 커리큘럼과 실습 결과물",
+    image: {
+      src: "/education/education-b2b-01.jpg",
+      alt: "기업 맞춤형 교육 워크숍에서 참가자들이 모여 협업하는 모습",
+    },
+  },
+  {
+    category: "regular",
+    audience: "AI를 처음 쓰는 사람부터 실무에 붙이려는 직장인까지",
+    format: "3~8주 오프라인 과정, 매 회차 실습 중심",
+    outcome: "직접 만든 결과물 — 수료하면 포트폴리오가 남습니다",
+    image: {
+      src: "/education/education-lecture-01.jpg",
+      alt: "정규 클래스에서 강사가 화면을 보며 실무 활용법을 설명하는 모습",
+    },
+  },
+  {
+    category: "club",
+    audience: "배운 것을 계속 이어가고 싶은 사람",
+    format: "기수제 스터디와 세미나, 실무 커뮤니티",
+    outcome: "매월 쌓이는 실험 기록과 함께 만드는 동료",
+    image: {
+      src: "/education/education-practice-01.jpg",
+      alt: "커뮤니티 클럽 모임에서 참가자들이 각자 노트북으로 작업하는 모습",
+    },
+  },
+];
+
+export function getProgramHighlight(category: EduCategoryId) {
+  return programHighlights.find((item) => item.category === category);
+}
+
+/* ------------------------------------------------------------------ *
  * 01. 조직·기업 맞춤 교육
  * ------------------------------------------------------------------ */
 
@@ -113,6 +245,24 @@ export const regularClassIntro = {
   description: "이론이 아닌 결과물 중심. 수료하면 포트폴리오가 생깁니다.",
 } as const;
 
+/**
+ * 방문자가 스스로 밝히는 학습 목적 (교육 페이지 수정 요청서 §5).
+ *
+ * **프로그램 3분류와 다른 축이고, 그래야 한다.** 3분류(`EduCategoryId`)는 우리가
+ * 실제로 운영하는 교육 상품의 체계고, 이 트랙은 처음 온 사람이 "나는 어느
+ * 쪽인가"를 고르는 탐색 장치다. 둘을 같은 이름으로 통일하려 들면 안 된다 —
+ * 상품 체계를 방문자 언어로 바꾸거나 그 반대가 되어 양쪽 다 망가진다.
+ *
+ * 트랙은 정규 클래스 안에서만 의미가 있다. 조직·기업 교육은 커리큘럼을 그때
+ * 설계하므로 난이도가 고정돼 있지 않고, 커뮤니티 클럽은 애초에 "목적"이 아니라
+ * 지속형 활동이라 목적 선택에 넣지 않는다(§5 사용자 결정).
+ */
+export type EduTrack =
+  /** AI를 처음 접하는 사람 */
+  | "beginner"
+  /** 이미 쓰고 있고, 업무에 제대로 붙이고 싶은 사람 */
+  | "practical";
+
 export type RegularClass = {
   slug: string;
   index: string;
@@ -125,6 +275,16 @@ export type RegularClass = {
   duration: string;
   /** "입문·중급" */
   level: string;
+  /**
+   * 이 과정이 답이 되는 학습 목적. 목적 카드를 고르면 해당 트랙의 과정이
+   * **앞으로 정렬**된다 — 나머지를 숨기지는 않는다. 4과정뿐이라 한 화면에 다
+   * 들어오고, 감추면 "고른 것 말고는 없다"는 인상만 남기 때문이다.
+   *
+   * `level`(자유 문자열)과 별개로 둔 이유 — level은 사람이 읽는 표기라
+   * "비개발자 환영"처럼 난이도가 아닌 값도 들어온다. 코드가 분기에 쓸 축은
+   * 표기와 분리해야 문구를 다듬을 때 동작이 따라 깨지지 않는다.
+   */
+  tracks: EduTrack[];
   accent: Accent;
   image?: EduImage;
   /**
@@ -147,6 +307,7 @@ export const regularClasses: RegularClass[] = [
       "ChatGPT, Claude, Cursor 등 현업에서 즉시 쓸 수 있는 AI 툴을 실무 프로젝트와 함께 배웁니다.",
     duration: "4주",
     level: "입문·중급",
+    tracks: ["beginner", "practical"],
     accent: "blue",
     image: {
       src: "/education/education-lecture-01.jpg",
@@ -175,6 +336,7 @@ export const regularClasses: RegularClass[] = [
       "코드를 몰라도 괜찮습니다. AI를 페어 프로그래머로 삼아 아이디어를 실제 소프트웨어로 만드세요.",
     duration: "6주",
     level: "비개발자 환영",
+    tracks: ["beginner"],
     accent: "red",
     image: {
       src: "/education/education-practice-01.jpg",
@@ -204,6 +366,7 @@ export const regularClasses: RegularClass[] = [
       "기획부터 배포까지. 웹사이트와 모바일 앱을 직접 설계하고 완성하는 실전 코스입니다.",
     duration: "8주",
     level: "중급",
+    tracks: ["practical"],
     accent: "yellow",
     image: {
       src: "/education/education-workshop-01.jpg",
@@ -233,6 +396,7 @@ export const regularClasses: RegularClass[] = [
     description: "보고서 자동화, 데이터 수집, 알림 시스템을 직접 구축합니다.",
     duration: "3주",
     level: "입문·중급",
+    tracks: ["practical"],
     accent: "mint",
     image: {
       src: "/education/education-coaching-01.jpg",
@@ -652,7 +816,23 @@ export type FaqItem = {
   answer: string;
 };
 
+/**
+ * FAQ 8문항 (수정 요청서 §12가 지정한 필수 질문).
+ *
+ * 순서는 방문자가 스스로 묻는 순서를 따른다 — "나도 되나?"(자격) → "어떻게
+ * 하나?"(방식) → "얼마인가?"(비용) → "끝나고는?"(사후). 요청서의 나열 순서와
+ * 다르지만 §12는 질문 목록을 확정한 것이지 순서를 확정한 게 아니다.
+ *
+ * 답변은 이미 확인된 운영 사실로만 채웠다. 근거가 없는 항목(구체적 수강료,
+ * 확정 일정)은 숫자를 지어내는 대신 문의로 안내한다 — §18.
+ */
 export const eduFaqs: FaqItem[] = [
+  {
+    id: "ai-beginner",
+    question: "AI를 처음 사용해도 참여할 수 있나요?",
+    answer:
+      "네. 정규 과정은 AI를 처음 접하는 분을 기준으로 시작합니다. 계정을 만들고 도구를 세팅하는 첫 단계부터 함께 진행하므로 사전 지식이 없어도 됩니다.",
+  },
   {
     id: "no-coding",
     question: "코딩을 전혀 몰라도 수강할 수 있나요?",
@@ -660,25 +840,61 @@ export const eduFaqs: FaqItem[] = [
       "네, 가능합니다. Vibe Coding이나 AI 활용 과정은 비개발자도 충분히 따라올 수 있도록 설계되어 있습니다. 코드보다 개념과 실습에 집중합니다.",
   },
   {
-    id: "org-minimum",
-    question: "조직 교육은 최소 몇 명부터 가능한가요?",
+    id: "individual-or-org",
+    question: "개인과 기업 모두 신청할 수 있나요?",
     answer:
-      "팀 단위(5명 이상)부터 가능합니다. 인원, 직무, 기간에 따라 맞춤형으로 설계해 드립니다.",
+      "네. 개인은 정규 과정과 바이브데이즈 클럽으로, 조직은 맞춤 교육으로 신청하실 수 있습니다. 조직 교육은 팀 단위 5명 이상부터 진행합니다.",
   },
   {
-    id: "after-support",
-    question: "수료 후 지원이 있나요?",
-    answer:
-      "네. 수료 후 카카오톡 오픈채팅 커뮤니티에서 질의응답 지원과 피드백을 제공합니다.",
-  },
-  {
-    // IA에 없는 4번째 문항 — 진행 방식 문의가 잦을 것으로 보고 추가.
     id: "online-offline",
-    question: "정규 클래스는 온라인인가요, 오프라인인가요?",
+    question: "온라인과 오프라인 중 어떤 방식으로 진행되나요?",
     answer:
       "정규 클래스는 오프라인으로 진행합니다. 조직·기업 맞춤 교육은 방문 교육까지 가능하고, 바이브데이즈 클럽은 월 1회 오프라인 모임을 함께 운영합니다.",
   },
+  {
+    id: "what-to-prepare",
+    question: "준비해야 할 프로그램이나 장비가 있나요?",
+    answer:
+      "노트북 한 대면 됩니다. 실습에 쓰는 AI 도구는 첫 회차에 함께 설치하고 계정을 만들며, 유료 결제가 필요한 경우 무료 대안을 함께 안내합니다.",
+  },
+  {
+    id: "org-custom",
+    question: "기업 맞춤형 커리큘럼도 가능한가요?",
+    answer:
+      "네. 조직의 목표와 직무, 현재 AI 활용 수준을 확인한 뒤 인원·기간에 맞춰 커리큘럼을 설계합니다. 팀 단위 5명 이상부터 가능합니다.",
+  },
+  {
+    id: "cost-and-schedule",
+    question: "교육 비용과 일정은 어떻게 정해지나요?",
+    answer:
+      "정규 과정은 기수별로 일정과 수강료를 공지하고, 조직 교육은 인원·기간·진행 방식에 따라 견적을 산출합니다. 문의를 남겨 주시면 조건에 맞춰 안내드립니다.",
+  },
+  {
+    id: "after-support",
+    question: "교육 후에도 자료나 지원을 받을 수 있나요?",
+    answer:
+      "네. 실습에 사용한 자료를 공유하고, 수료 후에도 카카오톡 오픈채팅 커뮤니티에서 질의응답과 피드백을 이어갑니다.",
+  },
 ];
+
+/* ------------------------------------------------------------------ *
+ * 강사진 보강 정보
+ * ------------------------------------------------------------------ */
+
+/**
+ * 강사별 담당 프로그램 (수정 요청서 §10 카드 정보).
+ *
+ * 강사 데이터 자체는 DB(`experts` 테이블 → `getPublicExperts()`)에서 오고
+ * 거기에는 담당 프로그램 컬럼이 없다. 컬럼 추가는 DB 변경이라 이번 범위 밖이며
+ * (DB 수정은 즉시 라이브에 반영된다), **누가 어느 과정을 맡는지 확인된 자료도
+ * 아직 없다.** §18이 확인되지 않은 정보를 만들지 말라고 못 박고 있으므로
+ * 그럴듯한 배정을 채워 넣지 않는다.
+ *
+ * 그래서 자리만 만들어 둔다 — 키는 강사 이름, 값은 담당 과정명이다. 비어
+ * 있으면 카드가 해당 줄을 그리지 않는다. 확인되는 대로 여기를 채우면 되고,
+ * 나중에 DB로 옮길 때도 이 형태를 그대로 어댑터가 채우면 된다.
+ */
+export const instructorPrograms: Record<string, string[]> = {};
 
 /* ------------------------------------------------------------------ *
  * 문의 폼 옵션

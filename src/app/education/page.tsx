@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { EduHero } from "@/components/sections/education/edu-hero";
+import { EduSubnav } from "@/components/sections/education/edu-subnav";
+import { EduExploreProvider } from "@/components/sections/education/explore-context";
+import { PurposeSelect } from "@/components/sections/education/purpose-select";
 import { EduStats } from "@/components/sections/education/edu-stats";
 import { Instructors } from "@/components/sections/education/instructors";
 import { EduPrograms } from "@/components/sections/education/edu-programs";
@@ -50,16 +53,28 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 /**
- * Education 페이지 (docs/KPOPSOFT_Education_Page_ver3.md §2).
+ * Education 페이지 (docs/KPOPSOFT_education_page_revision_request.md §2).
  *
- * ver3에서 14개 섹션 → 8개로 압축했다. Hero가 3분류 소개를 겸하고, 프로그램
- * 정보 한 섹션 안에서 조직·기업 / 정규 클래스 / 커뮤니티 클럽이 각자 앵커를
- * 갖는다. VIBEDAYS는 섹션이 아니라 모달이다.
+ * 요청서가 확정한 순서다. ver3(8섹션) 대비 바뀐 것은 셋.
+ *  1. **교육 목적 선택 신설** — ver3에서 히어로가 겸하던 3분류 소개를 독립
+ *     섹션으로 꺼냈다. 히어로에서 세 갈래를 보여주고 여기서 또 보여주면
+ *     어느 쪽이 진짜 입구인지 알 수 없어, 히어로 쪽을 걷어냈다.
+ *  2. **강사진이 사례 뒤로** — ver3에서는 프로그램보다도 앞이었다. "누가
+ *     가르치는가"는 "무엇을 배우는가"와 "실제로 무엇이 나왔는가"를 본 뒤에
+ *     읽히는 정보라는 것이 요청서의 판단이다.
+ *  3. **서브 내비게이션** — 전역 헤더 4메뉴는 그대로 두고, 페이지 안을 오가는
+ *     바를 따로 둔다(§3, 사용자 결정). 역할이 다르므로 둘 다 있는 게 맞다.
  *
- * 빠진 섹션(방문 목적 선택 · 교육 결과물 · 교육 방식 · 기업 맞춤형 교육 ·
- * 교육 진행 프로세스 · CTA 스플릿)의 컴포넌트 파일은 지우지 않았다 — 홈 ver2
- * 개편과 같은 방식으로 여기서 더 이상 불러오지 않을 뿐이다. 되돌리기 쉽고
- * diff가 작다.
+ * `EduExploreProvider`가 목적 선택과 프로그램 섹션을 감싼다 — 목적 카드를
+ * 누르면 프로그램 섹션이 해당 분류를 강조하고 정규 과정을 트랙 순서로
+ * 재정렬한다(§5). 두 섹션이 형제라 props로는 이어지지 않는다.
+ *
+ * 요청서가 지시한 기업교육·정규 과정 상세 페이지는 이번 범위에서 제외했다
+ * (사용자 결정). 해당 CTA는 없는 페이지 대신 문의 섹션으로 보낸다.
+ *
+ * 페이지에서 빠진 섹션(교육 결과물 · 교육 방식 · 기업 맞춤형 교육 · 교육
+ * 진행 프로세스 · CTA 스플릿)의 컴포넌트 파일은 지우지 않았다 — 여기서 더
+ * 이상 불러오지 않을 뿐이다. 되돌리기 쉽고 diff가 작다.
  *
  * 강사진은 홈과 동일한 `getPublicExperts()`를 그대로 재사용해 데이터를
  * 페이지마다 중복 등록하지 않는다. 나머지 콘텐츠는 DB 스키마가 아직 없어
@@ -73,10 +88,14 @@ export default async function EducationPage() {
       <Header />
       <main id={educationSectionId.hero} className="flex-1">
         <EduHero />
-        <EduStats />
-        <Instructors experts={experts} />
-        <EduPrograms />
+        <EduSubnav />
+        <EduExploreProvider>
+          <PurposeSelect />
+          <EduStats />
+          <EduPrograms />
+        </EduExploreProvider>
         <PastPrograms />
+        <Instructors experts={experts} />
         <Reviews />
         <Faq />
         <InquiryForm />
