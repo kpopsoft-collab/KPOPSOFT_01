@@ -36,6 +36,24 @@ export type PublicWork = {
   solution: string;
   results: string[];
   imageUrl?: string;
+  /**
+   * 갤러리 이미지. 여러 장이면 카드에 도트 페이지네이션이 붙는다
+   * (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 05).
+   * 비어 있으면 `imageUrl` 한 장만 쓴다.
+   */
+  imageUrls?: string[];
+  /**
+   * 담당 범위 (수정 요청서 §8). **실제 수행 내용이 확인된 경우에만** 채운다 —
+   * 확인되지 않은 역할을 임의로 추가하지 않는다. 비어 있으면 카드에서 이 줄이
+   * 통째로 빠진다.
+   */
+  scope?: string[];
+  /** 주요 기능 — 상세 패널에서만 보여준다 (요청서 §9~§11). */
+  features?: string[];
+  /** 핵심 사용자 흐름 한 줄 (요청서 §9~§11). */
+  flow?: string;
+  /** 공개된 실제 서비스 주소. 있으면 카드·상세에 외부 링크가 붙는다. */
+  externalUrl?: string;
 };
 export type PublicInsight = {
   tag: string;
@@ -118,6 +136,19 @@ export async function getPublicWork(): Promise<PublicWork[]> {
       solution: r.solution,
       results: r.results ?? [],
       ...(r.image_url ? { imageUrl: r.image_url as string } : {}),
+      ...(Array.isArray(r.image_urls) && r.image_urls.length > 0
+        ? { imageUrls: r.image_urls as string[] }
+        : {}),
+      // 아래 네 필드는 수정 요청서 §8~§12로 새로 생긴 컬럼이다. 컬럼이 아직
+      // 없는 DB에서도 `select *`가 그냥 undefined를 주므로 안전하게 빠진다.
+      ...(Array.isArray(r.scope) && r.scope.length > 0
+        ? { scope: r.scope as string[] }
+        : {}),
+      ...(Array.isArray(r.features) && r.features.length > 0
+        ? { features: r.features as string[] }
+        : {}),
+      ...(r.user_flow ? { flow: r.user_flow as string } : {}),
+      ...(r.external_url ? { externalUrl: r.external_url as string } : {}),
     }));
   } catch {
     return fallbackWork;

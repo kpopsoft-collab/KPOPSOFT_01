@@ -117,13 +117,12 @@ export const mockEducationImages: EducationImage[] = [];
 /** Singleton Education page settings (mock mode) — mirrors education_page_settings. */
 export const mockEducationSettings: EducationPageSettings = {
   heroEyebrow: "KPOPSOFT EDUCATION",
-  heroTitle: "배우는 데서 끝나지 않고,\n직접 만들고 적용합니다.",
-  heroDescription:
-    "AI 활용부터 Vibe Coding, 업무 자동화와 프로토타입 제작까지.\n실제 업무와 아이디어를 중심으로 직접 만들며 배우는\nKPOPSOFT의 실무형 교육 프로그램입니다.",
-  heroCtaPrimaryLabel: "교육 프로그램 보기",
-  heroCtaPrimaryHref: "#programs",
-  heroCtaSecondaryLabel: "기업 교육 상담",
-  heroCtaSecondaryHref: "#contact-form",
+  heroTitle: "배우며, 만들고\n적용까지.",
+  heroDescription: "누구나 쉽게 AI를 알고\n시작할 수 있게 교육합니다",
+  heroCtaPrimaryLabel: "무료 상담 신청하기",
+  heroCtaPrimaryHref: "#education-inquiry",
+  heroCtaSecondaryLabel: "교육 프로그램 보기",
+  heroCtaSecondaryHref: "#programs",
   vibedaysTitle: "서로 다른 바이브가 만나,\n배우고 만든 날들이 쌓입니다.",
   vibedaysDescription:
     "VIBEDAYS CLUB은 서로 다른 경험과 수준을 가진 사람들이\n배우고, 만들고, 자신의 결과를 나누는\nKPOPSOFT의 실습형 러닝 커뮤니티입니다.",
