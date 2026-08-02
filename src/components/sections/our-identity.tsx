@@ -96,8 +96,13 @@ export function OurIdentity() {
             ))}
 
             <li className="relative isolate min-h-44 overflow-hidden rounded-3xl bg-ink p-6 md:p-7">
+              {/* 패턴 블록을 카드 오른쪽 밖으로 조금 밀어 둔다. 모티프가 카드
+                  경계에서 잘려 나가야 "잘라 쓴 원단" 처럼 읽히고, 가운데를 곱게
+                  맞춰 놓으면 도형 하나하나가 아이콘처럼 보인다.
+                  `object-left`도 같은 이유 — 프레임이 원본의 왼쪽을 보므로
+                  오른쪽 열이 잘린다. */}
               <div
-                className="absolute inset-y-0 right-0 w-[48%] bg-[radial-gradient(circle_at_center,rgba(49,91,219,0.2),transparent_68%)]"
+                className="absolute inset-y-0 -right-[6%] w-[54%] bg-[radial-gradient(circle_at_center,rgba(49,91,219,0.2),transparent_68%)]"
                 aria-hidden
               >
                 <Image
@@ -106,7 +111,7 @@ export function OurIdentity() {
                   fill
                   unoptimized
                   sizes="(min-width: 1024px) 240px, 42vw"
-                  className="object-cover object-center opacity-85"
+                  className="object-cover object-left opacity-85"
                 />
               </div>
               <div
