@@ -12,6 +12,12 @@
 
 import type { Accent } from "@/lib/site";
 
+/**
+ * 핵심 비즈니스 세 축. 카드가 늘거나 줄면 홈 레이아웃(3열)과 헤더 앵커가
+ * 함께 바뀌어야 해서, 자유 추가가 아니라 키로 고정한다.
+ */
+export type PillarKey = "software" | "ai" | "education";
+
 export type PillarExample = {
   id: string;
   /** 사례 유형명 — 카드의 태그 문자열과 동일하게 둔다. */

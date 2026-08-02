@@ -8,6 +8,8 @@ import {
   LayoutDashboard,
   Inbox,
   Briefcase,
+  LayoutGrid,
+  Layers,
   Users,
   BarChart3,
   ListChecks,
@@ -46,6 +48,12 @@ export const adminNav: AdminNavGroup[] = [
   {
     heading: "콘텐츠",
     items: [
+      { label: "핵심 비즈니스", href: "/admin/content/pillars", icon: LayoutGrid },
+      {
+        label: "핵심 비즈니스 사례",
+        href: "/admin/content/pillar-examples",
+        icon: Layers,
+      },
       { label: "Work", href: "/admin/content/work", icon: Briefcase },
       { label: "강사진", href: "/admin/content/experts", icon: Users },
       { label: "수치", href: "/admin/content/stats", icon: BarChart3 },

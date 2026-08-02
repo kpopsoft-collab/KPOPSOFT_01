@@ -6,12 +6,9 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { CoverVisual } from "@/components/ui/cover-visual";
 import { Circle, Star, Wave } from "@/components/shapes";
 import { PillarExamplesModal } from "@/components/sections/pillar-examples-modal";
-import {
-  aiExamples,
-  type PillarExample,
-  softwareExamples,
-} from "@/lib/pillar-examples";
-import { type Accent, accentText, route, sectionId } from "@/lib/site";
+import type { PillarKey } from "@/lib/pillar-examples";
+import type { PublicPillar, PublicPillarExample } from "@/lib/public-content";
+import { accentText, route, sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,86 +21,60 @@ import { cn } from "@/lib/utils";
  *
  * 포트폴리오 목업(사례 스토리)은 WORK(Selected Work) 섹션이 담당한다.
  */
-type Pillar = {
+/**
+ * 카드의 **구조** — 문구·이미지·색은 DB(`home_pillars`)가 갖고, 여기 있는 것은
+ * 콘텐츠가 아니라 화면 동작이다. 도형 아이콘과 "누르면 무엇이 열리는가"는
+ * 바꾸려면 코드가 함께 바뀌어야 하므로 어드민 입력으로 내리지 않았다.
+ */
+type PillarShell = {
+  /** 헤더 앵커(`/#software`)가 계속 동작하도록 유지하는 id. */
   id?: string;
   icon: React.ReactNode;
-  title: string;
-  accent: Accent;
-  /** 커버 이미지 경로. 없으면 CoverVisual이 도형 폴백으로 대체(§5 · docs/디자인.md §1). */
-  image?: string;
-  alt: string;
-  description: string;
-  tags: string[];
   /**
-   * 있으면 카드 본문이 버튼이 되어 예시 사례 모달을 연다. 태그로만 적혀
-   * 있던 범위를 실제 화면과 함께 보여주기 위한 것 — 없는 카드는 종전대로
-   * 정적인 카드로 남는다.
+   * 있으면 카드 본문이 버튼이 되어 사례 모달을 연다. `bodyHref`와는 배타적 —
+   * 한 카드가 두 동작을 가질 수는 없다.
    */
-  examples?: PillarExample[];
-  /** 예시 모달 안에 놓을 문의 CTA. `examples`가 있는 카드에만 쓴다. */
-  contact?: { label: string; href: string };
-  /**
-   * 있으면 카드 본문 전체가 이 경로로 가는 링크가 된다.
-   * `examples`(모달)와는 배타적 — 한 카드가 두 동작을 가질 수는 없다.
-   */
+  hasExamples: boolean;
+  /** 있으면 카드 본문 전체가 이 경로로 가는 링크가 된다. */
   bodyHref?: string;
+  /** 사례 모달 안에 놓을 문의 CTA. */
+  contact?: { label: string; href: string };
 };
 
-const pillars: Pillar[] = [
-  {
-    // 헤더 앵커(`/#software`)가 계속 동작하도록 id 유지.
+const SHELLS: Record<PillarKey, PillarShell> = {
+  software: {
     id: sectionId.software,
     icon: <Circle className="size-7 shrink-0 text-brand-blue" aria-hidden />,
-    title: "Software",
-    accent: "blue",
-    image: "/work/software-overview-v2.png",
-    alt: "소프트웨어 제작 범위 — 웹, 모바일 앱, 관리자 시스템, 내부 운영 도구 화면 모음",
-    description: "웹·앱 서비스와 업무 시스템을 기획하고 개발합니다.",
-    tags: ["웹 서비스", "모바일 앱", "관리자 시스템", "내부 운영 도구"],
-    examples: softwareExamples,
+    hasExamples: true,
     contact: {
       label: "소프트웨어 문의하기",
       href: `/?ct=${encodeURIComponent("소프트웨어 개발")}#${sectionId.contact}`,
     },
   },
-  {
+  ai: {
     id: sectionId.aiSolutions,
     icon: <Star className="size-7 shrink-0 text-brand-red" aria-hidden />,
-    title: "AI Solutions",
-    accent: "red",
-    image: "/work/ai-solutions-overview.png",
-    alt: "AI 솔루션 화면 — 매출 리포트를 요약하는 어시스턴트와 자동화된 작업 목록",
-    description:
-      "반복 업무를 줄이고 의사결정을 돕는 맞춤형 AI 솔루션을 구축합니다.",
-    tags: ["AI 챗봇", "AI 에이전트", "업무 자동화", "사내 AI Tool"],
-    examples: aiExamples,
+    hasExamples: true,
     contact: {
       label: "AI 솔루션 문의하기",
       href: `/?ct=${encodeURIComponent("AI 솔루션")}#${sectionId.contact}`,
     },
   },
-  {
+  // 교육은 상세가 별도 페이지에 있으므로 본문을 눌러도 그 페이지로 간다.
+  education: {
     icon: <Wave className="size-7 shrink-0 text-brand-mint" aria-hidden />,
-    title: "Education",
-    accent: "mint",
-    /**
-     * 얼굴이 덜 드러나는 컷으로 고름 — 강사는 화면 쪽으로 돌아서 있고
-     * 수강생은 대부분 뒷모습이다. 교육 현장의 분위기는 그대로 전하면서
-     * 참석자 초상이 크게 노출되지 않는다.
-     */
-    image: "/education/education-lecture-01.jpg",
-    alt: "교육 현장 — 강사가 화면을 가리키며 설명하고 수강생들이 각자 노트북으로 따라 하는 강의실",
-    description:
-      "AI를 실제 업무에 활용할 수 있도록 실습 중심의 교육을 제공합니다.",
-    /** ver3 교육 3분류 (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 03). */
-    tags: ["조직·기업 맞춤 교육", "정규 클래스", "지식 공유 커뮤니티 클럽"],
-    // Software/AI는 카드 본문이 예시 모달을 열지만, 교육은 상세가 별도
-    // 페이지에 있으므로 본문을 눌러도 그 페이지로 간다.
+    hasExamples: false,
     bodyHref: route.education,
   },
-];
+};
 
-export function WhatWeDo() {
+export function WhatWeDo({
+  pillars,
+  examples,
+}: {
+  pillars: PublicPillar[];
+  examples: PublicPillarExample[];
+}) {
   return (
     <Section id={sectionId.whatWeDo} className="relative overflow-hidden">
       <div className="max-w-2xl">
@@ -121,8 +92,12 @@ export function WhatWeDo() {
       </div>
 
       <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-20 lg:grid-cols-3 lg:items-stretch">
-        {pillars.map((p) => (
-          <PillarCard key={p.title} pillar={p} />
+        {pillars.map((pillar) => (
+          <PillarCard
+            key={pillar.key}
+            pillar={pillar}
+            examples={examples.filter((e) => e.pillarKey === pillar.key)}
+          />
         ))}
       </div>
     </Section>
@@ -137,11 +112,19 @@ export function WhatWeDo() {
  * 서로 다른 곳으로 갈라져 어디를 눌러야 할지 모호했다 — CTA pill을 걷어내고
  * 카드 전체를 하나의 트리거로 통일했다. 클릭 유도는 타이틀 옆 화살표가 맡는다.
  */
-function PillarCard({ pillar }: { pillar: Pillar }) {
+function PillarCard({
+  pillar,
+  examples,
+}: {
+  pillar: PublicPillar;
+  examples: PublicPillarExample[];
+}) {
+  const shell = SHELLS[pillar.key];
+
   const body = (
     <>
       <div className="flex items-center gap-3">
-        {pillar.icon}
+        {shell.icon}
         <h3
           className={cn(
             "text-2xl font-extrabold tracking-tight",
@@ -160,11 +143,11 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
 
       <CoverVisual
         accent={pillar.accent}
-        imageUrl={pillar.image}
-        alt={pillar.alt}
+        imageUrl={pillar.imageUrl}
+        alt={pillar.imageAlt}
         ratio="4/3"
         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        label={pillar.image ? undefined : pillar.title.toUpperCase()}
+        label={pillar.imageUrl ? undefined : pillar.title.toUpperCase()}
       />
 
       <p className="text-body-lg text-ink/70">{pillar.description}</p>
@@ -179,28 +162,28 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
 
   return (
     <div
-      id={pillar.id}
+      id={shell.id}
       className="flex scroll-mt-24 flex-col gap-5 rounded-3xl bg-white p-8"
     >
-      {pillar.examples ? (
+      {shell.hasExamples && examples.length > 0 ? (
         <PillarExamplesModal
           label={pillar.title}
-          examples={pillar.examples}
-          contact={pillar.contact}
+          examples={examples}
+          contact={shell.contact}
         >
           {/* 눌러서 여는 카드라는 신호는 커서·hover 배경과 타이틀 옆 화살표로
               준다. 카드 전체가 무엇을 여는 버튼인지는 `aria-label`로 밝힌다. */}
           <button
             type="button"
-            aria-label={`${pillar.title} 예시 사례 ${pillar.examples.length}가지 보기`}
+            aria-label={`${pillar.title} 예시 사례 ${examples.length}가지 보기`}
             className="group -m-2 flex cursor-pointer flex-col gap-5 rounded-3xl p-2 text-left transition-colors outline-none hover:bg-ink/[0.03] focus-visible:ring-3 focus-visible:ring-brand-blue/40"
           >
             {body}
           </button>
         </PillarExamplesModal>
-      ) : pillar.bodyHref ? (
+      ) : shell.bodyHref ? (
         <Link
-          href={pillar.bodyHref}
+          href={shell.bodyHref}
           className="group -m-2 flex flex-col gap-5 rounded-3xl p-2 transition-colors outline-none hover:bg-ink/[0.03] focus-visible:ring-3 focus-visible:ring-brand-blue/40"
         >
           {body}

@@ -286,3 +286,49 @@ export type EducationStat = ContentBase & {
   value: string;
   label: string;
 };
+
+// ─────────────────────────────────────────────────────────────────────────
+// 핵심 비즈니스 (What We Do) — 홈 카드 3장과 사례 슬라이드
+//
+// 카드의 도형 아이콘과 동작(사례 모달 / 교육 페이지 링크)은 관리 대상이
+// 아니다. 콘텐츠가 아니라 화면 구조라 바꾸려면 코드가 함께 바뀐다.
+// ─────────────────────────────────────────────────────────────────────────
+
+/** 세 사업 축. 카드 수가 바뀌면 홈 3열 레이아웃과 헤더 앵커도 바뀌므로 고정이다. */
+export type PillarKey = "software" | "ai" | "education";
+
+export const PILLAR_KEYS: readonly PillarKey[] = ["software", "ai", "education"] as const;
+
+export const pillarKeyLabel: Record<PillarKey, string> = {
+  software: "Software",
+  ai: "AI Solutions",
+  education: "Education",
+};
+
+export type HomePillar = ContentBase & {
+  key: PillarKey;
+  title: string;
+  description: string;
+  /** 다루는 범위 — 가운뎃점으로 이어 한 줄로 나간다. */
+  tags: string[];
+  imageUrl?: string;
+  imageAlt: string;
+  accent: Accent;
+};
+
+export type HomePillarExample = ContentBase & {
+  pillarKey: PillarKey;
+  /** 정적 데이터에서 승계한 식별 키. */
+  key: string;
+  /** 카드 하단 태그 문자열과 같게 유지한다 — 다르면 같은 대상인지 알기 어렵다. */
+  name: string;
+  /** 실제 제작 사례일 때만 고객사명. 비우면 화면에 "예시"로 표기된다. */
+  client: string;
+  headline: string;
+  description: string;
+  /** 이 유형에서 실제로 하는 일. 3개 권장. */
+  highlights: string[];
+  imageUrl?: string;
+  imageAlt: string;
+  accent: Accent;
+};

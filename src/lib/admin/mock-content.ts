@@ -20,6 +20,8 @@ import type {
   EducationReview,
   EducationStat,
   Expert,
+  HomePillar,
+  HomePillarExample,
   Stat,
   WorkItem,
 } from "./content-types";
@@ -91,3 +93,7 @@ export const mockOrgTraining: EducationOrgTraining = {
   imageCaption: "",
   ctaLabel: "",
 };
+
+/** 핵심 비즈니스 — 목 모드는 빈 배열에서 시작한다(실제 값은 Supabase). */
+export const mockHomePillars: HomePillar[] = [];
+export const mockHomePillarExamples: HomePillarExample[] = [];

@@ -10,6 +10,12 @@ import {
   inquiryOptions as seedOptions,
 } from "@/lib/site";
 import {
+  aiExamples,
+  type PillarExample,
+  type PillarKey,
+  softwareExamples,
+} from "@/lib/pillar-examples";
+import {
   type ClubCohort,
   type ClubTier,
   type EduImage,
@@ -517,5 +523,101 @@ export async function getPublicEducationStats(): Promise<EduStat[]> {
     "education_stats",
     (rows) => rows.map((r) => ({ value: str(r.value), label: str(r.label) })),
     eduStats,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// 핵심 비즈니스 (What We Do) — 카드 3장과 사례 슬라이드.
+//
+// 카드의 **동작**(사례 모달을 여는가, /education으로 보내는가)과 도형 아이콘은
+// DB에 두지 않는다. 그것들은 콘텐츠가 아니라 화면 구조라 바꾸려면 코드가
+// 함께 바뀌어야 한다. DB가 갖는 것은 문구·태그·이미지·색이다.
+// ─────────────────────────────────────────────────────────────────────────
+
+export type PublicPillar = {
+  key: PillarKey;
+  title: string;
+  description: string;
+  tags: string[];
+  imageUrl?: string;
+  imageAlt: string;
+  accent: Accent;
+};
+
+export type PublicPillarExample = PillarExample & { pillarKey: PillarKey };
+
+/** 정적 폴백 — DB가 비었거나 조회가 실패해도 홈은 지금 모습 그대로 나온다. */
+const fallbackPillars: PublicPillar[] = [
+  {
+    key: "software",
+    title: "Software",
+    description: "웹·앱 서비스와 업무 시스템을 기획하고 개발합니다.",
+    tags: ["웹 서비스", "모바일 앱", "관리자 시스템", "내부 운영 도구"],
+    imageUrl: "/work/software-overview-v2.png",
+    imageAlt:
+      "소프트웨어 제작 범위 — 웹, 모바일 앱, 관리자 시스템, 내부 운영 도구 화면 모음",
+    accent: "blue",
+  },
+  {
+    key: "ai",
+    title: "AI Solutions",
+    description:
+      "반복 업무를 줄이고 의사결정을 돕는 맞춤형 AI 솔루션을 구축합니다.",
+    tags: ["AI 챗봇", "AI 에이전트", "업무 자동화", "사내 AI Tool"],
+    imageUrl: "/work/ai-solutions-overview.png",
+    imageAlt:
+      "AI 솔루션 화면 — 매출 리포트를 요약하는 어시스턴트와 자동화된 작업 목록",
+    accent: "red",
+  },
+  {
+    key: "education",
+    title: "Education",
+    description: "AI를 실제 업무에 활용할 수 있도록 실습 중심의 교육을 제공합니다.",
+    tags: ["조직·기업 맞춤 교육", "정규 클래스", "지식 공유 커뮤니티 클럽"],
+    imageUrl: "/education/education-lecture-01.jpg",
+    imageAlt:
+      "교육 현장 — 강사가 화면을 가리키며 설명하고 수강생들이 각자 노트북으로 따라 하는 강의실",
+    accent: "mint",
+  },
+];
+
+const fallbackPillarExamples: PublicPillarExample[] = [
+  ...softwareExamples.map((e) => ({ ...e, pillarKey: "software" as PillarKey })),
+  ...aiExamples.map((e) => ({ ...e, pillarKey: "ai" as PillarKey })),
+];
+
+export async function getPublicPillars(): Promise<PublicPillar[]> {
+  return read(
+    "home_pillars",
+    (rows) =>
+      rows.map((r) => ({
+        key: str(r.key) as PillarKey,
+        title: str(r.title),
+        description: str(r.description),
+        tags: strArray(r.tags),
+        ...(str(r.image_url) ? { imageUrl: str(r.image_url) } : {}),
+        imageAlt: str(r.image_alt),
+        accent: str(r.accent) as Accent,
+      })),
+    fallbackPillars,
+  );
+}
+
+export async function getPublicPillarExamples(): Promise<PublicPillarExample[]> {
+  return read(
+    "home_pillar_examples",
+    (rows) =>
+      rows.map((r) => ({
+        pillarKey: str(r.pillar_key) as PillarKey,
+        id: str(r.key),
+        name: str(r.name),
+        ...(str(r.client) ? { client: str(r.client) } : {}),
+        headline: str(r.headline),
+        description: str(r.description),
+        highlights: strArray(r.highlights),
+        image: { src: str(r.image_url), alt: str(r.image_alt) },
+        accent: str(r.accent) as Accent,
+      })),
+    fallbackPillarExamples,
   );
 }

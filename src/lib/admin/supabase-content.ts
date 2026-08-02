@@ -20,6 +20,8 @@ import type {
   EducationReview,
   EducationStat,
   Expert,
+  HomePillar,
+  HomePillarExample,
   Stat,
   WorkItem,
 } from "./content-types";
@@ -70,6 +72,29 @@ const FIELDS: Record<string, FieldMap> = {
     ["value", "value"],
     ["suffix", "suffix"],
     ["label", "label"],
+  ],
+  home_pillars: [
+    ...COMMON,
+    ["key", "key"],
+    ["title", "title"],
+    ["description", "description"],
+    ["tags", "tags"],
+    ["imageUrl", "image_url"],
+    ["imageAlt", "image_alt"],
+    ["accent", "accent"],
+  ],
+  home_pillar_examples: [
+    ...COMMON,
+    ["pillarKey", "pillar_key"],
+    ["key", "key"],
+    ["name", "name"],
+    ["client", "client"],
+    ["headline", "headline"],
+    ["description", "description"],
+    ["highlights", "highlights"],
+    ["imageUrl", "image_url"],
+    ["imageAlt", "image_alt"],
+    ["accent", "accent"],
   ],
   education_regular_classes: [
     ...COMMON,
@@ -372,6 +397,8 @@ class SupabaseOrgTrainingRepo implements EducationOrgTrainingRepo {
 
 export const supabaseContentData: ContentData = {
   work: new SupabaseRepo<WorkItem>("work_items"),
+  pillars: new SupabaseRepo<HomePillar>("home_pillars"),
+  pillarExamples: new SupabaseRepo<HomePillarExample>("home_pillar_examples"),
   experts: new SupabaseRepo<Expert>("experts"),
   stats: new SupabaseRepo<Stat>("stats"),
   education: {

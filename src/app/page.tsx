@@ -15,6 +15,8 @@ import {
   getPublicWork,
   getPublicStats,
   getPublicInquiryOptions,
+  getPublicPillars,
+  getPublicPillarExamples,
 } from "@/lib/public-content";
 
 // Render per request so admin content edits (DB) reflect immediately, instead
@@ -58,10 +60,12 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   // Fetch DB-backed public content server-side (falls back to site.ts seed on
   // empty/error) and pass it down — client sections can't fetch themselves.
-  const [work, stats, inquiryOptions] = await Promise.all([
+  const [work, stats, inquiryOptions, pillars, pillarExamples] = await Promise.all([
     getPublicWork(),
     getPublicStats(),
     getPublicInquiryOptions(),
+    getPublicPillars(),
+    getPublicPillarExamples(),
   ]);
 
   return (
@@ -71,7 +75,7 @@ export default async function Home() {
         <Hero />
         <StatsBar stats={stats} />
         <OurIdentity />
-        <WhatWeDo />
+        <WhatWeDo pillars={pillars} examples={pillarExamples} />
         <WhyKpopsoft />
         {/* 홈에는 관리자가 고른 사례만. 전체 목록은 `/work`가 맡는다. */}
         <SelectedWork

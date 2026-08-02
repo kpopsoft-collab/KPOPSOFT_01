@@ -18,6 +18,8 @@ import {
   mockEducationReviews,
   mockEducationStats,
   mockExperts,
+  mockHomePillarExamples,
+  mockHomePillars,
   mockOrgTraining,
   mockStats,
   mockWork,
@@ -35,6 +37,8 @@ import type {
   EducationReview,
   EducationStat,
   Expert,
+  HomePillar,
+  HomePillarExample,
   Stat,
   WorkItem,
 } from "./content-types";
@@ -81,6 +85,10 @@ export interface EducationContentData {
 
 export interface ContentData {
   work: ContentRepo<WorkItem>;
+  /** 핵심 비즈니스 카드 3장. */
+  pillars: ContentRepo<HomePillar>;
+  /** 카드를 누르면 열리는 사례 슬라이드. */
+  pillarExamples: ContentRepo<HomePillarExample>;
   experts: ContentRepo<Expert>;
   stats: ContentRepo<Stat>;
   education: EducationContentData;
@@ -167,6 +175,8 @@ class MockOrgTrainingRepo implements EducationOrgTrainingRepo {
 
 const data: ContentData = {
   work: new MockRepo(mockWork, "work"),
+  pillars: new MockRepo(mockHomePillars, "pillar"),
+  pillarExamples: new MockRepo(mockHomePillarExamples, "pillar_example"),
   experts: new MockRepo(mockExperts, "expert"),
   stats: new MockRepo(mockStats, "stat"),
   education: {
