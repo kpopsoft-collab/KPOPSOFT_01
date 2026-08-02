@@ -29,9 +29,11 @@ export const dynamic = "force-dynamic";
  * 굵게 표시한 둘이 이번에 새로 추가된 섹션이다. 나머지 순서는 ver3 그대로다.
  *  - OUR IDENTITY — 이름에 담긴 의미를 밝혀 K-POP 콘텐츠 제작사로 오해되는
  *    것을 막는다. 헤더 `ABOUT` 앵커가 이 섹션으로 옮겨왔다.
- *  - WHY KPOPSOFT — 다섯 역량이 하나로 연결되는 모습을 보여주는 레이더.
- *    포트폴리오(사례)와 프로세스(진행 방식) 사이에 둬서, 사례를 본 뒤
- *    "그게 가능한 이유"를 읽고 진행 방식으로 넘어가게 한다.
+ *  - WHY KPOPSOFT — 차별점 카드 3장과 5축 역량 레이더.
+ *    **핵심 비즈니스와 포트폴리오 사이**에 둔다(docs/신규수정사항 §1).
+ *    "무엇을 제공하는가" → "왜 우리인가" → "실제로 어떤 결과를 만들었는가"
+ *    순서다. 처음에는 포트폴리오 뒤에 뒀었는데, 증명을 먼저 보여준 뒤에
+ *    이유를 설명하는 거꾸로 된 흐름이었다.
  *
  * ver2 대비 바뀐 것.
  *  1. **순서** — 핵심 비즈니스(What We Do)가 포트폴리오보다 위로 올라갔다.
@@ -70,8 +72,8 @@ export default async function Home() {
         <StatsBar stats={stats} />
         <OurIdentity />
         <WhatWeDo />
-        <SelectedWork items={work} inquiryOptions={inquiryOptions} />
         <WhyKpopsoft />
+        <SelectedWork items={work} inquiryOptions={inquiryOptions} />
         <Process />
         <Suspense>
           <FinalCta inquiryOptions={inquiryOptions} />

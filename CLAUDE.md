@@ -8,8 +8,9 @@
 
 문서는 **아래로 갈수록 오래된 것**이다. 같은 화면을 두 문서가 다르게 지시하면 위쪽을 따른다.
 
-**최신 기준 — 수정 요청서 3종**
+**최신 기준 — 수정 요청서 4종**
 
+- [docs/KPOPSOFT_why_section_revision_request.md](docs/KPOPSOFT_why_section_revision_request.md) — **WHY KPOPSOFT 최신 기준**. 섹션 위치 이동, 차별점 카드 3장, 레이더 5축 교체
 - [docs/KPOPSOFT_education_page_revision_request.md](docs/KPOPSOFT_education_page_revision_request.md) — **Education 최신 기준**. 9섹션 재편, 기업교육·정규과정 상세 페이지 신설
 - [docs/KPOPSOFT_home_4th_revision_request.md](docs/KPOPSOFT_home_4th_revision_request.md) — **홈 최신 기준**. 사례·핵심사업·레이더·프로세스 4개 영역 보강
 - [docs/KPOPSOFT_homepage_revision_request.md](docs/KPOPSOFT_homepage_revision_request.md) — 홈 섹션 순서 확정(OUR IDENTITY·WHY KPOPSOFT 신설). 확정 카피의 출처

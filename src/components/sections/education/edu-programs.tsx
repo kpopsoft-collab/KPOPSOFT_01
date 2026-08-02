@@ -34,8 +34,8 @@ import { cn } from "@/lib/utils";
  *  - 오른쪽 패널이 스크롤에 따라 저절로 바뀌니, 방금 읽던 정보가 스크롤을
  *    조금만 움직여도 사라졌다. 사용자가 요청하지 않은 변화라 통제감이 없다.
  *
- * 그래서 자동으로 바뀌는 것을 전부 없앴다. 카드 안에 사진·설명·대상·방식·
- * 결과물·CTA가 모두 들어 있어 한 장이 그 자체로 완결된다. 데스크톱 3열,
+ * 그래서 자동으로 바뀌는 것을 전부 없앴다. 카드 안에 사진·설명·대상·CTA가
+ * 모두 들어 있어 한 장이 그 자체로 완결된다. 데스크톱 3열,
  * 태블릿 이하에서 접힌다 — 모바일 구성이 따로 있는 게 아니라 같은 카드가
  * 세로로 쌓일 뿐이라 마크업이 하나로 줄었다.
  *
@@ -214,8 +214,6 @@ function ProgramCard({
         {highlight ? (
           <dl className="mt-auto flex flex-col gap-3 rounded-2xl bg-ivory p-5">
             <Fact label="대상" value={highlight.audience} />
-            <Fact label="방식" value={highlight.format} />
-            <Fact label="결과물" value={highlight.outcome} />
           </dl>
         ) : null}
 

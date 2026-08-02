@@ -8,29 +8,30 @@ import { sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * WHY KPOPSOFT — 인터랙티브 역량 구조도 (수정 요청서 §13).
+ * WHY KPOPSOFT — 차별점 카드 + 인터랙티브 역량 레이더 (docs/신규수정사항).
  *
- * 일반적인 3카드 레이아웃 대신 5축 레이더로 "분리된 역량이 하나로 연결된다"를
- * 보여준다. 중요한 전제: **이건 데이터 차트가 아니다.** 객관적 근거가 없는
- * 점수·퍼센트·순위·눈금은 어디에도 노출하지 않는다(§13). 다섯 축의 기본
- * 반지름이 모두 같은 정오각형인 이유도 그래서다 — 축 길이 차이가 곧 "우리는
- * 여기가 더 강하다"는 측정값으로 읽히기 때문이다. 움직임은 값의 변화가 아니라
- * 역량이 유기적으로 연결되고 발전한다는 브랜드 메시지를 뜻한다.
+ * 섹션의 자리는 **핵심 비즈니스와 포트폴리오 사이**다(§1). "무엇을 제공하는가"
+ * 다음에 "왜 우리인가"를 말하고, 바로 이어지는 포트폴리오가 그것을 증명하는
+ * 순서다. 이전에는 포트폴리오 뒤에 있어서, 증명을 먼저 보여준 뒤에 이유를
+ * 설명하는 거꾸로 된 흐름이었다.
  *
- * 색은 기존 팔레트 안에서만 고른다(§13). Strategy는 요청서의 "Blue 계열"을
- * Navy로, Design의 "Blue와 Red 사이의 기존 보조 컬러"는 Coral로 확정했다.
- * Education의 "Green"은 새 초록이 아니라 기존 Mint를 가리킨다.
+ * **레이더는 데이터 차트가 아니다.** 눈금·점수·퍼센트를 어디에도 쓰지 않는다.
+ * 다만 정오각형으로 고정하지는 않았다 — 카드를 고르면 관련된 두 축이 바깥으로
+ * 뻗고 나머지는 살짝 물러난다(§6·§7). 축 하나만 늘리면 "이것만 잘한다"로
+ * 읽히지만, 두 축이 짝으로 움직이면 역량이 함께 작동한다는 인상이 된다.
+ * 기본 상태(선택 없음)는 여전히 정오각형이라, 가만히 두면 어느 축도 더 길지
+ * 않다.
  *
- * 접근성 — 그래픽(SVG)은 `aria-hidden`이고, 실제 조작 인터페이스는 오른쪽(모바일
- * 에서는 아래) 역량 목록의 버튼들이다. 그래야 키보드로 다섯 축을 모두 탐색할 수
- * 있고, 스크린리더에도 "그림"이 아니라 의미와 설명이 먼저 전달된다. 화면에
- * 그려지는 건 장식이고 내용은 목록이 갖는다.
+ * 색은 기존 브랜드 팔레트 안에서만 고른다. Yellow는 아이보리 배경에서 글자로
+ * 읽히지 않아 라벨에만 어두운 짝(`brand-yellow-ink`)을 쓴다(docs/디자인.md §2).
+ *
+ * 접근성 — 그래픽(SVG)은 `aria-hidden`이고, 실제 조작 인터페이스는 오른쪽
+ * (모바일에서는 아래) 차별점 카드의 버튼들이다. 그래야 키보드로 셋을 모두
+ * 탐색할 수 있고, 스크린리더에도 "그림"이 아니라 의미가 먼저 전달된다.
  */
 
 type Axis = {
-  index: string;
   name: string;
-  description: string;
   /** 점·스포크에 쓰는 CSS 색 (globals.css의 브랜드 토큰). */
   color: string;
   /**
@@ -39,55 +40,74 @@ type Axis = {
    * 생략하면 `color`를 그대로 쓴다.
    */
   labelColor?: string;
-  /** 목록 항목 강조에 쓰는 Tailwind 클래스. */
+};
+
+/**
+ * 레이더 5축 (신규수정사항 §5).
+ *
+ * 이전 축(`Strategy · Design · Technology · AI · Education`)은 핵심 비즈니스
+ * 섹션이 이미 말하는 **서비스 분야의 나열**이었다. 같은 내용을 도형으로 한 번
+ * 더 보여주는 셈이라 이 섹션이 따로 있을 이유가 약했다. 새 축은 분야가 아니라
+ * **고객이 우리를 고르는 기준**이다 — 무엇을 파는지가 아니라 어떻게 해내는지.
+ */
+const axes: Axis[] = [
+  { name: "통합 실행력", color: "var(--color-brand-navy)" },
+  { name: "기술 구현력", color: "var(--color-brand-blue)" },
+  {
+    name: "맞춤 설계",
+    color: "var(--color-brand-yellow)",
+    labelColor: "var(--color-brand-yellow-ink)",
+  },
+  { name: "현업 적용성", color: "var(--color-brand-red)" },
+  { name: "지속 운영", color: "var(--color-brand-mint)" },
+];
+
+type Differentiator = {
+  index: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  /** 이 카드가 켜질 때 강조할 축 (§6 매핑표). */
+  axisIndexes: number[];
   textClass: string;
   borderClass: string;
 };
 
-const axes: Axis[] = [
+/**
+ * 차별점 카드 3장 (§4). 각 카드는 레이더의 두 축과 짝지어져 있다(§6).
+ *
+ * 세 카드가 다섯 축을 나눠 가지는데, `현업 적용성`은 02와 03이 함께 쓴다 —
+ * 겹치는 게 아니라 실제로 두 성격을 잇는 축이라 그렇다. "직접 만들어 봤다"와
+ * "쓰이게 만든다"가 만나는 지점이 현업 적용성이다.
+ */
+const differentiators: Differentiator[] = [
   {
     index: "01",
-    name: "Strategy",
+    title: "한 팀에서 연결되는 실행력",
     description:
-      "아이디어와 비즈니스 목표를 구체적인 실행 방향으로 설계합니다.",
-    color: "var(--color-brand-navy)",
+      "기획·UX/UI·개발·AI를 하나의 팀에서 연결해 커뮤니케이션 비용을 줄이고 프로젝트의 속도와 완성도를 높입니다.",
+    keywords: ["Strategy", "UX/UI", "Development", "AI"],
+    axisIndexes: [0, 2],
     textClass: "text-brand-navy",
     borderClass: "border-brand-navy",
   },
   {
     index: "02",
-    name: "Design",
+    title: "직접 구현해 본 경험",
     description:
-      "사용자가 이해하고 편리하게 사용할 수 있는 서비스 경험을 설계합니다.",
-    color: "var(--color-brand-yellow)",
-    labelColor: "var(--color-brand-yellow-ink)",
-    textClass: "text-brand-yellow-ink",
-    borderClass: "border-brand-yellow",
-  },
-  {
-    index: "03",
-    name: "Technology",
-    description:
-      "아이디어를 안정적으로 작동하는 웹·앱 서비스와 업무 시스템으로 구현합니다.",
-    color: "var(--color-brand-blue)",
+      "웹 서비스, 업무 시스템, AI 자동화 등 다양한 프로젝트를 직접 구축한 경험을 바탕으로 실행 가능한 방법을 제안합니다.",
+    keywords: ["Web Service", "Business System", "AI Automation"],
+    axisIndexes: [1, 3],
     textClass: "text-brand-blue",
     borderClass: "border-brand-blue",
   },
   {
-    index: "04",
-    name: "AI",
+    index: "03",
+    title: "도입 이후의 활용까지",
     description:
-      "기술 시연에 그치지 않고 실제 업무와 서비스에서 활용할 수 있는 AI 솔루션을 구축합니다.",
-    color: "var(--color-brand-red)",
-    textClass: "text-brand-red",
-    borderClass: "border-brand-red",
-  },
-  {
-    index: "05",
-    name: "Education",
-    description:
-      "AI를 이해하는 데서 끝나지 않고 실제 업무에 활용할 수 있도록 실습 중심의 교육을 제공합니다.",
-    color: "var(--color-brand-mint)",
+      "서비스 구축에서 끝나지 않고 운영 환경과 사용자 교육까지 고려해 기술이 실제 조직과 업무에 정착하도록 돕습니다.",
+    keywords: ["Operation", "Adoption", "Education"],
+    axisIndexes: [3, 4],
     textClass: "text-brand-mint-ink",
     borderClass: "border-brand-mint",
   },
@@ -148,7 +168,7 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
 
 export function WhyKpopsoft() {
-  /** 선택(hover/focus/tap)된 축. null이면 기본 Idle 상태. */
+  /** 선택(hover/focus/tap)된 **차별점 카드**. null이면 기본 Idle 상태. */
   const [selected, setSelected] = useState<number | null>(null);
   /** 진입 애니메이션을 이미 재생했는지 — 짧은 스크롤마다 반복하지 않는다. */
   const [entered, setEntered] = useState(false);
@@ -159,9 +179,14 @@ export function WhyKpopsoft() {
   const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
   const spokeRefs = useRef<(SVGLineElement | null)[]>([]);
 
-  /** rAF 루프가 매 프레임 읽는 값 — state로 두면 초당 60회 리렌더가 된다. */
+  /**
+   * rAF 루프가 매 프레임 읽는 값 — state로 두면 초당 60회 리렌더가 된다.
+   * 렌더 중에 직접 대입하지 않고 effect에서 동기화한다(렌더는 순수해야 한다).
+   */
   const selectedRef = useRef<number | null>(null);
-  selectedRef.current = selected;
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
 
   // 진입 감지 — 한 번 재생한 뒤에는 observer를 끊는다(§13: 최초 1회만).
   useEffect(() => {
@@ -252,7 +277,12 @@ export function WhyKpopsoft() {
       const growth = easeOutCubic(clamp01((elapsed - GROW_START) / GROW_MS));
       // 2) Idle — 진입이 끝난 뒤 진폭을 서서히 올려 툭 튀지 않게 한다.
       const idleRamp = clamp01((elapsed - ENTRY_MS) / 600);
-      const active = selectedRef.current;
+      const activeCard = selectedRef.current;
+      // 카드 하나가 두 축을 켠다(§6). 축 하나만 늘리면 오각형이 한쪽으로
+      // 뾰족해져 "이 항목만 잘한다"로 읽히는데, 두 축이 함께 뻗으면 역량이
+      // 짝을 이뤄 작동한다는 인상이 된다.
+      const activeAxes =
+        activeCard === null ? null : differentiators[activeCard].axisIndexes;
 
       for (let i = 0; i < axes.length; i++) {
         const breathe =
@@ -261,7 +291,11 @@ export function WhyKpopsoft() {
             idleRamp *
             Math.sin((elapsed / IDLE_PERIOD_MS[i]) * Math.PI * 2 + IDLE_PHASE[i]);
         const focusScale =
-          active === null ? 1 : active === i ? SELECTED_SCALE : UNSELECTED_SCALE;
+          activeAxes === null
+            ? 1
+            : activeAxes.includes(i)
+              ? SELECTED_SCALE
+              : UNSELECTED_SCALE;
         const target = BASE_R * growth * breathe * focusScale;
         // 선택 전환은 부드럽게 — 갑작스러운 변화나 튀는 easing을 쓰지 않는다.
         current[i] += (target - current[i]) * 0.12;
@@ -284,36 +318,40 @@ export function WhyKpopsoft() {
     };
   }, [entered]);
 
-  const activeAxis = selected === null ? null : axes[selected];
+  const activeCard = selected === null ? null : differentiators[selected];
+  const activeAxes = activeCard?.axisIndexes ?? null;
+  const isAxisActive = (i: number) => activeAxes?.includes(i) ?? false;
 
   return (
     <Section id={sectionId.why} className="relative overflow-hidden">
-      {/* 제목은 컨테이너 폭을 다 쓴다 — max-w-2xl에 묶어 두면 첫 줄이 한 번 더
-          접혀 의도한 두 줄이 세 줄이 됐다. 본문 단락만 좁게 유지한다. */}
-      <div>
-        <Eyebrow dotClassName="bg-brand-red">WHY KPOPSOFT</Eyebrow>
-        <h2 className="text-section mt-6 text-ink">
-          기술이 실제로 활용되기까지,
-          <br />
-          필요한 역량을 연결합니다.
-        </h2>
-        <p className="mt-6 max-w-2xl text-body-lg text-ink/70">
-          전략과 디자인, 소프트웨어와 AI, 교육까지 분리된 영역을 하나의 실행
-          과정으로 연결합니다.
-        </p>
-      </div>
-
       <div
         ref={sectionRef}
-        className="mt-14 grid grid-cols-1 items-center gap-12 lg:mt-20 lg:grid-cols-12 lg:gap-14"
+        className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-14"
       >
-        {/* ── 레이더 그래픽 ── 순수 장식. 내용은 오른쪽 목록이 갖는다. */}
+        {/*
+          ── 왼쪽: 카피 + 레이더 (§8) ──
+          제목을 그리드 위로 빼지 않고 왼쪽 컬럼 안에 둔다. 레이더가 제목 바로
+          아래 붙어야 "이 도형이 이 문장의 그림"이라는 관계가 성립한다.
+          모바일에서는 이 컬럼이 통째로 위에 오므로 §8이 지정한 순서
+          (라벨 → 타이틀 → 보조 문구 → 레이더 → 카드)가 그대로 나온다.
+        */}
         <div className="lg:col-span-7">
+          <Eyebrow dotClassName="bg-brand-red">WHY KPOPSOFT</Eyebrow>
+          <h2 className="text-section mt-6 text-ink">
+            기획부터 구현, 실제 활용까지
+            <br />
+            하나의 흐름으로 연결합니다.
+          </h2>
+          <p className="mt-6 max-w-xl text-body-lg text-ink/70">
+            KPOPSOFT는 전략과 디자인, 소프트웨어 개발, AI와 교육을 하나의 팀으로
+            연결해 아이디어가 실제 비즈니스 성과로 이어지도록 돕습니다.
+          </p>
+
           <svg
             viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`}
-            /* 4차 요청서 §3: 그래픽을 20~30% 키운다. 폭 상한을 걷어 컬럼을
-               다 쓰게 했다(576px → 약 745px, +29%). */
-            className="mx-auto h-auto w-full"
+            /* 배경 장식으로 보이지 않을 만큼 크게 둔다(§8). 폭 상한을 걸지
+               않고 컬럼을 다 쓴다. */
+            className="mx-auto mt-10 h-auto w-full max-w-xl lg:mt-4 lg:max-w-none"
             aria-hidden
           >
             {/* 1) 축과 격자선 — 가장 먼저 fade-in */}
@@ -387,8 +425,8 @@ export function WhyKpopsoft() {
 
             {/* 2) 각 축의 스포크 + 포인트 — 중앙에서 바깥으로 확장 */}
             {axes.map((axis, i) => {
-              const isActive = selected === i;
-              const dimmed = selected !== null && !isActive;
+              const isActive = isAxisActive(i);
+              const dimmed = activeAxes !== null && !isActive;
               return (
                 <g
                   key={axis.name}
@@ -427,8 +465,8 @@ export function WhyKpopsoft() {
             {/* 5) 라벨 — 마지막에 순차적으로 나타난다 */}
             {axes.map((axis, i) => {
               const { x, y, anchor } = labelLayout(i);
-              const isActive = selected === i;
-              const dimmed = selected !== null && !isActive;
+              const isActive = isAxisActive(i);
+              const dimmed = activeAxes !== null && !isActive;
               return (
                 <text
                   key={axis.name}
@@ -489,15 +527,19 @@ export function WhyKpopsoft() {
         </div>
 
         {/*
-          ── 역량 목록 ── 실제 인터페이스.
-          데스크톱에서는 레이더 옆, 모바일에서는 아래에 놓인다(§13 모바일).
-          hover(포인터)·focus(키보드)·tap(터치)이 모두 같은 선택 상태를 만든다.
+          ── 오른쪽: 차별점 카드 ── 실제 인터페이스 (§4·§8).
+          SVG는 `aria-hidden`이고 조작은 전부 이 버튼들이 받는다. 그래야
+          키보드로 셋을 모두 탐색할 수 있고, 스크린리더에도 "그림"이 아니라
+          의미가 먼저 전달된다.
+
+          hover(포인터)·focus(키보드)·tap(터치)이 모두 같은 상태를 만든다.
+          터치에는 hover가 없어 탭이 곧 선택이고, 한 번 더 누르면 해제된다.
         */}
-        <ul className="flex flex-col gap-2.5 lg:col-span-5">
-          {axes.map((axis, i) => {
+        <ul className="flex flex-col gap-4 lg:col-span-5 lg:justify-center">
+          {differentiators.map((item, i) => {
             const isActive = selected === i;
             return (
-              <li key={axis.name}>
+              <li key={item.index}>
                 <button
                   type="button"
                   aria-pressed={isActive}
@@ -507,39 +549,50 @@ export function WhyKpopsoft() {
                   onBlur={() => setSelected(null)}
                   onClick={() => setSelected(isActive ? null : i)}
                   className={cn(
-                    "w-full cursor-pointer rounded-2xl border px-5 py-4 text-left transition-colors outline-none",
+                    "w-full cursor-pointer rounded-3xl border px-6 py-6 text-left transition-all duration-300 outline-none",
                     "focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     isActive
-                      ? cn("bg-white", axis.borderClass)
+                      ? cn("bg-white", item.borderClass)
                       : "border-ink/12 hover:border-ink/30",
-                    // 나머지 항목은 투명도를 낮춰 선택된 축에 시선을 모은다.
-                    selected !== null && !isActive && "opacity-60",
+                    // 나머지는 투명도를 낮춰 켜진 카드에 시선을 모은다.
+                    selected !== null && !isActive && "opacity-55",
                   )}
                 >
-                  {/* 축의 색 점을 항목 앞에 둔다 — 그래픽의 어느 꼭짓점이
-                      이 설명에 해당하는지 색으로 바로 이어진다(4차 §3:
-                      그래픽과 설명 영역의 관계를 명확히). */}
-                  <p className="flex items-baseline gap-2.5">
-                    <span
-                      aria-hidden
-                      className="size-2.5 shrink-0 translate-y-[-1px] rounded-full"
-                      style={{ backgroundColor: axis.color }}
-                    />
+                  <p className="flex items-baseline gap-3">
                     <span className="text-eyebrow text-ink/45">
-                      {axis.index}
+                      {item.index}
                     </span>
                     <span
                       className={cn(
-                        "text-lg font-extrabold tracking-tight md:text-xl",
-                        isActive ? axis.textClass : "text-ink",
+                        "text-lg leading-snug font-extrabold tracking-tight transition-colors md:text-xl",
+                        isActive ? item.textClass : "text-ink",
                       )}
                     >
-                      {axis.name}
+                      {item.title}
                     </span>
                   </p>
-                  <p className="mt-1.5 text-base leading-relaxed text-ink/70">
-                    {axis.description}
+
+                  <p className="mt-3 text-base leading-relaxed text-ink/70">
+                    {item.description}
                   </p>
+
+                  {/* 키워드 칩 — 카드가 켜졌을 때만 또렷해진다. 항상 진하면
+                      본문보다 먼저 읽혀 카드가 태그 목록처럼 보인다. */}
+                  <span className="mt-4 flex flex-wrap gap-2">
+                    {item.keywords.map((keyword) => (
+                      <span
+                        key={keyword}
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                          isActive
+                            ? cn(item.borderClass, item.textClass)
+                            : "border-ink/15 text-ink/55",
+                        )}
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </span>
                 </button>
               </li>
             );
@@ -547,12 +600,14 @@ export function WhyKpopsoft() {
         </ul>
       </div>
 
-      {/* 선택된 역량을 스크린리더에도 알린다. 설명 자체는 위 목록에 이미
-          보이므로 화면에는 중복해서 그리지 않는다. */}
+      {/* 선택된 차별점과 강조 축을 스크린리더에도 알린다. 설명 자체는 카드에
+          이미 보이므로 화면에는 중복해서 그리지 않는다. */}
       <p className="sr-only" aria-live="polite">
-        {activeAxis
-          ? `${activeAxis.name} — ${activeAxis.description}`
-          : "역량을 선택하면 설명이 강조됩니다."}
+        {activeCard
+          ? `${activeCard.title} — ${activeCard.axisIndexes
+              .map((i) => axes[i].name)
+              .join(", ")} 역량을 강조합니다.`
+          : "차별점을 선택하면 관련 역량이 강조됩니다."}
       </p>
     </Section>
   );
