@@ -2,7 +2,7 @@
 
 /**
  * Image lightbox — click-to-zoom modal for gallery-style images
- * (docs/KPOPSOFT_Education_Page_ver2.md §10 "이미지 확대").
+ * (docs/99-archive/education-ver2/ §10 "이미지 확대").
  *
  * Built directly on the same `@base-ui/react/dialog` primitive `Sheet` wraps
  * (src/components/ui/sheet.tsx), just centered instead of docked to an edge.

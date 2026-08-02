@@ -4,11 +4,11 @@ import { Arch, Capsule, Circle, Ring, Star, Wave } from "@/components/shapes";
 import { consultCta, sectionId, site } from "@/lib/site";
 
 /**
- * Hero (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 02/§3, docs/디자인.md §7).
+ * Hero (docs/99-archive/home-ver2/ §SECTION 02/§3, docs/04-design-system/ §7).
  * An editorial poster: a large asymmetric headline block on the left, a
  * cropped/layered cluster of brand shapes on the right. On mobile the shapes
  * recompose below the copy rather than shrinking the desktop layout
- * (docs/디자인.md §11).
+ * (docs/04-design-system/ §11).
  *
  * 카피는 ver2를 따른다 — CTA는 `프로젝트 의뢰하기` 하나만 둔다(§3, 사례 보기
  * CTA 추가 금지). 다만 eyebrow는 §3이 지정한 `SOFTWARE · AI SOLUTIONS` 대신

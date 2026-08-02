@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Admin email-notification seam (docs/어드민기획.md §7, §8, §11.8).
+ * Admin email-notification seam (docs/06-admin/ §7, §8, §11.8).
  *
  * `submitInquiry` (src/lib/inquiry-actions.ts) calls this right after a new
  * inquiry is persisted. Sends a "new inquiry" email via Resend to every

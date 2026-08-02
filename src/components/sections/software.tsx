@@ -23,8 +23,8 @@ function inquiryHref(inquiry: {
 }
 
 /**
- * Software (docs/기획서.md §2 item 5 in the page order; content grounded in
- * §6 "01 SOFTWARE"). docs/디자인.md §8 calls this out explicitly as a
+ * Software (docs/99-archive/01-초기-16섹션-기획서.md §2 item 5 in the page order; content grounded in
+ * §6 "01 SOFTWARE"). docs/04-design-system/ §8 calls this out explicitly as a
  * "large case-study oriented layout" — the opposite instruction from a
  * plain 5-up equal card grid, and deliberately a different rhythm from
  * BusinessOverview's 7/5/12 article grid.

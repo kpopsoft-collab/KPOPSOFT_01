@@ -1,5 +1,5 @@
 /**
- * Inquiry-form options seam (docs/어드민기획.md §4.2 — inquiry_types/inquiry_subtypes).
+ * Inquiry-form options seam (docs/06-admin/ §4.2 — inquiry_types/inquiry_subtypes).
  *
  * Two levels: a type (프로젝트/교육/AI 솔루션 문의) holds ordered subtypes, and each
  * subtype carries a `placeholder` (the 문의 내용 예시 문구 that drives the public

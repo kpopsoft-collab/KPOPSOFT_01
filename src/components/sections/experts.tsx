@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const portraitShapes = [Arch, Circle, Star] as const;
 
 /**
- * Experts & Instructors (docs/기획서.md §2 no.8, docs/디자인.md §8 EXPERT NETWORK).
+ * Experts & Instructors (docs/99-archive/01-초기-16섹션-기획서.md §2 no.8, docs/04-design-system/ §8 EXPERT NETWORK).
  *
  * §8 explicitly warns against generic corporate employee cards. Each expert
  * shows a real profile photo when one is provided (`expert.image`); until then

@@ -4,7 +4,7 @@ import { CtaButton } from "@/components/ui/cta-button";
 import { sectionId } from "@/lib/site";
 
 /**
- * B2B / Custom Training (docs/디자인.md §8 "CUSTOM TRAINING").
+ * B2B / Custom Training (docs/04-design-system/ §8 "CUSTOM TRAINING").
  *
  * The spec calls this out explicitly as "a large colored CTA panel" — one of
  * the deliberately saturated 15% moments in the 60/25/15 color budget, not

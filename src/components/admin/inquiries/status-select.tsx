@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Status changer for the inquiry detail page (docs/어드민기획.md §6 — "상태 드롭다운
+ * Status changer for the inquiry detail page (docs/06-admin/ §6 — "상태 드롭다운
  * (즉시 저장)"). Plain native <select> styled to the field tokens: base-ui's Select
  * needs generic wiring for form-submit semantics we don't need here, so a native
  * element keeps this small and fully keyboard/screen-reader accessible.

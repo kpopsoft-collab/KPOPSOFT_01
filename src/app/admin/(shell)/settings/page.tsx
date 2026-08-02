@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { PasswordForm } from "@/components/admin/settings/password-form";
 
 /**
- * Admin account settings (docs/어드민기획.md §6). Currently: account email +
+ * Admin account settings (docs/06-admin/ §6). Currently: account email +
  * password change. Guarded by the shell layout's requireAdmin().
  */
 export default async function AdminSettingsPage() {

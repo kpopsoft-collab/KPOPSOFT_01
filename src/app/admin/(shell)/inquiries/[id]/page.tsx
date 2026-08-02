@@ -9,7 +9,7 @@ import { inquiryStatusAccent, inquiryStatusLabel } from "@/lib/admin/types";
 import { cn } from "@/lib/utils";
 
 /**
- * Inquiry detail (docs/어드민기획.md §6). Server Component fetches the record;
+ * Inquiry detail (docs/06-admin/ §6). Server Component fetches the record;
  * status change + memo are delegated to small client components that call the
  * Server Actions in `../actions.ts`.
  */

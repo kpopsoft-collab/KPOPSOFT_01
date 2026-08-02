@@ -1,5 +1,5 @@
 /**
- * Education 페이지 콘텐츠 (docs/KPOPSOFT_Education_Page_ver3.md).
+ * Education 페이지 콘텐츠 (docs/03-education/).
  *
  * ver3에서 프로그램 구조가 평면 6개 → **3분류 체계**로 바뀌었다.
  *   01. 조직·기업 맞춤 교육

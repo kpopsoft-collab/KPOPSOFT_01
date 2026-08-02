@@ -9,7 +9,7 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { type FaqItem, eduSectionId } from "@/lib/education-content";
 
 /**
- * SECTION 08 — FAQ (docs/KPOPSOFT_Education_Page_ver3.md §08).
+ * SECTION 08 — FAQ (docs/03-education/ §08).
  *
  * ver3에서 개인/기업 카테고리 분리를 없애고 단일 목록 4문항으로 압축했다.
  *

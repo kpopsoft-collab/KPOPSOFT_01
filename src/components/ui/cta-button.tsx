@@ -1,5 +1,5 @@
 /**
- * Signature KPOPSOFT call-to-action button (docs/디자인.md §Buttons).
+ * Signature KPOPSOFT call-to-action button (docs/04-design-system/ §Buttons).
  * - Height 48–54px, generous horizontal padding, fully rounded (pill).
  * - Primary = brand blue on white. Secondary = transparent w/ 1.25px ink border.
  * - Optional arrow nudges right on hover (no bounce), per the motion spec.

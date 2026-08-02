@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 export const VIBEDAYS_HASH = "#program-club";
 
 /**
- * 바이브데이즈 랜딩 모달 (docs/KPOPSOFT_Education_Page_ver3.md §05.3).
+ * 바이브데이즈 랜딩 모달 (docs/03-education/ §05.3).
  *
  * ver2에서는 독립 섹션이었지만 ver3에서 모달로 바뀌었다. Esc/배경 클릭 닫기,
  * 포커스 트랩, 배경 스크롤 잠금은 `ui/modal.tsx`가 감싼 base-ui Dialog가

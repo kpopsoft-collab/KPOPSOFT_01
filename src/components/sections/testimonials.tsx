@@ -13,7 +13,7 @@ const rows: { accent: Accent }[] = [
 ];
 
 /**
- * Testimonials (docs/디자인.md §6 Testimonial Component).
+ * Testimonials (docs/04-design-system/ §6 Testimonial Component).
  *
  * Rendered as flat, full-saturation horizontal bands — not the conventional
  * white card with a shadow and a round avatar photo. Each band is a

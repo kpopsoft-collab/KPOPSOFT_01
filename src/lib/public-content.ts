@@ -35,7 +35,7 @@ import {
 } from "@/lib/education-content";
 
 /**
- * Public-site content readers (docs/어드민기획.md §11.8). Each reads published /
+ * Public-site content readers (docs/06-admin/ §11.8). Each reads published /
  * active rows through the anon public client and maps them back to the exact
  * src/lib/site.ts shape the sections already consume. On empty result or any
  * error they fall back to the site.ts seed, so the landing page never breaks —
@@ -61,7 +61,7 @@ export type PublicWork = {
   showOnHome: boolean;
   /**
    * 갤러리 이미지. 여러 장이면 카드에 도트 페이지네이션이 붙는다
-   * (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 05).
+   * (docs/02-home/ §SECTION 05).
    * 비어 있으면 `imageUrl` 한 장만 쓴다.
    */
   imageUrls?: string[];
@@ -226,7 +226,7 @@ export async function getPublicInquiryOptions(): Promise<PublicInquiryOption[]> 
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/KPOPSOFT_Education_Page_ver3.md) — public readers.
+// Education (docs/03-education/) — public readers.
 //
 // 위 섹션들이 site.ts 시드로 폴백하듯, 교육은 `education-content.ts`의 정적
 // 데이터로 폴백한다. DB가 비었거나(마이그레이션 직후) 조회가 실패해도

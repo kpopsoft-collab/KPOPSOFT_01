@@ -6,7 +6,7 @@ description: KPOPSOFT 개발 워크플로우 — 프로젝트 팀 서브에이�
 
 다음 순서로 진행한다.
 
-1. **컨텍스트 확인**: `CLAUDE.md`와 관련된 `docs/기획서.md`, `docs/디자인.md`, `docs/스펙.md` 부분을 확인한다. 이미 알고 있는 내용이면 다시 읽지 않는다.
+1. **컨텍스트 확인**: `CLAUDE.md`와 `docs/00-START-HERE.md`를 먼저 보고, 해당 주제 폴더의 `00-START-HERE.md`(예: `docs/02-home/`, `docs/03-education/`, `docs/04-design-system/`)를 확인한다. 이미 알고 있는 내용이면 다시 읽지 않는다.
 2. **팀 구성 판단**: 요청 내용에 따라 아래 프로젝트 전용 서브에이전트 중 필요한 것을 골라 위임한다. 서로 독립적인 작업이면 병렬로 실행한다.
    - `nextjs-frontend` — 페이지/섹션/UI 구현·수정
    - `supabase-backend` — 스키마, 인증, RLS, 서버 데이터 작업

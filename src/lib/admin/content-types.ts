@@ -1,5 +1,5 @@
 /**
- * Admin CMS content types (docs/어드민기획.md §4.2).
+ * Admin CMS content types (docs/06-admin/ §4.2).
  *
  * Shapes mirror the real content in src/lib/site.ts so the mock store seeds
  * losslessly and the future Supabase adapter maps 1:1. Every collection shares
@@ -109,7 +109,7 @@ export const ACCENTS: readonly Accent[] = [
 
 
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/KPOPSOFT_Education_Page_ver3.md — 3분류 체계)
+// Education (docs/03-education/ — 3분류 체계)
 //
 // ver2의 평면 프로그램·결과물·사례·VIBEDAYS 역할·이미지 갤러리·페이지 설정
 // 타입은 지웠다. 그 스키마는 DB에 만들어진 적이 없고, ver3에서 프로그램이

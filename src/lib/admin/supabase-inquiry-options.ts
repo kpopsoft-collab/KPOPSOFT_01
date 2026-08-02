@@ -8,7 +8,7 @@ import type {
 } from "./inquiry-options";
 
 /**
- * Supabase-backed inquiry-form options (docs/어드민기획.md §4.2 / §11.8).
+ * Supabase-backed inquiry-form options (docs/06-admin/ §4.2 / §11.8).
  * Two tables (inquiry_types 1-N inquiry_subtypes). Reads nest subtypes via an
  * embedded select; RLS gates writes to admins.
  */

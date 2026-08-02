@@ -11,7 +11,7 @@ import { accentBg, accentOnDark, type Accent } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * Flat brand-shape composition used as an image stand-in (docs/디자인.md §5) —
+ * Flat brand-shape composition used as an image stand-in (docs/04-design-system/ §5) —
  * no gray photo placeholders, no gradients. Each accent gets its own pairing
  * from the shape vocabulary so a card reads from shape + copy, not color alone
  * (§12). Shared by Selected Work and Education so both surfaces stay consistent.

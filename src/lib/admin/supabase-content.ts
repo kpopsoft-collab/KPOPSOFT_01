@@ -27,7 +27,7 @@ import type {
 } from "./content-types";
 
 /**
- * Supabase-backed CMS repos (docs/어드민기획.md §4.2 / §11.8 wiring day).
+ * Supabase-backed CMS repos (docs/06-admin/ §4.2 / §11.8 wiring day).
  * Runs through the session server client, so RLS gates writes to admins and
  * lets admins read unpublished rows. camel↔snake mapping is table-driven.
  */

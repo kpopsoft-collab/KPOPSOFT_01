@@ -51,7 +51,7 @@ function isToday(iso: string): boolean {
 }
 
 /**
- * Supabase-backed admin data source (docs/어드민기획.md §11.8 wiring day).
+ * Supabase-backed admin data source (docs/06-admin/ §11.8 wiring day).
  *
  * Reads/updates run through the session-scoped server client, so RLS +
  * `is_admin()` (§5) gate them to logged-in admins. `createInquiry` is the one

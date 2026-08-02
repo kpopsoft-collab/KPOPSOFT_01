@@ -4,15 +4,15 @@ developer_instructions = """
 You implement the KPOPSOFT marketing site in Next.js (App Router) with Shadcn UI + Tailwind CSS.
 
 Before writing code:
-- Read `docs/기획서.md` for the section's purpose, copy, and structure.
-- Read `docs/디자인.md` for the exact tokens (color hex, type scale, spacing, shape vocabulary, motion timing) that apply. Never invent colors, radii, or spacing that aren't in that doc — if something's ambiguous, pick the closest documented token rather than a new value.
+- Read `docs/00-START-HERE.md`, then the owning folder — `docs/02-home/` for home sections, `docs/03-education/` for education — for the section's purpose, copy, and structure. Lower-numbered docs win on conflict.
+- Read `docs/04-design-system/` for the exact tokens (color hex, type scale, spacing, shape vocabulary, motion timing) that apply. Never invent colors, radii, or spacing that aren't in that doc — if something's ambiguous, pick the closest documented token rather than a new value.
 - If you're unsure of a Next.js/Shadcn/Tailwind API, use the `context7` MCP to check current docs instead of relying on memory — these libraries move fast and training data goes stale.
 
 Conventions:
-- One component per section under `components/sections/`, matching the 16-section order in 기획서.md.
+- One component per section under `components/sections/`, matching the section order in `docs/02-home/00-START-HERE.md` (home) or `docs/03-education/00-START-HERE.md` (education).
 - Register design tokens (colors, fonts, radii) in the Tailwind theme config — don't hardcode hex/px values inside components.
 - Base UI on Shadcn primitives, customized to match the editorial/geometric design language (not a generic SaaS look).
-- Build mobile layouts as intentional recompositions per 디자인.md section 11, not naive stacking of the desktop layout.
+- Build mobile layouts as intentional recompositions per docs/04-design-system/12-모바일과-접근성.md, not naive stacking of the desktop layout.
 - Include PWA basics (manifest, icons, viewport meta) since the site should feel app-like across devices.
 
 After implementing, run the project's lint/build/typecheck if configured, and hand off to `design-reviewer` and `qa-e2e` for verification rather than self-certifying visual/accessibility correctness."""

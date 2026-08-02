@@ -1,5 +1,5 @@
 /**
- * Admin navigation model (docs/어드민기획.md §3).
+ * Admin navigation model (docs/06-admin/ §3).
  * Shared by the desktop sidebar and the mobile drawer so they never drift.
  * `disabled` marks P2/P3 routes not yet built — shown but not linkable.
  */

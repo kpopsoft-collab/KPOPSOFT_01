@@ -30,7 +30,7 @@ const title = "KPOPSOFT Education | AI 활용·Vibe Coding·기업 맞춤형 교
 const description =
   "AI 업무 활용, Vibe Coding, 웹·앱 제작, 업무 자동화와 기업 맞춤형 교육을 제공합니다. 실제 업무와 아이디어를 중심으로 직접 만들고 적용하는 KPOPSOFT의 실무형 교육 프로그램입니다.";
 
-/** docs/KPOPSOFT_Education_Page_ver2.md §32. 루트 layout의 title 템플릿
+/** docs/99-archive/education-ver2/ §32. 루트 layout의 title 템플릿
  *  (`%s | KPOPSOFT`)이 붙지 않도록 absolute로 지정한다. */
 export const metadata: Metadata = {
   title: { absolute: title },
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 /**
- * Education 페이지 (docs/KPOPSOFT_education_page_revision_request.md §2).
+ * Education 페이지 (docs/03-education/ §2).
  *
  * 요청서가 확정한 순서다. ver3(8섹션) 대비 바뀐 것은 셋.
  *  1. **교육 목적 선택 신설** — ver3에서 히어로가 겸하던 3분류 소개를 독립

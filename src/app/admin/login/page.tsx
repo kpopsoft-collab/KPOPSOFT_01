@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Admin login (docs/어드민기획.md §6 "로그인", §11.8 DB-excluded seam mode).
+ * Admin login (docs/06-admin/ §6 "로그인", §11.8 DB-excluded seam mode).
  *
  * This route sits outside the `(shell)` group on purpose: it must NOT go
  * through `requireAdmin()` (that would redirect back here in a loop). It only

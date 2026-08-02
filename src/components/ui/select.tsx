@@ -6,7 +6,7 @@ import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Brand-styled wrapper over base-ui Select (docs/디자인.md — flat color, hairline
+ * Brand-styled wrapper over base-ui Select (docs/04-design-system/ — flat color, hairline
  * borders, no gradients). Trigger matches the form's text inputs (h-12,
  * rounded-2xl, ivory field), the popup is a white rounded panel. Keyboard
  * navigation / focus management come from the primitive.

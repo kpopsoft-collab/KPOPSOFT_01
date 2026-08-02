@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * Inquiry list (docs/어드민기획.md §6). Server Component: filters live in the
+ * Inquiry list (docs/06-admin/ §6). Server Component: filters live in the
  * URL and are applied server-side via `listInquiries(filter)` — no client
  * fetch/loading state needed. Each row is a stretched-link row (single <a>
  * absolutely positioned over the row) so the whole row is one accessible,

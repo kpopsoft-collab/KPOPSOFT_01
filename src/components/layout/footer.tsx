@@ -4,7 +4,7 @@ import { consultCta, flatNavItems, site } from "@/lib/site";
 import { Circle, Star, Wave } from "@/components/shapes";
 
 /**
- * Footer (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 08). Reuses the brand
+ * Footer (docs/99-archive/home-ver2/ §SECTION 08). Reuses the brand
  * shape vocabulary so the visual language carries through to the very
  * bottom of the page.
  *

@@ -18,7 +18,7 @@ const cardInteraction =
   "group transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory";
 
 /**
- * Business Overview (docs/기획서.md §6, docs/디자인.md §4/§6/§8).
+ * Business Overview (docs/99-archive/01-초기-16섹션-기획서.md §6, docs/04-design-system/ §4/§6/§8).
  *
  * Deliberately not a 3-up rectangular card grid (§8 warns against every
  * section looking the same): 01 SOFTWARE is a wide, full-accent feature

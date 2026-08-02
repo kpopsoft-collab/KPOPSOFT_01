@@ -1,5 +1,5 @@
 /**
- * CMS data-access seam (docs/어드민기획.md §11.7, §11.8).
+ * CMS data-access seam (docs/06-admin/ §11.7, §11.8).
  *
  * Admin content screens call `getContentData().<collection>` — never Supabase
  * directly. Today every collection is a generic in-memory repo over the mock

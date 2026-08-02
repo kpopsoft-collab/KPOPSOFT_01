@@ -43,7 +43,7 @@ export const dynamic = "force-dynamic";
  *  2. **통계바 분리** — About Summary에 붙어 있던 Numbers가 독립 섹션이 됐고,
  *     About 카피는 그 위 짧은 리드로 압축됐다(`stats-bar.tsx`).
  *
- * 아래 둘은 레포의 IA 원본(docs/KPOPSOFT HOMEPAGE IA .png)보다 나중에 나온
+ * 아래 둘은 레포의 IA 원본(docs/01-ia/KPOPSOFT-HOMEPAGE-IA.png)보다 나중에 나온
  * 개정안을 따른 것이라 ver3 문서와 어긋난다. 원본 IA/요약 문서가 갱신되면
  * 그때 맞춘다.
  *  3. **통계바가 핵심 비즈니스 위로** 올라갔다.

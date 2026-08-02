@@ -15,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * AI Prototype Lab process steps (docs/디자인.md §8 "AI PROTOTYPE LAB").
+ * AI Prototype Lab process steps (docs/04-design-system/ §8 "AI PROTOTYPE LAB").
  * Reuses `labSteps` (Idea → Prototype → Test → Build) and pairs each with a
  * shape from the brand vocabulary that matches its meaning: Lightbulb (idea),
  * Ring (experimentation), Check (validation/confirmation), Blocks (assembly).
@@ -57,7 +57,7 @@ const steps: {
 ];
 
 /**
- * AI Solutions (docs/기획서.md §6 "02 AI SOLUTIONS", docs/디자인.md §8
+ * AI Solutions (docs/99-archive/01-초기-16섹션-기획서.md §6 "02 AI SOLUTIONS", docs/04-design-system/ §8
  * "AI PROTOTYPE LAB").
  *
  * Two visual rhythms in one section: an editorial intro (heading + lead +
