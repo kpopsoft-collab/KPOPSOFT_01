@@ -153,10 +153,14 @@ export function EduHero() {
                   style={{ transform: `scale(${zoom})` }}
                   className="transition-transform duration-300 ease-out will-change-transform"
                 >
+                  {/* 홈 핵심 비즈니스의 Education 카드와 같은 사진이다
+                      (사용자 지시). 보유 사진 중 참가자가 가장 많아 교육
+                      현장이라는 사실이 한눈에 읽히고, 홈에서 교육 카드를 보고
+                      넘어온 방문자에게 같은 장면이 이어진다. */}
                   <CoverVisual
                     accent="mint"
-                    imageUrl="/education/education-hero.jpg"
-                    alt="KPOPSOFT 교육 현장에서 참가자들이 노트북으로 실습하는 모습"
+                    imageUrl="/education/education-lecture-01.jpg"
+                    alt="교육 현장 — 강사가 화면을 가리키며 설명하고 수강생들이 각자 노트북으로 따라 하는 강의실"
                     ratio="4/3"
                     priority
                     sizes="(max-width: 1024px) 90vw, 40vw"
