@@ -197,12 +197,12 @@ export const programHighlights: ProgramHighlight[] = [
     audience: "AI를 처음 쓰는 사람부터 실무에 붙이려는 직장인까지",
     format: "3~8주 오프라인 과정, 매 회차 실습 중심",
     outcome: "직접 만든 결과물 — 수료하면 포트폴리오가 남습니다",
-    // 히어로가 `education-lecture-01`을 쓰게 되면서 다른 사진으로 옮겼다.
-    // 같은 페이지 안에서 큰 사진 두 장이 똑같으면 스크롤이 제자리인 것처럼
-    // 보인다.
+    // 정규 과정 전용 사진(사용자 제공). 원본은 `public/work/정규교육과정.JPG`
+    // 였는데, 교육 사진은 `public/education/`에 모여 있고 URL에 한글이 들어가면
+    // 인코딩된 경로가 코드에 박히므로 옮기고 이름을 맞췄다.
     image: {
-      src: "/education/education-workshop-01.jpg",
-      alt: "정규 클래스 워크숍에서 참가자들이 화면 설계를 함께 검토하는 모습",
+      src: "/education/education-regular-01.jpg",
+      alt: "정규 교육 과정에서 참가자들이 각자 노트북으로 화면을 따라 만들어보는 모습",
     },
   },
   {
