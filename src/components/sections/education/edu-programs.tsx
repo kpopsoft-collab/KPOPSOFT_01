@@ -18,7 +18,7 @@ import {
   type RegularClass,
   sortRegularClassesByTrack,
 } from "@/lib/education-content";
-import { accentBg, accentText, educationSectionId } from "@/lib/site";
+import { accentText, educationSectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
@@ -177,10 +177,6 @@ function ProgramCard({
       <div className="flex flex-1 flex-col gap-4 p-7 md:p-8">
         <div className="flex items-center gap-3">
           <span className="text-eyebrow text-ink/40">{copy.index}</span>
-          <span
-            aria-hidden
-            className={cn("size-2.5 rounded-full", accentBg[accent])}
-          />
           {highlighted ? (
             <span
               className={cn(
