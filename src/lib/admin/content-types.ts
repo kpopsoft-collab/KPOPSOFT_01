@@ -39,6 +39,13 @@ export type WorkItem = ContentBase & {
   results: string[];
   /** Cover image (docs §4.2 — Work + Insights 커버 이미지). */
   imageUrl?: string;
+  /** 상세 시트 갤러리 — 커버 뒤에 이어지는 화면들. */
+  imageUrls: string[];
+  /** 수정 요청서 §8~§12 — 상세 시트에 나오는 작업 범위·기능·흐름·링크. */
+  scope: string[];
+  features: string[];
+  userFlow: string;
+  externalUrl: string;
   /** Home ver2 §7 — 홈 노출 여부(별도 컬럼, sortOrder는 재사용). */
   showOnHome: boolean;
   /** Home ver2 §7 — 대표 프로젝트 여부(대형 카드). */
@@ -94,10 +101,6 @@ export type Expert = ContentBase & {
   accent: Accent;
   /** Profile photo (docs §4.2). Falls back to a monogram when empty. */
   imageUrl?: string;
-  /** Education §27.5 — 한 줄 소개 (대표 문구 quote와는 별도 필드). */
-  bio: string;
-  /** Education §27.5 — 주요 경력 (불릿 목록). */
-  career: string[];
 };
 
 export type Stat = ContentBase & {

@@ -36,6 +36,11 @@ export const mockWork: WorkItem[] = selectedWork.map((w, i) => ({
   challenge: w.challenge,
   solution: w.solution,
   results: [...w.results],
+  imageUrls: [],
+  scope: [],
+  features: [],
+  userFlow: "",
+  externalUrl: "",
   showOnHome: true,
   isFeatured: i === 0,
   layoutType: i === 0 ? "featured" : "grid",
@@ -51,8 +56,6 @@ export const mockExperts: Expert[] = siteExperts.map((e, i) => ({
   tags: [...e.tags],
   accent: e.accent,
   imageUrl: e.image,
-  bio: "",
-  career: [],
 }));
 
 export const mockStats: Stat[] = siteStats.map((s, i) => ({

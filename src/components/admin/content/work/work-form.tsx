@@ -17,6 +17,7 @@ import {
 } from "@/components/admin/content/fields";
 import { AccentPicker } from "@/components/admin/content/accent-picker";
 import { ImageUpload } from "@/components/admin/content/image-upload";
+import { GalleryField } from "@/components/admin/content/work/gallery-field";
 
 type WorkInput = Omit<WorkItem, "id" | "sortOrder">;
 
@@ -45,6 +46,11 @@ export function WorkForm({
   const [solution, setSolution] = useState(initial?.solution ?? "");
   const [results, setResults] = useState<string[]>(initial?.results ?? []);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initial?.imageUrl);
+  const [imageUrls, setImageUrls] = useState<string[]>(initial?.imageUrls ?? []);
+  const [scope, setScope] = useState<string[]>(initial?.scope ?? []);
+  const [features, setFeatures] = useState<string[]>(initial?.features ?? []);
+  const [userFlow, setUserFlow] = useState(initial?.userFlow ?? "");
+  const [externalUrl, setExternalUrl] = useState(initial?.externalUrl ?? "");
   const [showOnHome, setShowOnHome] = useState(initial?.showOnHome ?? true);
   const [isFeatured, setIsFeatured] = useState(initial?.isFeatured ?? false);
   const [layoutType, setLayoutType] = useState<WorkLayoutType>(initial?.layoutType ?? "grid");
@@ -65,6 +71,11 @@ export function WorkForm({
         solution: solution.trim(),
         results: results.map((r) => r.trim()).filter(Boolean),
         imageUrl,
+        imageUrls,
+        scope: scope.map((s) => s.trim()).filter(Boolean),
+        features: features.map((f) => f.trim()).filter(Boolean),
+        userFlow: userFlow.trim(),
+        externalUrl: externalUrl.trim(),
         showOnHome,
         isFeatured,
         layoutType,
@@ -98,6 +109,8 @@ export function WorkForm({
         label="커버 이미지"
       />
 
+      <GalleryField values={imageUrls} onChange={setImageUrls} />
+
       <TextAreaField label="요약" value={summary} onChange={setSummary} placeholder="프로젝트 한두 문장 요약" />
       <TextAreaField label="문제 (Challenge)" value={challenge} onChange={setChallenge} />
       <TextAreaField label="해결 (Solution)" value={solution} onChange={setSolution} />
@@ -108,6 +121,38 @@ export function WorkForm({
         onChange={setResults}
         placeholder="예) 주문 처리 시간 70% 단축"
         addLabel="성과 추가"
+      />
+
+      {/* 아래 넷은 상세 시트(사례 패널)에 나온다. 비워 두면 그 블록이 통째로
+          빠지므로, 사례마다 있는 것만 채우면 된다. */}
+      <StringListField
+        label="작업 범위 (Scope)"
+        values={scope}
+        onChange={setScope}
+        placeholder="예) 기획 · 화면 설계"
+        addLabel="범위 추가"
+      />
+
+      <StringListField
+        label="주요 기능 (Features)"
+        values={features}
+        onChange={setFeatures}
+        placeholder="예) 업종별 추천 솔루션"
+        addLabel="기능 추가"
+      />
+
+      <TextAreaField
+        label="사용자 흐름"
+        value={userFlow}
+        onChange={setUserFlow}
+        placeholder="방문 → 업종 선택 → 상담 신청"
+      />
+
+      <TextField
+        label="사이트 주소"
+        value={externalUrl}
+        onChange={setExternalUrl}
+        placeholder="https://... (있으면 '사이트 방문하기' 버튼이 생깁니다)"
       />
 
       <label className="flex flex-col gap-2 text-sm font-semibold text-ink/70">
