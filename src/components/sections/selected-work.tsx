@@ -92,39 +92,43 @@ export function SelectedWork({
 }) {
   return (
     <Section id={sectionId.work}>
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        {/*
-          요청서 §8: `우리가 만든 것들`·`우리가 해결한 문제들`은 쓰지 않는다 —
-          모든 프로젝트를 문제 해결 사례로만 한정하지 않기 위한 변경이다.
-        */}
+      {/*
+        헤더 구성은 교육 사례 섹션과 같다 — 제목 아래 보조 문구, 그 줄 오른쪽
+        끝에 전체보기(사용자 지시). 예전에는 보조 문구가 제목 오른쪽에 붙고
+        전체 목록 링크가 카드 아래 가운데 있었는데, 목록을 다 지나쳐야 링크가
+        나와서 "더 있다"는 사실을 카드를 다 읽은 뒤에야 알 수 있었다.
+
+        요청서 §8: `우리가 만든 것들`·`우리가 해결한 문제들`은 쓰지 않는다 —
+        모든 프로젝트를 문제 해결 사례로만 한정하지 않기 위한 변경이다.
+      */}
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-10">
         <div className="max-w-2xl">
           <Eyebrow dotClassName="bg-brand-blue">PROJECTS</Eyebrow>
           <h2 className="text-section mt-6 text-ink">
             아이디어를 현실로 만든 프로젝트
           </h2>
+          <p className="mt-6 text-body-lg text-ink/70">
+            웹 서비스부터 업무 플랫폼과 AI 자동화 솔루션까지,
+            <br className="hidden sm:inline" /> 다양한 아이디어를 실제로 사용할
+            수 있는 서비스로 구현합니다.
+          </p>
         </div>
-        <p className="max-w-md text-body-lg text-ink/70">
-          웹 서비스부터 업무 플랫폼과 AI 자동화 솔루션까지, 다양한 아이디어를
-          실제로 사용할 수 있는 서비스로 구현합니다.
-        </p>
-      </div>
 
-      <WorkGrid items={items} inquiryOptions={inquiryOptions} />
-
-      {/* 요청서 §8의 목록 하단 CTA. 전체 목록(`/work`)으로 나간다 — 홈은
-          대표 사례만 보여주고, 아카이브는 분류 필터를 항상 열어 둔다. */}
-      <div className="mt-10 flex justify-center lg:mt-14">
+        {/* 전체 목록(`/work`)으로 나간다 — 홈은 대표 사례만 보여주고,
+            아카이브는 분류 필터를 항상 열어 둔다(요청서 §8). */}
         <Link
           href={route.work}
-          className="group inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink transition-colors hover:text-brand-blue"
+          className="group inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors outline-none hover:border-ink/40 focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background md:self-auto"
         >
-          전체 프로젝트 보기
+          전체보기
           <ArrowUpRight
             className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             aria-hidden
           />
         </Link>
       </div>
+
+      <WorkGrid items={items} inquiryOptions={inquiryOptions} />
     </Section>
   );
 }
