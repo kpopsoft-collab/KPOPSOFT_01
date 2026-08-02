@@ -153,12 +153,15 @@ export function Process() {
           transform(scaleX)만 움직이므로 레이아웃 재계산이 없다.
         */}
         <div
-          className="pointer-events-none absolute top-12 right-[10%] left-[10%] h-px -translate-y-1/2 bg-ink/15"
+          className="pointer-events-none absolute top-12 right-[10%] left-[10%] h-px -translate-y-1/2 bg-ink/10"
           aria-hidden
         />
+        {/* 진행 선도 1px로 둔다. 2px는 번호 원 옆에서 굵게 읽혀 연결선이
+            아니라 그 자체로 하나의 요소처럼 보였다 — 선은 원과 원을 잇는
+            안내지 주인공이 아니다. 진행 여부는 굵기가 아니라 농도로 구분한다. */}
         <div
           className={cn(
-            "pointer-events-none absolute top-12 right-[10%] left-[10%] h-0.5 origin-left -translate-y-1/2 bg-ink/45",
+            "pointer-events-none absolute top-12 right-[10%] left-[10%] h-px origin-left -translate-y-1/2 bg-ink/30",
             "transition-transform ease-out motion-reduce:transition-none",
             entered ? "scale-x-100" : "scale-x-0",
           )}
@@ -214,7 +217,7 @@ export function Process() {
       {/* ── 모바일 · 태블릿 — 세로 타임라인 ───────────────────────────── */}
       <div className="relative mt-14 lg:hidden">
         <div
-          className="absolute top-8 bottom-8 left-8 w-px bg-ink/25"
+          className="absolute top-8 bottom-8 left-8 w-px bg-ink/20"
           aria-hidden
         />
         <ol className="flex flex-col gap-10">
