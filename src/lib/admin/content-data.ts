@@ -18,10 +18,8 @@ import {
   mockEducationReviews,
   mockEducationStats,
   mockExperts,
-  mockInsights,
   mockOrgTraining,
   mockStats,
-  mockTestimonials,
   mockWork,
 } from "./mock-content";
 import type {
@@ -37,9 +35,7 @@ import type {
   EducationReview,
   EducationStat,
   Expert,
-  Insight,
   Stat,
-  Testimonial,
   WorkItem,
 } from "./content-types";
 
@@ -85,8 +81,6 @@ export interface EducationContentData {
 
 export interface ContentData {
   work: ContentRepo<WorkItem>;
-  insights: ContentRepo<Insight>;
-  testimonials: ContentRepo<Testimonial>;
   experts: ContentRepo<Expert>;
   stats: ContentRepo<Stat>;
   education: EducationContentData;
@@ -173,8 +167,6 @@ class MockOrgTrainingRepo implements EducationOrgTrainingRepo {
 
 const data: ContentData = {
   work: new MockRepo(mockWork, "work"),
-  insights: new MockRepo(mockInsights, "insight"),
-  testimonials: new MockRepo(mockTestimonials, "testimonial"),
   experts: new MockRepo(mockExperts, "expert"),
   stats: new MockRepo(mockStats, "stat"),
   education: {

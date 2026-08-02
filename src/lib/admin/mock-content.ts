@@ -6,8 +6,6 @@
 
 import {
   selectedWork,
-  insights as siteInsights,
-  testimonials as siteTestimonials,
   experts as siteExperts,
   stats as siteStats,
 } from "@/lib/site";
@@ -22,9 +20,7 @@ import type {
   EducationReview,
   EducationStat,
   Expert,
-  Insight,
   Stat,
-  Testimonial,
   WorkItem,
 } from "./content-types";
 
@@ -43,34 +39,6 @@ export const mockWork: WorkItem[] = selectedWork.map((w, i) => ({
   showOnHome: true,
   isFeatured: i === 0,
   layoutType: i === 0 ? "featured" : "grid",
-}));
-
-export const mockInsights: Insight[] = siteInsights.map((n, i) => ({
-  id: `insight_${i + 1}`,
-  sortOrder: i,
-  isPublished: true,
-  tag: n.tag,
-  title: n.title.replace(/\n/g, " "),
-  date: n.date,
-  accent: n.accent,
-  excerpt: n.excerpt,
-  body: [...n.body],
-  slug: `insight-${i + 1}`,
-  inquiryType: n.inquiry.type,
-  inquirySubtype: n.inquiry.subtype,
-}));
-
-export const mockTestimonials: Testimonial[] = siteTestimonials.map((t, i) => ({
-  id: `testimonial_${i + 1}`,
-  sortOrder: i,
-  isPublished: true,
-  quote: t.quote,
-  author: t.author,
-  program: t.program,
-  result: t.result,
-  company: "",
-  role: "",
-  showOnEducation: false,
 }));
 
 export const mockExperts: Expert[] = siteExperts.map((e, i) => ({

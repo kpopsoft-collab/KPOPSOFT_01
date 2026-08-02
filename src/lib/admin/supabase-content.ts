@@ -20,9 +20,7 @@ import type {
   EducationReview,
   EducationStat,
   Expert,
-  Insight,
   Stat,
-  Testimonial,
   WorkItem,
 } from "./content-types";
 
@@ -54,32 +52,6 @@ const FIELDS: Record<string, FieldMap> = {
     ["showOnHome", "show_on_home"],
     ["isFeatured", "is_featured"],
     ["layoutType", "layout_type"],
-  ],
-  insights: [
-    ...COMMON,
-    ["tag", "tag"],
-    ["title", "title"],
-    ["date", "date"],
-    ["accent", "accent"],
-    ["excerpt", "excerpt"],
-    ["body", "body"],
-    ["slug", "slug"],
-    ["imageUrl", "image_url"],
-    ["inquiryType", "inquiry_type"],
-    ["inquirySubtype", "inquiry_subtype"],
-  ],
-  testimonials: [
-    ...COMMON,
-    ["quote", "quote"],
-    ["author", "author"],
-    ["program", "program"],
-    ["result", "result"],
-    ["company", "company"],
-    ["role", "role"],
-    ["imageUrl", "image_url"],
-    ["showOnEducation", "show_on_education"],
-    ["programId", "program_id"],
-    ["caseId", "case_id"],
   ],
   experts: [
     ...COMMON,
@@ -399,8 +371,6 @@ class SupabaseOrgTrainingRepo implements EducationOrgTrainingRepo {
 
 export const supabaseContentData: ContentData = {
   work: new SupabaseRepo<WorkItem>("work_items"),
-  insights: new SupabaseRepo<Insight>("insights"),
-  testimonials: new SupabaseRepo<Testimonial>("testimonials"),
   experts: new SupabaseRepo<Expert>("experts"),
   stats: new SupabaseRepo<Stat>("stats"),
   education: {
