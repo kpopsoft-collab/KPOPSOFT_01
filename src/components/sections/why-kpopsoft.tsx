@@ -330,18 +330,22 @@ export function WhyKpopsoft() {
 
   return (
     <Section id={sectionId.why} className="relative overflow-hidden">
+      {/*
+        카피 / 레이더 / 카드를 **하나의 그리드에 세 형제**로 둔다.
+
+        처음에는 카피와 레이더를 왼쪽 컬럼 하나에 묶었는데, 그러면 오른쪽
+        카드 컬럼의 기준선이 왼쪽 컬럼 전체(=카피 시작점)가 되어 카드가
+        제목 옆에서 시작하거나 세로 중앙에 뜬다. 행을 나눠 두면 레이더와
+        카드가 **같은 행**에 놓여 윗선이 자연히 맞는다.
+
+        모바일은 단일 컬럼이라 DOM 순서 그대로 카피 → 레이더 → 카드가 되고,
+        이는 §8이 지정한 순서와 같다.
+      */}
       <div
         ref={sectionRef}
-        className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-14"
+        className="grid grid-cols-1 gap-x-14 gap-y-10 lg:grid-cols-12"
       >
-        {/*
-          ── 왼쪽: 카피 + 레이더 (§8) ──
-          제목을 그리드 위로 빼지 않고 왼쪽 컬럼 안에 둔다. 레이더가 제목 바로
-          아래 붙어야 "이 도형이 이 문장의 그림"이라는 관계가 성립한다.
-          모바일에서는 이 컬럼이 통째로 위에 오므로 §8이 지정한 순서
-          (라벨 → 타이틀 → 보조 문구 → 레이더 → 카드)가 그대로 나온다.
-        */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 lg:row-start-1">
           <Eyebrow dotClassName="bg-brand-red">WHY KPOPSOFT</Eyebrow>
           <h2 className="text-section mt-6 text-ink">
             하나의 흐름으로
@@ -352,12 +356,14 @@ export function WhyKpopsoft() {
             KPOPSOFT는 전략과 디자인, 소프트웨어 개발, AI와 교육을 하나의 팀으로
             연결해 아이디어가 실제 비즈니스 성과로 이어지도록 돕습니다.
           </p>
+        </div>
 
+        <div className="lg:col-span-7 lg:col-start-1 lg:row-start-2">
           <svg
             viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`}
             /* 배경 장식으로 보이지 않을 만큼 크게 둔다(§8). 폭 상한을 걸지
                않고 컬럼을 다 쓴다. */
-            className="mx-auto mt-10 h-auto w-full max-w-xl lg:mt-4 lg:max-w-none"
+            className="mx-auto h-auto w-full max-w-xl lg:max-w-none"
             aria-hidden
           >
             {/* 1) 축과 격자선 — 가장 먼저 fade-in */}
@@ -545,8 +551,10 @@ export function WhyKpopsoft() {
 
           hover(포인터)·focus(키보드)·tap(터치)이 모두 같은 상태를 만든다.
           터치에는 hover가 없어 탭이 곧 선택이고, 한 번 더 누르면 해제된다.
+
+          `row-start-2`로 레이더와 같은 행에 놓아 윗선을 맞춘다.
         */}
-        <ul className="flex flex-col gap-4 lg:col-span-5 lg:justify-center">
+        <ul className="flex flex-col gap-4 lg:col-span-5 lg:col-start-8 lg:row-start-2">
           {differentiators.map((item, i) => {
             const isActive = selected === i;
             return (
