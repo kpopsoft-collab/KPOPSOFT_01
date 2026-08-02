@@ -4,7 +4,6 @@ import {
   type Expert,
   experts as seedExperts,
   selectedWork as seedWork,
-  insights as seedInsights,
   testimonials as seedTestimonials,
   stats as seedStats,
   inquiryOptions as seedOptions,
@@ -79,17 +78,6 @@ export type PublicWork = {
   /** 공개된 실제 서비스 주소. 있으면 카드·상세에 외부 링크가 붙는다. */
   externalUrl?: string;
 };
-export type PublicInsight = {
-  tag: string;
-  title: string;
-  date: string;
-  accent: Accent;
-  excerpt: string;
-  body: string[];
-  inquiry: { type: string; subtype: string };
-  slug: string;
-  imageUrl?: string;
-};
 export type PublicTestimonial = {
   quote: string;
   author: string;
@@ -111,16 +99,6 @@ const fallbackWork = (seedWork as unknown as Omit<PublicWork, "showOnHome">[]).m
 const fallbackTestimonials = seedTestimonials as unknown as PublicTestimonial[];
 const fallbackStats = seedStats as unknown as PublicStat[];
 const fallbackOptions = seedOptions as unknown as PublicInquiryOption[];
-const fallbackInsights: PublicInsight[] = seedInsights.map((n, i) => ({
-  tag: n.tag,
-  title: n.title,
-  date: n.date,
-  accent: n.accent,
-  excerpt: n.excerpt,
-  body: [...n.body],
-  inquiry: { type: n.inquiry.type, subtype: n.inquiry.subtype },
-  slug: `insight-${i + 1}`,
-}));
 
 export async function getPublicExperts(): Promise<PublicExpert[]> {
   try {
@@ -183,33 +161,6 @@ export async function getPublicWork(): Promise<PublicWork[]> {
   }
 }
 
-export async function getPublicInsights(): Promise<PublicInsight[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("insights")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackInsights;
-    return data.map((r) => ({
-      tag: r.tag,
-      title: r.title,
-      date: r.date,
-      accent: r.accent as Accent,
-      excerpt: r.excerpt,
-      body: r.body ?? [],
-      inquiry: {
-        type: r.inquiry_type ?? "",
-        subtype: r.inquiry_subtype ?? "",
-      },
-      slug: r.slug,
-      ...(r.image_url ? { imageUrl: r.image_url as string } : {}),
-    }));
-  } catch {
-    return fallbackInsights;
-  }
-}
 
 export async function getPublicTestimonials(): Promise<PublicTestimonial[]> {
   try {
@@ -274,13 +225,6 @@ export async function getPublicInquiryOptions(): Promise<PublicInquiryOption[]> 
   }
 }
 
-/** Find one published insight by slug (for /insights/[slug]). */
-export async function getPublicInsightBySlug(
-  slug: string,
-): Promise<PublicInsight | null> {
-  const all = await getPublicInsights();
-  return all.find((n) => n.slug === slug) ?? null;
-}
 // ─────────────────────────────────────────────────────────────────────────
 // Education (docs/KPOPSOFT_Education_Page_ver3.md) — public readers.
 //
