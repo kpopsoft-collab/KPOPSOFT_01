@@ -183,22 +183,17 @@ export const clubKeyVisual = {
  * ------------------------------------------------------------------ */
 
 /**
- * 세 분류를 같은 형식으로 요약한다 (수정 요청서 §7 "오른쪽: 실제 교육 사진,
- * 대상, 방식, 결과물").
+ * 분류별 대표 이미지 (수정 요청서 §7).
  *
- * 분류마다 데이터 모양이 다르다 — 조직·기업은 단일 객체, 정규는 4과정 배열,
- * 클럽은 기수·티어 구조다. Sticky 패널이 그 셋을 각각 분해해서 그리면 분기가
- * 패널 안에 쌓이므로, **읽는 쪽이 원하는 형식으로 한 번만 정리**해 둔다.
- * 아래 값은 각 분류 데이터에서 뽑은 것이지 새로 지어낸 사실이 아니다.
+ * 원래는 대상·방식·결과물 텍스트도 함께 들고 있었는데, 카드에서 그 블록이
+ * 빠지면서(사용자 요청) 화면에 남은 것은 이미지뿐이다. 쓰이지 않는 값을
+ * 남겨 두면 다음 사람이 "어딘가에 나오는 문구"로 알고 고치게 되므로 지웠다.
+ * 되살릴 때는 각 분류 데이터(orgTraining / regularClasses / clubTiers)에서
+ * 다시 뽑아 오면 된다 — 여기 있던 값도 지어낸 것이 아니라 그렇게 정리한
+ * 것이었다.
  */
 export type ProgramHighlight = {
   category: EduCategoryId;
-  /** 누가 듣는가 */
-  audience: string;
-  /** 어떻게 진행하는가 */
-  format: string;
-  /** 무엇이 남는가 */
-  outcome: string;
   image: EduImage;
   /**
    * 사진이 아니라 **그래픽**일 때 `contain`. 사진은 잘려도 분위기가 남지만
@@ -212,9 +207,6 @@ export type ProgramHighlight = {
 export const programHighlights: ProgramHighlight[] = [
   {
     category: "org",
-    audience: "팀 단위 5명 이상의 조직·기업",
-    format: "인원·직무·기간에 맞춘 맞춤 설계, 방문 또는 온라인",
-    outcome: "조직의 실제 과제를 다룬 커리큘럼과 실습 결과물",
     // 조직·기업 전용 사진(사용자 제공). 기존 `b2b-01`은 다른 카드와 같은
     // 강의실이라 세 카드가 구분되지 않았다.
     image: {
@@ -224,9 +216,6 @@ export const programHighlights: ProgramHighlight[] = [
   },
   {
     category: "regular",
-    audience: "AI를 처음 쓰는 사람부터 실무에 붙이려는 직장인까지",
-    format: "3~8주 오프라인 과정, 매 회차 실습 중심",
-    outcome: "직접 만든 결과물 — 수료하면 포트폴리오가 남습니다",
     // 정규 과정 전용 사진(사용자 제공). 원본은 `public/work/정규교육과정.JPG`
     // 였는데, 교육 사진은 `public/education/`에 모여 있고 URL에 한글이 들어가면
     // 인코딩된 경로가 코드에 박히므로 옮기고 이름을 맞췄다.
@@ -237,9 +226,6 @@ export const programHighlights: ProgramHighlight[] = [
   },
   {
     category: "club",
-    audience: "배운 것을 계속 이어가고 싶은 사람",
-    format: "기수제 스터디와 세미나, 실무 커뮤니티",
-    outcome: "매월 쌓이는 실험 기록과 함께 만드는 동료",
     /*
       사진이 아니라 바이브데이즈 대표 이미지(키비주얼)를 쓴다(사용자 지시).
       클럽은 강의가 아니라 브랜드를 가진 활동이라, 옆 두 카드와 같은 강의실
