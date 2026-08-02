@@ -40,7 +40,13 @@ export const eduSectionId = {
   cases: "education-cases",
 } as const;
 
-export type EduImage = { src: string; alt: string; caption?: string };
+export type EduImage = {
+  src: string;
+  alt: string;
+  caption?: string;
+  /** 브라우저나 개발 서버의 이미지 최적화 캐시를 우회해야 하는 로컬 에셋. */
+  unoptimized?: boolean;
+};
 
 /* ------------------------------------------------------------------ *
  * 교육 3분류
@@ -499,6 +505,11 @@ export type ClubCohort = {
   /** 마감·연기 등 상태를 보충하는 한 줄. `closed`일 때 사유로 쓴다. */
   note?: string;
   /**
+   * 신청 버튼을 눌리지 않게 막는다. 상태는 `open`이지만 아직 신청을 받지
+   * 않는 준비 기간을 위해 둔 스위치 — 버튼은 그대로 두고 비활성만 시킨다.
+   */
+  ctaDisabled?: boolean;
+  /**
    * 요소별 노출 토글. 가격 미정 상태로 모집 예고만 띄우는 경우가 있어
    * 상태값과 별개로 각각 끌 수 있어야 한다.
    */
@@ -520,6 +531,7 @@ export const clubCohorts: ClubCohort[] = [
     price: "79,000원",
     listPrice: "99,000원",
     capacity: undefined, // 정원 미정 — show.capacity를 false로 둔다.
+    ctaDisabled: true,
     show: { price: true, capacity: false, schedule: true, cta: true },
   },
   {
@@ -675,15 +687,14 @@ export type PastProgram = {
   /** 진행 시기 — "2026년 3월" */
   period: string;
   audience: string;
-  participants: string;
   duration: string;
   /** 한 줄 요약 */
   summary: string;
   outcome: string;
   accent: Accent;
   coverImage: EduImage;
-  /** 상세 갤러리에 더 있음을 나타내는 보조 이미지 수 ("+3" 표시). */
-  galleryCount: number;
+  /** 대표 이미지 뒤에 이어지는 실제 현장·결과물 이미지. */
+  galleryImages?: EduImage[];
 };
 
 // 기업명은 익명화한다(ver2 §24 유지). 수치는 실제 데이터 확보 전까지 더미.
@@ -694,7 +705,6 @@ export const pastPrograms: PastProgram[] = [
     category: "org",
     period: "2026년 3월", // 더미
     audience: "운영 및 관리 실무자",
-    participants: "30명", // 더미
     duration: "6시간 실습형 워크숍",
     summary: "반복 보고서 작성과 데이터 정리를 자동화했습니다.",
     outcome: "부서별 AI 업무 템플릿과 자동화 흐름",
@@ -704,43 +714,58 @@ export const pastPrograms: PastProgram[] = [
       alt: "제조기업 AI 업무 자동화 워크숍 현장에서 참가자들이 실습하는 모습",
       caption: "제조기업 AI 업무 자동화 워크숍 현장",
     },
-    galleryCount: 3,
   },
   {
     slug: "ai-web-app-class",
     title: "AI 웹앱 만들기 과정",
     category: "regular",
-    period: "2026년 5월", // 더미
+    period: "2026년 6월",
     audience: "AI·코딩 입문자",
-    participants: "15명", // 더미
     duration: "2회차 실습형 과정",
     summary: "코딩 경험 없이 AI와 함께 웹앱을 만들어 배포했습니다.",
     outcome: "데일리 노트 웹페이지와 카테고리 Todo 앱(배포까지 완료)",
     accent: "red",
     coverImage: {
-      src: "/education/education-case-02.jpg",
-      alt: "AI 웹앱 만들기 과정에서 참가자가 노트북으로 결과물을 만드는 모습",
-      caption: "AI 웹앱 만들기 과정, 2회차 동안의 제작 현장",
+      src: "/education/ai-web-app-class-result-v2.jpg",
+      alt: "AI 웹앱 만들기 과정 결과물 — 데일리 노트 웹페이지와 카테고리 Todo 앱 목업",
+      caption: "AI 웹앱 만들기 과정에서 제작한 데일리 노트·카테고리 Todo 앱",
+      unoptimized: true,
     },
-    galleryCount: 2,
+    galleryImages: [
+      {
+        src: "/education/education-regular-01.jpg",
+        alt: "AI 웹앱 만들기 과정에서 참가자들이 모바일 웹앱 화면을 제작하는 모습",
+        caption: "AI와 함께 모바일 웹앱 화면을 구현하는 실습",
+      },
+    ],
   },
   {
     slug: "gemini-oneday-class",
     title: "Gemini 원데이클래스",
     category: "regular",
-    period: "2026년 6월", // 더미
+    period: "2026년 7월",
     audience: "구글 계정만 있는 입문자",
-    participants: "20명", // 더미
     duration: "2시간 원데이클래스",
     summary: "무료 도구만으로 2시간 만에 결과물 다섯 개를 만들었습니다.",
     outcome: "요약본 · 리서치 보고서 · 캔버스 문서 · 이미지 · 나만의 Gem",
     accent: "mint",
     coverImage: {
-      src: "/education/education-lecture-01.jpg",
-      alt: "Gemini 원데이클래스에서 강사가 화면을 보며 활용법을 설명하는 모습",
-      caption: "Gemini 원데이클래스, 2시간 만에 결과물까지 만드는 현장",
+      src: "/education/gemini-oneday-class-mockup.jpg",
+      alt: "Gemini 원데이클래스 결과물 — 리서치 보고서와 나만의 Gem 제작 화면 목업",
+      caption: "Gemini 원데이클래스에서 완성한 요약·리서치·Canvas·이미지·Gem",
     },
-    galleryCount: 2,
+    galleryImages: [
+      {
+        src: "/education/education-lecture-01.jpg",
+        alt: "Gemini 원데이클래스에서 강사가 화면을 보며 활용법을 설명하는 모습",
+        caption: "무료 AI 도구의 주요 기능을 따라 해보는 강의",
+      },
+      {
+        src: "/education/education-coaching-01.jpg",
+        alt: "Gemini 원데이클래스에서 강사가 참가자의 노트북을 보며 코칭하는 모습",
+        caption: "나만의 결과물을 완성하는 개별 실습 코칭",
+      },
+    ],
   },
 ];
 
@@ -750,9 +775,9 @@ export const pastPrograms: PastProgram[] = [
 
 export type EduStat = { value: string; label: string };
 
-// 실제 수치 확보 전까지 더미. 홈 통계바(1,800+ / 96%)와 모순되지 않게 맞춰 둔다.
+// 나머지 수치는 실제 데이터 확보 전까지 더미.
 export const eduStats: EduStat[] = [
-  { value: "1,800+", label: "교육 수료생" },
+  { value: "200+", label: "교육 수료생" },
   { value: "4", label: "정규 클래스" },
   { value: "96%", label: "평균 만족도" },
   { value: "120+", label: "클럽 참가자" }, // 더미
@@ -1034,7 +1059,6 @@ export type EduCase = {
   title: string;
   industry: string;
   audience: string;
-  participants: string;
   duration: string;
   task: string;
   format: string;

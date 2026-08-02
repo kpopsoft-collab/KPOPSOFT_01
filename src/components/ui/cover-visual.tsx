@@ -35,6 +35,8 @@ export function CoverVisual({
   ratio,
   sizes = "(max-width: 768px) 100vw, 33vw",
   priority = false,
+  loading,
+  unoptimized = false,
   monogram,
   label,
   className,
@@ -45,6 +47,8 @@ export function CoverVisual({
   ratio?: CoverRatio;
   sizes?: string;
   priority?: boolean;
+  loading?: "eager" | "lazy";
+  unoptimized?: boolean;
   monogram?: string;
   label?: string;
   className?: string;
@@ -78,6 +82,8 @@ export function CoverVisual({
         alt={alt}
         fill
         priority={priority}
+        loading={loading}
+        unoptimized={unoptimized}
         className="object-cover"
         sizes={sizes}
       />

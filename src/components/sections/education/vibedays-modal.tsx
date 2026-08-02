@@ -279,7 +279,7 @@ function CohortBlock({ cohort }: { cohort: ClubCohort }) {
 
       {cohort.show.cta && (
         <div className="flex flex-col gap-2">
-          {isOpen ? (
+          {isOpen && !cohort.ctaDisabled ? (
             <a
               href="/#contact"
               className="group inline-flex h-13 items-center justify-center gap-2 rounded-full bg-brand-blue px-7 text-[0.95rem] font-semibold text-white transition-all outline-none hover:bg-brand-navy focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"

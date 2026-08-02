@@ -51,7 +51,7 @@ function CaseFacts({ item }: { item: EduCase }) {
         {item.title}
       </h3>
       <p className="mt-3 text-sm font-semibold text-ink/70">
-        {item.audience} {item.participants}
+        {item.audience}
       </p>
       <p className="text-sm text-ink/50">
         {item.duration} · {item.format}

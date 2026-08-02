@@ -115,9 +115,7 @@ function ProgramFacts({ item }: { item: PastProgram }) {
       <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
         <div className="flex gap-2">
           <dt className="text-ink/45">대상</dt>
-          <dd className="font-medium text-ink">
-            {item.audience} {item.participants}
-          </dd>
+          <dd className="font-medium text-ink">{item.audience}</dd>
         </div>
         <div className="flex gap-2">
           <dt className="text-ink/45">기간</dt>
@@ -133,12 +131,14 @@ function ProgramFacts({ item }: { item: PastProgram }) {
 }
 
 function ProgramCover({ item }: { item: PastProgram }) {
-  const badge = item.galleryCount > 0 && (
+  const galleryImages = [item.coverImage, ...(item.galleryImages ?? [])];
+  const totalImageCount = galleryImages.length;
+  const badge = totalImageCount > 1 && (
     <span
       className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-3 py-1.5 text-xs font-semibold text-ivory"
-      aria-hidden
+      aria-label={`전체 이미지 ${totalImageCount}장`}
     >
-      +{item.galleryCount}
+      {totalImageCount}
     </span>
   );
 
@@ -154,6 +154,8 @@ function ProgramCover({ item }: { item: PastProgram }) {
             imageUrl={item.coverImage.src}
             alt={item.coverImage.alt}
             ratio="4/3"
+            loading="eager"
+            unoptimized={item.coverImage.unoptimized}
             sizes="(max-width: 1024px) 100vw, 22rem"
             className="rounded-none [&_img]:transition-transform [&_img]:duration-300 group-hover:[&_img]:scale-[1.03]"
           />
@@ -163,11 +165,10 @@ function ProgramCover({ item }: { item: PastProgram }) {
       <ImageLightboxContent
         src={item.coverImage.src}
         alt={item.coverImage.alt}
+        images={galleryImages}
         caption={
           item.coverImage.caption ??
-          `${item.period} · ${item.title}${
-            item.galleryCount > 0 ? ` (외 ${item.galleryCount}장)` : ""
-          }`
+          `${item.period} · ${item.title} (총 ${totalImageCount}장)`
         }
       />
     </ImageLightbox>
