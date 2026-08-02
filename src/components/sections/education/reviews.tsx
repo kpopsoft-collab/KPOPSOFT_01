@@ -67,7 +67,8 @@ export function Reviews({ reviews }: { reviews: EduReview[] }) {
     observer.observe(set);
     observer.observe(viewport);
     return () => observer.disconnect();
-  }, []);
+    // 후기가 DB에서 오므로 개수가 바뀌면 한 벌 폭도 바뀐다 — 다시 잰다.
+  }, [reviews.length]);
 
   if (reviews.length === 0) return null;
 
