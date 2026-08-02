@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -25,15 +25,54 @@ import { cn } from "@/lib/utils";
  * 속도를 사용자가 통제할 수 없다. Hover·Focus에서 멈추고,
  * `prefers-reduced-motion`에서는 아예 돌지 않는다.
  */
+/**
+ * 마키 이동 속도(px/초).
+ *
+ * **한 바퀴 시간이 아니라 속도를 고정한다.** 후기 개수는 어드민에서 늘어날
+ * 값이라 상한이 없는데, 한 바퀴를 60초로 못 박으면 후기가 늘어날수록 같은
+ * 시간에 더 먼 거리를 지나 글자가 점점 빨리 흘러간다. 속도를 고정하면 개수가
+ * 몇이든 읽는 속도가 같다.
+ */
+const SPEED_PX_PER_SEC = 40;
+
 export function Reviews() {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const setRef = useRef<HTMLUListElement>(null);
+
+  /** 한 바퀴 시간(초). 카드 한 벌의 실제 폭에서 계산한다. */
+  const [duration, setDuration] = useState(0);
+  /** 한 벌이 화면보다 좁으면 돌리지 않는다 — 아래 주석 참고. */
+  const [enoughToLoop, setEnoughToLoop] = useState(false);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const set = setRef.current;
+    if (!viewport || !set) return;
+
+    const measure = () => {
+      const setWidth = set.scrollWidth;
+      if (setWidth === 0) return;
+
+      setDuration(setWidth / SPEED_PX_PER_SEC);
+      // 한 벌이 화면 폭보다 좁으면 두 벌을 이어 붙여도 빈 구간이 생겨
+      // 카드가 끊겼다 나타난다. 후기가 한두 건뿐일 때가 그렇다 — 그때는
+      // 애니메이션을 켜지 않고 그냥 나란히 둔다.
+      setEnoughToLoop(setWidth >= viewport.clientWidth);
+    };
+
+    measure();
+
+    // 폰트 로드나 화면 회전으로 폭이 바뀌면 다시 잰다.
+    const observer = new ResizeObserver(measure);
+    observer.observe(set);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, []);
+
   if (eduReviews.length === 0) return null;
 
   return (
-    <Section
-      id={eduSectionId.reviews}
-      className="scroll-mt-36 bg-ivory"
-      bleed
-    >
+    <Section id={eduSectionId.reviews} className="scroll-mt-36 bg-ivory" bleed>
       <div className="container-editorial">
         <div className="max-w-2xl">
           <Eyebrow dotClassName="bg-brand-coral">수강 후기</Eyebrow>
@@ -49,45 +88,61 @@ export function Reviews() {
       </div>
 
       {/*
-        마키 트랙. 데스크톱에서는 넘침을 감추고 애니메이션으로 밀고, 모바일에서는
-        같은 컨테이너가 그냥 가로 스크롤러가 된다(트랙 애니메이션 없음).
+        마키 트랙 — 모든 화면에서 끊김 없이 돈다.
+
+        같은 목록을 두 벌 이어 붙이고 트랙 전체를 "한 벌 + 간격"만큼 민다.
+        첫 벌이 완전히 빠져나가는 순간 둘째 벌이 정확히 그 자리에 와 있어
+        이음매가 보이지 않는다(`kps-marquee` 키프레임의 `-50% - gap/2`가
+        그 계산이다).
+
+        둘째 벌은 `aria-hidden`이라 스크린리더는 후기를 한 번만 읽는다.
       */}
       <div
-        className={cn(
-          "group mt-14 overflow-x-auto pb-4 lg:mt-20 md:overflow-hidden",
-          "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        )}
+        ref={viewportRef}
+        className="group mt-14 overflow-hidden pb-4 lg:mt-20"
       >
-        <ul
-          style={{ ["--marquee-gap" as string]: "1.5rem" }}
+        <div
+          style={{
+            ["--marquee-gap" as string]: "1.5rem",
+            animationDuration: `${duration}s`,
+          }}
           className={cn(
-            "flex w-max gap-6 px-4 md:px-6",
-            // 60초 한 바퀴 — 읽는 속도를 방해하지 않는 범위(§15).
-            "md:animate-[kps-marquee_60s_linear_infinite]",
-            // Hover·Focus·Drag에서 정지(§11). focus-within이 있어야 키보드로
-            // 카드 안 버튼에 닿았을 때 카드가 도망가지 않는다.
-            "md:group-hover:[animation-play-state:paused] md:group-focus-within:[animation-play-state:paused]",
+            // 좌우 여백을 두지 않는다 — 키프레임이 트랙 폭의 50%를 기준으로
+            // 미는데 패딩이 붙으면 그 50%가 한 벌 폭과 어긋나 이음매가 튄다.
+            // 마키는 원래 화면 양끝으로 흘러 나가는 편이 자연스럽다.
+            "flex w-max gap-6",
+            enoughToLoop && duration > 0
+              ? "animate-[kps-marquee_linear_infinite]"
+              : null,
+            // Hover·Focus에서 정지(§11). focus-within이 있어야 키보드로 카드
+            // 안 버튼(더보기)에 닿았을 때 카드가 도망가지 않는다.
+            "group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused]",
             "motion-reduce:animate-none",
           )}
         >
-          {eduReviews.map((review) => (
-            <li key={review.id} className="w-[78vw] shrink-0 sm:w-[26rem]">
-              <ReviewCard review={review} />
-            </li>
-          ))}
+          <ul ref={setRef} className="flex w-max shrink-0 gap-6">
+            {eduReviews.map((review) => (
+              <li key={review.id} className="w-[78vw] shrink-0 sm:w-[26rem]">
+                <ReviewCard review={review} />
+              </li>
+            ))}
+          </ul>
 
-          {/* 이음매용 두 번째 벌 — 스크린리더는 읽지 않는다. 모바일에서는
-              스와이프로 넘기므로 필요 없어 렌더하지 않는다. */}
-          {eduReviews.map((review) => (
-            <li
-              key={`${review.id}-loop`}
-              aria-hidden
-              className="hidden w-[26rem] shrink-0 md:block"
-            >
-              <ReviewCard review={review} />
-            </li>
-          ))}
-        </ul>
+          {/* 이음매용 둘째 벌. 돌지 않을 때는 같은 카드가 두 번 보이므로
+              렌더하지 않는다. */}
+          {enoughToLoop ? (
+            <ul aria-hidden className="flex w-max shrink-0 gap-6">
+              {eduReviews.map((review) => (
+                <li
+                  key={`${review.id}-loop`}
+                  className="w-[78vw] shrink-0 sm:w-[26rem]"
+                >
+                  <ReviewCard review={review} />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </div>
     </Section>
   );
