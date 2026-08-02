@@ -12,7 +12,7 @@
 |---|------|-------|------|
 | 1 | [01-regular-class-schedule-and-html](01-regular-class-schedule-and-html/00-START-HERE.md) | 정규 클래스 폼에 일정 유형(원데이/다회차)과 HTML 상세 업로드 추가 | 대기 |
 | 2 | [02-education-programs-public-pages](02-education-programs-public-pages/00-START-HERE.md) | `/education/programs` 목록·상세 페이지를 DB에 연결해 구현 | 대기 |
-| 3 | [03-regular-class-form-merge](03-regular-class-form-merge/00-START-HERE.md) | 정규 클래스 `new`와 `[id]` 페이지를 하나로 병합 | 대기 |
+| 3 | [03-regular-class-form-merge](03-regular-class-form-merge/00-START-HERE.md) | 정규 클래스 `new`와 `[id]` 페이지를 하나로 병합 | **완료** → [docs/06-admin/06](../docs/06-admin/06-콘텐츠-폼-공용셸.md) |
 
 ## 셋의 관계
 
@@ -24,9 +24,12 @@
    (컬럼/타입/폼)         (라우트 정리)         (1이 넣은 필드를 화면에 씀)
 ```
 
-- **1 → 3**: 3은 1이 만든 최종 폼을 감싸는 껍데기 정리다. 1보다 먼저 하면
-  병합한 화면을 1에서 또 손대게 된다. 다만 3은 1과 **같은 PR에서 이어서** 해도
-  된다(둘 다 어드민 폼 한 곳이라 충돌 지점이 겹친다).
+- ~~**1 → 3**~~ — **틀린 판단이었다. 3을 먼저 했다 (2026-08-03).**
+  3이 고치는 것은 페이지 껍데기와 신규 셸이고, 1이 고치는 것은 폼 컴포넌트·
+  타입·마이그레이션·`actions.ts`다. **소스 파일 교집합이 0**이라 순서가 없다.
+  3이 `actions.ts`를 건드리지 않았으므로 1은 지금 그대로 진행하면 된다.
+  1을 할 때 폼 페이지 두 개는 이미 `ContentFormShell`을 쓰고 있으니
+  [docs/06-admin/06-콘텐츠-폼-공용셸.md](../docs/06-admin/06-콘텐츠-폼-공용셸.md)를 먼저 본다.
 - **1 → 2**: 2의 상세 페이지가 보여줄 일정·HTML 본문이 1에서 생긴다. 1 없이
   2를 먼저 하면 상세 페이지를 나중에 다시 열어야 한다.
 - 2의 **목록 페이지**만은 1과 독립이다. 급하면 목록부터 먼저 내보낼 수 있다.
