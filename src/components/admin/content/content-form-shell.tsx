@@ -19,6 +19,9 @@ import { cn } from "@/lib/utils";
  *
  * 서버 컴포넌트로 둔다. `"use client"`를 붙이면 정적인 헤더와 아이콘까지
  * 클라이언트 번들로 들어간다(폼은 이미 각자 클라이언트 컴포넌트다).
+ *
+ * 뒤로가기 링크의 `min-h-11 w-fit`은 탭 타겟 44px 규칙이다
+ * (docs/04-design-system/). 글자 높이만으로는 모바일에서 누르기 어렵다.
  */
 export function ContentFormShell({
   backHref,
@@ -43,7 +46,7 @@ export function ContentFormShell({
       <div>
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/55 transition-colors hover:text-ink"
+          className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-ink/55 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           {backLabel}
