@@ -15,7 +15,6 @@ import {
   eduCategories,
   eduSectionId,
   type PastProgram,
-  pastPrograms,
 } from "@/lib/education-content";
 
 /**
@@ -44,10 +43,10 @@ import {
  */
 const PREVIEW_COUNT = 3;
 
-export function PastPrograms() {
-  if (pastPrograms.length === 0) return null;
+export function PastPrograms({ programs }: { programs: PastProgram[] }) {
+  if (programs.length === 0) return null;
 
-  const visible = pastPrograms.slice(0, PREVIEW_COUNT);
+  const visible = programs.slice(0, PREVIEW_COUNT);
 
   return (
     <Section id={eduSectionId.cases} className="scroll-mt-36 bg-ivory">

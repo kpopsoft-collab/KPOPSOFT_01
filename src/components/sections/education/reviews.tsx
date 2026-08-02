@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Tag } from "@/components/ui/tag";
-import { type EduReview, eduReviews, eduSectionId } from "@/lib/education-content";
+import { type EduReview, eduSectionId } from "@/lib/education-content";
 import { cn } from "@/lib/utils";
 
 /**
@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
  */
 const SPEED_PX_PER_SEC = 40;
 
-export function Reviews() {
+export function Reviews({ reviews }: { reviews: EduReview[] }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const setRef = useRef<HTMLUListElement>(null);
 
@@ -69,7 +69,7 @@ export function Reviews() {
     return () => observer.disconnect();
   }, []);
 
-  if (eduReviews.length === 0) return null;
+  if (reviews.length === 0) return null;
 
   return (
     <Section id={eduSectionId.reviews} className="scroll-mt-36 bg-ivory" bleed>
@@ -121,7 +121,7 @@ export function Reviews() {
           )}
         >
           <ul ref={setRef} className="flex w-max shrink-0 gap-6">
-            {eduReviews.map((review) => (
+            {reviews.map((review) => (
               <li key={review.id} className="w-[78vw] shrink-0 sm:w-[26rem]">
                 <ReviewCard review={review} />
               </li>
@@ -132,7 +132,7 @@ export function Reviews() {
               렌더하지 않는다. */}
           {enoughToLoop ? (
             <ul aria-hidden className="flex w-max shrink-0 gap-6">
-              {eduReviews.map((review) => (
+              {reviews.map((review) => (
                 <li
                   key={`${review.id}-loop`}
                   className="w-[78vw] shrink-0 sm:w-[26rem]"

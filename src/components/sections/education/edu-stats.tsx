@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { eduSectionId, eduStats } from "@/lib/education-content";
+import { type EduStat, eduSectionId } from "@/lib/education-content";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,7 +27,7 @@ const COUNT_MS = 900;
 /** 항목별 시작 지연(ms) — §6의 0.1초 간격. */
 const STAGGER_MS = 100;
 
-export function EduStats() {
+export function EduStats({ stats }: { stats: EduStat[] }) {
   const [started, setStarted] = useState(false);
   const ref = useRef<HTMLDListElement>(null);
 
@@ -48,7 +48,7 @@ export function EduStats() {
     return () => observer.disconnect();
   }, []);
 
-  if (eduStats.length === 0) return null;
+  if (stats.length === 0) return null;
 
   return (
     <Section id={eduSectionId.stats} className="bg-brand-navy py-16 md:py-20">
@@ -65,7 +65,7 @@ export function EduStats() {
         ref={ref}
         className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4"
       >
-        {eduStats.map((stat, index) => (
+        {stats.map((stat, index) => (
           <div key={stat.label} className="flex flex-col gap-2">
             <dt className="order-2 text-sm font-medium text-ivory/70 md:text-base">
               {stat.label}

@@ -11,11 +11,13 @@ import { Tag } from "@/components/ui/tag";
 import { VibedaysModal } from "@/components/sections/education/vibedays-modal";
 import { useEduExplore } from "@/components/sections/education/explore-context";
 import {
+  type ClubCohort,
+  type ClubTier,
   type EduCategoryId,
   eduCategories,
   eduSectionId,
   getProgramHighlight,
-  orgTraining,
+  type OrgTraining,
   type RegularClass,
   sortRegularClassesByTrack,
 } from "@/lib/education-content";
@@ -89,10 +91,20 @@ function accentOf(category: EduCategoryId) {
   return eduCategories.find((c) => c.id === category)?.accent ?? "blue";
 }
 
-export function EduPrograms() {
+export function EduPrograms({
+  regularClasses,
+  orgTraining,
+  cohorts,
+  tiers,
+}: {
+  regularClasses: RegularClass[];
+  orgTraining: OrgTraining;
+  cohorts: ClubCohort[];
+  tiers: ClubTier[];
+}) {
   const { purpose, category: purposeCategory, clearPurpose } = useEduExplore();
 
-  const classes = sortRegularClassesByTrack(purpose?.track);
+  const classes = sortRegularClassesByTrack(purpose?.track, regularClasses);
 
   return (
     <Section id={educationSectionId.programs} className="scroll-mt-36 bg-ivory">
@@ -135,6 +147,9 @@ export function EduPrograms() {
               category={id}
               highlighted={purposeCategory === id}
               classes={classes}
+              orgTraining={orgTraining}
+              cohorts={cohorts}
+              tiers={tiers}
             />
           </li>
         ))}
@@ -147,10 +162,16 @@ function ProgramCard({
   category,
   highlighted,
   classes,
+  orgTraining,
+  cohorts,
+  tiers,
 }: {
   category: EduCategoryId;
   highlighted: boolean;
   classes: RegularClass[];
+  orgTraining: OrgTraining;
+  cohorts: ClubCohort[];
+  tiers: ClubTier[];
 }) {
   const copy = COPY[category];
   const highlight = getProgramHighlight(category);
@@ -244,7 +265,13 @@ function ProgramCard({
         ) : null}
 
         <div className={cn(!highlight && "mt-auto", "pt-1")}>
-          <ProgramCta category={category} highlighted={highlighted} />
+          <ProgramCta
+            category={category}
+            highlighted={highlighted}
+            orgTraining={orgTraining}
+            cohorts={cohorts}
+            tiers={tiers}
+          />
         </div>
       </div>
     </article>
@@ -276,9 +303,15 @@ function Fact({ label, value }: { label: string; value: string }) {
 function ProgramCta({
   category,
   highlighted,
+  orgTraining,
+  cohorts,
+  tiers,
 }: {
   category: EduCategoryId;
   highlighted: boolean;
+  orgTraining: OrgTraining;
+  cohorts: ClubCohort[];
+  tiers: ClubTier[];
 }) {
   if (category === "regular") {
     return (
@@ -294,7 +327,7 @@ function ProgramCta({
 
   if (category === "club") {
     return (
-      <VibedaysModal>
+      <VibedaysModal cohorts={cohorts} tiers={tiers}>
         <button
           type="button"
           className="group inline-flex h-13 w-full items-center justify-center gap-2 rounded-full border-[1.25px] border-ink/70 px-7 text-[0.95rem] font-semibold text-ink transition-all outline-none hover:bg-ink hover:text-ivory focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white"

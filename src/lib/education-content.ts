@@ -153,10 +153,13 @@ export const eduPurposes: EduPurpose[] = [
  * 남는다. 같은 트랙 안에서는 원래 순서(01~04)를 지켜 목록이 매번 다르게
  * 보이지 않게 한다.
  */
-export function sortRegularClassesByTrack(track?: EduTrack): RegularClass[] {
-  if (!track) return regularClasses;
+export function sortRegularClassesByTrack(
+  track?: EduTrack,
+  classes: RegularClass[] = regularClasses,
+): RegularClass[] {
+  if (!track) return classes;
 
-  return [...regularClasses].sort((a, b) => {
+  return [...classes].sort((a, b) => {
     const aMatch = a.tracks.includes(track) ? 0 : 1;
     const bMatch = b.tracks.includes(track) ? 0 : 1;
     return aMatch - bMatch;
@@ -262,6 +265,15 @@ export function getProgramHighlight(category: EduCategoryId) {
 /* ------------------------------------------------------------------ *
  * 01. 조직·기업 맞춤 교육
  * ------------------------------------------------------------------ */
+
+/** 조직·기업 맞춤 교육은 상품이 하나뿐이라 목록이 아니라 단일 객체다. */
+export type OrgTraining = {
+  title: string;
+  description: string;
+  minParticipants: string;
+  image: EduImage;
+  cta: { label: string };
+};
 
 export const orgTraining = {
   title: "회사 상황과 직무에 맞춰 설계합니다.",

@@ -9,13 +9,25 @@ import {
   stats as seedStats,
   inquiryOptions as seedOptions,
 } from "@/lib/site";
-import type {
-  EducationFaqCategory,
-  EducationFormat,
-  EducationImageOwner,
-  EducationImageRole,
-  EducationRecruitStatus,
-} from "@/lib/admin/content-types";
+import {
+  type ClubCohort,
+  type ClubTier,
+  type EduImage,
+  type EduReview,
+  type EduStat,
+  type FaqItem,
+  type OrgTraining,
+  type PastProgram,
+  type RegularClass,
+  clubCohorts,
+  clubTiers,
+  eduFaqs,
+  eduReviews,
+  eduStats,
+  orgTraining,
+  pastPrograms,
+  regularClasses,
+} from "@/lib/education-content";
 
 /**
  * Public-site content readers (docs/어드민기획.md §11.8). Each reads published /
@@ -253,332 +265,247 @@ export async function getPublicInsightBySlug(
   const all = await getPublicInsights();
   return all.find((n) => n.slug === slug) ?? null;
 }
-
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/KPOPSOFT_Education_Page_ver2.md) — public readers.
+// Education (docs/KPOPSOFT_Education_Page_ver3.md) — public readers.
 //
-// No src/lib/site.ts seed exists for Education yet (it's new content), so
-// there is no seed fallback here the way the sections above fall back to
-// site.ts. On empty result or any DB error these return `[]` (or a minimal
-// default settings object) so /education never breaks mid-migration or
-// during an outage — the page's own section components decide whether to
-// render an empty state or hide the section entirely (§33).
+// 위 섹션들이 site.ts 시드로 폴백하듯, 교육은 `education-content.ts`의 정적
+// 데이터로 폴백한다. DB가 비었거나(마이그레이션 직후) 조회가 실패해도
+// /education은 지금 화면 그대로 나온다 — 빈 페이지가 나오는 편이 더 나쁘다.
+//
+// 반환 타입은 정적 데이터와 **같은 타입**을 그대로 쓴다. 섹션 컴포넌트가 이미
+// 그 모양을 소비하고 있어, 별도 Public* 타입을 만들면 같은 것을 두 번 정의한
+// 뒤 서로 변환하는 코드만 늘어난다.
+//
+// ver2 스키마(education_programs / outputs / cases / vibedays_roles / images /
+// page_settings)를 읽던 함수들은 지웠다. 그 테이블은 DB에 만들어진 적이 없고
+// ver3 3분류 체계와 구조가 맞지 않았으며, 호출하는 곳도 없었다.
 // ─────────────────────────────────────────────────────────────────────────
 
-export type PublicEducationProgram = {
-  id: string;
-  slug: string;
-  name: string;
-  vibeLabel: string;
-  category: string;
-  summary: string;
-  description: string;
-  targetAudience: string;
-  difficulty: string;
-  duration: string;
-  format?: EducationFormat;
-  location: string;
-  price: string;
-  recruitStatus: EducationRecruitStatus;
-  recruitStartDate?: string;
-  recruitEndDate?: string;
-  coverImageUrl?: string;
-  heroImageUrl?: string;
-  isFeatured: boolean;
-  hasDetailPage: boolean;
-  seoTitle?: string;
-  seoDescription?: string;
-  displayOrder: number;
-  /** expert ids (§28 — Program ↔ Instructor 관계형 연결). */
-  instructorIds: string[];
-};
+type Row = Record<string, unknown>;
 
-export type PublicEducationOutput = {
-  id: string;
-  title: string;
-  programId?: string;
-  category: string;
-  description: string;
-  coverImageUrl?: string;
-  displayOrder: number;
-};
+const str = (v: unknown): string => (typeof v === "string" ? v : "");
+const strArray = (v: unknown): string[] => (Array.isArray(v) ? v.map(str) : []);
+/** 비어 있으면 필드 자체를 빼기 위한 헬퍼 — optional 필드에 ""를 넣지 않는다. */
+const opt = (v: unknown): string | undefined => (str(v) ? str(v) : undefined);
 
-export type PublicEducationCase = {
-  id: string;
-  title: string;
-  industry: string;
-  companyName: string;
-  targetAudience: string;
-  participantCount: string;
-  duration: string;
-  format?: EducationFormat;
-  goal: string;
-  mainTask: string;
-  outputs: string;
-  outcome: string;
-  coverImageUrl?: string;
-  displayOrder: number;
-};
+/** 이미지 세 컬럼(url/alt/caption) → EduImage. url이 없으면 이미지 자체가 없다. */
+function toImage(url: unknown, alt: unknown, caption: unknown): EduImage | undefined {
+  if (!str(url)) return undefined;
+  return {
+    src: str(url),
+    alt: str(alt),
+    ...(str(caption) ? { caption: str(caption) } : {}),
+  };
+}
 
-export type PublicEducationFaq = {
-  id: string;
-  category: EducationFaqCategory;
-  question: string;
-  answer: string;
-  displayOrder: number;
-};
-
-export type PublicVibedaysRole = {
-  id: string;
-  roleName: string;
-  tagline: string;
-  description: string;
-  characterImageUrl?: string;
-  displayOrder: number;
-};
-
-/** Image-gallery row (Education §24) — only `isPublic=true` rows are ever returned. */
-export type PublicEducationImage = {
-  id: string;
-  ownerType: EducationImageOwner;
-  ownerId: string;
-  role: EducationImageRole;
-  imageUrl: string;
-  altText: string;
-  caption?: string;
-  isBlurred: boolean;
-  isFeatured: boolean;
-  displayOrder: number;
-};
-
-export type PublicEducationPageSettings = {
-  heroEyebrow: string;
-  heroTitle: string;
-  heroDescription: string;
-  heroImageUrl?: string;
-  heroCtaPrimaryLabel: string;
-  heroCtaPrimaryHref: string;
-  heroCtaSecondaryLabel: string;
-  heroCtaSecondaryHref: string;
-  vibedaysTitle: string;
-  vibedaysDescription: string;
-  sections: Record<string, { isPublished: boolean; order: number } | undefined>;
-};
-
-const defaultEducationSettings: PublicEducationPageSettings = {
-  heroEyebrow: "KPOPSOFT EDUCATION",
-  heroTitle: "",
-  heroDescription: "",
-  heroCtaPrimaryLabel: "",
-  heroCtaPrimaryHref: "",
-  heroCtaSecondaryLabel: "",
-  heroCtaSecondaryHref: "",
-  vibedaysTitle: "",
-  vibedaysDescription: "",
-  sections: {},
-};
-
-export async function getPublicEducationPrograms(): Promise<PublicEducationProgram[]> {
+/**
+ * 조회 한 번을 감싸는 공통 틀. 에러·빈 결과면 폴백을 돌려준다.
+ * 세 군데에서 같은 try/catch를 반복하지 않기 위한 것이지 다른 동작은 없다.
+ */
+async function read<T>(
+  table: string,
+  map: (rows: Row[]) => T,
+  fallback: T,
+): Promise<T> {
   try {
     const db = createSupabasePublicClient();
     const { data, error } = await db
-      .from("education_programs")
-      .select("*, education_program_instructors(expert_id)")
-      .eq("is_published", true)
-      .order("display_order", { ascending: true });
-    if (error || !data) return [];
-    return data.map((r) => ({
-      id: r.id as string,
-      slug: r.slug,
-      name: r.name,
-      vibeLabel: r.vibe_label,
-      category: r.category,
-      summary: r.summary,
-      description: r.description,
-      targetAudience: r.target_audience,
-      difficulty: r.difficulty,
-      duration: r.duration,
-      ...(r.format ? { format: r.format as EducationFormat } : {}),
-      location: r.location,
-      price: r.price,
-      recruitStatus: r.recruit_status as EducationRecruitStatus,
-      ...(r.recruit_start_date ? { recruitStartDate: r.recruit_start_date as string } : {}),
-      ...(r.recruit_end_date ? { recruitEndDate: r.recruit_end_date as string } : {}),
-      ...(r.cover_image_url ? { coverImageUrl: r.cover_image_url as string } : {}),
-      ...(r.hero_image_url ? { heroImageUrl: r.hero_image_url as string } : {}),
-      isFeatured: r.is_featured,
-      hasDetailPage: r.has_detail_page,
-      ...(r.seo_title ? { seoTitle: r.seo_title as string } : {}),
-      ...(r.seo_description ? { seoDescription: r.seo_description as string } : {}),
-      displayOrder: r.display_order,
-      instructorIds: (
-        (r.education_program_instructors ?? []) as { expert_id: string }[]
-      ).map((l) => l.expert_id),
-    }));
+      .from(table)
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error || !data || data.length === 0) return fallback;
+    return map(data as Row[]);
   } catch {
-    return [];
+    return fallback;
   }
 }
 
-/** Find one published program by slug (for the future /education/[slug]). */
-export async function getPublicEducationProgramBySlug(
-  slug: string,
-): Promise<PublicEducationProgram | null> {
-  const all = await getPublicEducationPrograms();
-  return all.find((p) => p.slug === slug) ?? null;
-}
-
-export async function getPublicEducationOutputs(): Promise<PublicEducationOutput[]> {
+/** 01. 조직·기업 맞춤 교육 — 싱글턴 행. */
+export async function getPublicOrgTraining(): Promise<OrgTraining> {
   try {
     const db = createSupabasePublicClient();
     const { data, error } = await db
-      .from("education_outputs")
+      .from("education_org_training")
       .select("*")
-      .eq("is_published", true)
-      .order("display_order", { ascending: true });
-    if (error || !data) return [];
-    return data.map((r) => ({
-      id: r.id as string,
-      title: r.title,
-      ...(r.program_id ? { programId: r.program_id as string } : {}),
-      category: r.category,
-      description: r.description,
-      ...(r.cover_image_url ? { coverImageUrl: r.cover_image_url as string } : {}),
-      displayOrder: r.display_order,
-    }));
-  } catch {
-    return [];
-  }
-}
-
-export async function getPublicEducationCases(): Promise<PublicEducationCase[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_cases")
-      .select("*")
-      .eq("is_published", true)
-      .order("display_order", { ascending: true });
-    if (error || !data) return [];
-    return data.map((r) => ({
-      id: r.id as string,
-      title: r.title,
-      industry: r.industry,
-      companyName: r.company_name,
-      targetAudience: r.target_audience,
-      participantCount: r.participant_count,
-      duration: r.duration,
-      ...(r.format ? { format: r.format as EducationFormat } : {}),
-      goal: r.goal,
-      mainTask: r.main_task,
-      outputs: r.outputs,
-      outcome: r.outcome,
-      ...(r.cover_image_url ? { coverImageUrl: r.cover_image_url as string } : {}),
-      displayOrder: r.display_order,
-    }));
-  } catch {
-    return [];
-  }
-}
-
-export async function getPublicEducationFaqs(): Promise<PublicEducationFaq[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_faqs")
-      .select("*")
-      .eq("is_published", true)
-      .order("display_order", { ascending: true });
-    if (error || !data) return [];
-    return data.map((r) => ({
-      id: r.id as string,
-      category: r.category as EducationFaqCategory,
-      question: r.question,
-      answer: r.answer,
-      displayOrder: r.display_order,
-    }));
-  } catch {
-    return [];
-  }
-}
-
-export async function getPublicVibedaysRoles(): Promise<PublicVibedaysRole[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("vibedays_roles")
-      .select("*")
-      .eq("is_published", true)
-      .order("display_order", { ascending: true });
-    if (error || !data) return [];
-    return data.map((r) => ({
-      id: r.id as string,
-      roleName: r.role_name,
-      tagline: r.tagline,
-      description: r.description,
-      ...(r.character_image_url ? { characterImageUrl: r.character_image_url as string } : {}),
-      displayOrder: r.display_order,
-    }));
-  } catch {
-    return [];
-  }
-}
-
-/** Public (isPublic=true only) images for one gallery owner (Education §24). */
-export async function getPublicEducationImages(
-  ownerType: EducationImageOwner,
-  ownerId: string,
-): Promise<PublicEducationImage[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_images")
-      .select("*")
-      .eq("owner_type", ownerType)
-      .eq("owner_id", ownerId)
-      .eq("is_public", true)
-      .order("display_order", { ascending: true });
-    if (error || !data) return [];
-    return data.map((r) => ({
-      id: r.id as string,
-      ownerType: r.owner_type as EducationImageOwner,
-      ownerId: r.owner_id as string,
-      role: r.role as EducationImageRole,
-      imageUrl: r.image_url,
-      altText: r.alt_text,
-      ...(r.caption ? { caption: r.caption as string } : {}),
-      isBlurred: r.is_blurred,
-      isFeatured: r.is_featured,
-      displayOrder: r.display_order,
-    }));
-  } catch {
-    return [];
-  }
-}
-
-export async function getPublicEducationPageSettings(): Promise<PublicEducationPageSettings> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_page_settings")
-      .select("*")
-      .eq("id", true)
       .maybeSingle();
-    if (error || !data) return defaultEducationSettings;
+    if (error || !data) return orgTraining;
     return {
-      heroEyebrow: data.hero_eyebrow ?? defaultEducationSettings.heroEyebrow,
-      heroTitle: data.hero_title ?? "",
-      heroDescription: data.hero_description ?? "",
-      ...(data.hero_image_url ? { heroImageUrl: data.hero_image_url as string } : {}),
-      heroCtaPrimaryLabel: data.hero_cta_primary_label ?? "",
-      heroCtaPrimaryHref: data.hero_cta_primary_href ?? "",
-      heroCtaSecondaryLabel: data.hero_cta_secondary_label ?? "",
-      heroCtaSecondaryHref: data.hero_cta_secondary_href ?? "",
-      vibedaysTitle: data.vibedays_title ?? "",
-      vibedaysDescription: data.vibedays_description ?? "",
-      sections: (data.sections as PublicEducationPageSettings["sections"]) ?? {},
+      title: str(data.title),
+      description: str(data.description),
+      minParticipants: str(data.min_participants),
+      image:
+        toImage(data.image_url, data.image_alt, data.image_caption) ??
+        orgTraining.image,
+      cta: { label: str(data.cta_label) },
     };
   } catch {
-    return defaultEducationSettings;
+    return orgTraining;
   }
+}
+
+/** 02. 정규 클래스 4과정. */
+export async function getPublicRegularClasses(): Promise<RegularClass[]> {
+  return read(
+    "education_regular_classes",
+    (rows) =>
+      rows.map((r) => ({
+        slug: str(r.slug),
+        index: str(r.index_label),
+        name: str(r.name),
+        subtitle: str(r.subtitle),
+        description: str(r.description),
+        duration: str(r.duration),
+        level: str(r.level),
+        tracks: strArray(r.tracks) as RegularClass["tracks"],
+        accent: str(r.accent) as Accent,
+        ...(toImage(r.image_url, r.image_alt, r.image_caption)
+          ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
+          : {}),
+        curriculum: strArray(r.curriculum),
+        detailHref: str(r.detail_href),
+        seo: { title: str(r.seo_title), description: str(r.seo_description) },
+      })),
+    regularClasses,
+  );
+}
+
+/** 03. 커뮤니티 클럽 — 기수. */
+export async function getPublicClubCohorts(): Promise<ClubCohort[]> {
+  return read(
+    "education_club_cohorts",
+    (rows) =>
+      rows.map((r) => ({
+        id: str(r.id),
+        label: str(r.label),
+        status: str(r.status) as ClubCohort["status"],
+        recruitPeriod: str(r.recruit_period),
+        runPeriod: str(r.run_period),
+        ...(opt(r.price) ? { price: opt(r.price) } : {}),
+        ...(opt(r.list_price) ? { listPrice: opt(r.list_price) } : {}),
+        ...(opt(r.capacity) ? { capacity: opt(r.capacity) } : {}),
+        ...(opt(r.note) ? { note: opt(r.note) } : {}),
+        ctaDisabled: Boolean(r.cta_disabled),
+        show: {
+          price: Boolean(r.show_price),
+          capacity: Boolean(r.show_capacity),
+          schedule: Boolean(r.show_schedule),
+          cta: Boolean(r.show_cta),
+        },
+      })),
+    clubCohorts,
+  );
+}
+
+/** 03. 커뮤니티 클럽 — 참여 유형. */
+export async function getPublicClubTiers(): Promise<ClubTier[]> {
+  return read(
+    "education_club_tiers",
+    (rows) =>
+      rows.map((r) => ({
+        name: str(r.name),
+        role: str(r.role),
+        points: strArray(r.points),
+        accent: str(r.accent) as Accent,
+        character: {
+          src: str(r.character_src),
+          width: Number(r.character_width) || 0,
+          height: Number(r.character_height) || 0,
+        },
+      })),
+    clubTiers,
+  );
+}
+
+/**
+ * 지난 프로그램 — 갤러리 이미지를 함께 읽어 붙인다.
+ * 카드 배지 숫자가 대표 1장 + 갤러리 길이로 계산되므로 두 번 조회해서라도
+ * 한 덩어리로 돌려준다(컴포넌트가 다시 조회하지 않게).
+ */
+export async function getPublicPastPrograms(): Promise<PastProgram[]> {
+  try {
+    const db = createSupabasePublicClient();
+    const { data, error } = await db
+      .from("education_past_programs")
+      .select("*")
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true });
+    if (error || !data || data.length === 0) return pastPrograms;
+
+    const { data: images } = await db
+      .from("education_past_program_images")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    const galleryByProgram = new Map<string, EduImage[]>();
+    for (const image of (images ?? []) as Row[]) {
+      const list = galleryByProgram.get(str(image.program_id)) ?? [];
+      const mapped = toImage(image.image_url, image.alt, image.caption);
+      if (mapped) list.push(mapped);
+      galleryByProgram.set(str(image.program_id), list);
+    }
+
+    return (data as Row[]).map((r) => {
+      const gallery = galleryByProgram.get(str(r.id)) ?? [];
+      const cover = toImage(r.cover_image_url, r.cover_image_alt, r.cover_image_caption);
+      return {
+        slug: str(r.slug),
+        title: str(r.title),
+        category: str(r.category) as PastProgram["category"],
+        period: str(r.period),
+        audience: str(r.audience),
+        duration: str(r.duration),
+        summary: str(r.summary),
+        outcome: str(r.outcome),
+        accent: str(r.accent) as Accent,
+        coverImage: {
+          ...(cover ?? { src: "", alt: "" }),
+          ...(r.cover_unoptimized ? { unoptimized: true } : {}),
+        },
+        ...(gallery.length > 0 ? { galleryImages: gallery } : {}),
+      };
+    });
+  } catch {
+    return pastPrograms;
+  }
+}
+
+/** 후기 — 평균 별점은 저장하지 않고 목록에서 계산한다. */
+export async function getPublicEducationReviews(): Promise<EduReview[]> {
+  return read(
+    "education_reviews",
+    (rows) =>
+      rows.map((r) => ({
+        id: str(r.key),
+        rating: Number(r.rating) || 0,
+        body: str(r.body),
+        author: str(r.author),
+        program: str(r.program),
+        date: str(r.date_label),
+        accent: str(r.accent) as Accent,
+      })),
+    eduReviews,
+  );
+}
+
+/** FAQ — ver3에서 개인/기업 구분이 없어져 단일 목록이다. */
+export async function getPublicEducationFaqs(): Promise<FaqItem[]> {
+  return read(
+    "education_faqs",
+    (rows) =>
+      rows.map((r) => ({
+        id: str(r.key),
+        question: str(r.question),
+        answer: str(r.answer),
+      })),
+    eduFaqs,
+  );
+}
+
+/** 교육 성과 수치 — 홈의 stats와 다른 항목이라 테이블도 다르다. */
+export async function getPublicEducationStats(): Promise<EduStat[]> {
+  return read(
+    "education_stats",
+    (rows) => rows.map((r) => ({ value: str(r.value), label: str(r.label) })),
+    eduStats,
+  );
 }

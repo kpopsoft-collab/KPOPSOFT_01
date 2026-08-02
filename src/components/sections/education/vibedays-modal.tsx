@@ -14,9 +14,9 @@ import {
 import { Tag } from "@/components/ui/tag";
 import {
   type ClubCohort,
+  type ClubTier,
   clubIntro,
   clubOperation,
-  clubTiers,
   cohortStatusLabel,
   getActiveCohort,
   getUpcomingCohorts,
@@ -37,11 +37,19 @@ export const VIBEDAYS_HASH = "#program-club";
  * 모집 정보는 `CohortStatus`와 기수별 `show` 토글만 보고 그린다 — 마감·연기
  * 때 문구를 고치는 게 아니라 데이터의 상태값 하나만 바꾸면 되도록.
  */
-export function VibedaysModal({ children }: { children: React.ReactNode }) {
+export function VibedaysModal({
+  cohorts,
+  tiers,
+  children,
+}: {
+  cohorts: ClubCohort[];
+  tiers: ClubTier[];
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
 
-  const active = getActiveCohort();
-  const upcoming = getUpcomingCohorts();
+  const active = getActiveCohort(cohorts);
+  const upcoming = getUpcomingCohorts(cohorts);
 
   // 홈 Contact의 "지식 공유 커뮤니티 클럽" 링크(`/education#program-club`)로
   // 들어온 경우 모달을 자동으로 연다. 해시로 도착한 뒤에도 뒤로가기가 정상
@@ -96,7 +104,7 @@ export function VibedaysModal({ children }: { children: React.ReactNode }) {
                 글자에는 accent를 쓰지 않는다 — 노랑·민트는 옅은 배경 위에서
                 AA를 못 넘긴다(§접근성). 색은 왼쪽 막대와 캐릭터에만 남기고,
                 이건 이름이 글로 이미 적혀 있으므로 장식으로만 기능한다. */}
-            {clubTiers.map((tier) => (
+            {tiers.map((tier) => (
               <article
                 key={tier.name}
                 className={cn(

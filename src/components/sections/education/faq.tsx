@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { eduFaqs, eduSectionId } from "@/lib/education-content";
+import { type FaqItem, eduSectionId } from "@/lib/education-content";
 
 /**
  * SECTION 08 — FAQ (docs/KPOPSOFT_Education_Page_ver3.md §08).
@@ -23,8 +23,8 @@ import { eduFaqs, eduSectionId } from "@/lib/education-content";
  * divider, and a generously sized full-row trigger for the 44px touch target
  * (§31).
  */
-export function Faq() {
-  if (eduFaqs.length === 0) return null;
+export function Faq({ faqs }: { faqs: FaqItem[] }) {
+  if (faqs.length === 0) return null;
 
   return (
     <Section id={eduSectionId.faq} className="bg-ivory">
@@ -36,7 +36,7 @@ export function Faq() {
         </p>
 
         <Accordion className="mt-14 border-t border-ink/10 lg:mt-20">
-          {eduFaqs.map((faq) => (
+          {faqs.map((faq) => (
             <AccordionItem
               key={faq.id}
               value={faq.id}

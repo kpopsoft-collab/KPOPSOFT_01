@@ -14,7 +14,17 @@ import { Reviews } from "@/components/sections/education/reviews";
 import { Faq } from "@/components/sections/education/faq";
 import { InquiryForm } from "@/components/sections/education/inquiry-form";
 import { educationSectionId, route } from "@/lib/site";
-import { getPublicExperts } from "@/lib/public-content";
+import {
+  getPublicClubCohorts,
+  getPublicClubTiers,
+  getPublicEducationFaqs,
+  getPublicEducationReviews,
+  getPublicEducationStats,
+  getPublicExperts,
+  getPublicOrgTraining,
+  getPublicPastPrograms,
+  getPublicRegularClasses,
+} from "@/lib/public-content";
 
 const title = "KPOPSOFT Education | AI 활용·Vibe Coding·기업 맞춤형 교육";
 const description =
@@ -76,12 +86,35 @@ export const dynamic = "force-dynamic";
  * 진행 프로세스 · CTA 스플릿)의 컴포넌트 파일은 지우지 않았다 — 여기서 더
  * 이상 불러오지 않을 뿐이다. 되돌리기 쉽고 diff가 작다.
  *
- * 강사진은 홈과 동일한 `getPublicExperts()`를 그대로 재사용해 데이터를
- * 페이지마다 중복 등록하지 않는다. 나머지 콘텐츠는 DB 스키마가 아직 없어
- * `src/lib/education-content.ts`를 읽는다 — 비어 있으면 각 섹션이 스스로 숨는다.
+ * 콘텐츠는 전부 Supabase에서 읽는다. 어드민에서 고친 내용이 이 페이지에
+ * 반영되게 하기 위한 것이고, 조회가 실패하거나 테이블이 비면 각 리더가
+ * `src/lib/education-content.ts`의 정적 데이터로 폴백한다 — 빈 페이지가 나오는
+ * 편이 더 나쁘다. 강사진은 홈과 같은 `getPublicExperts()`를 재사용한다.
+ *
+ * 섹션마다 따로 await 하면 요청이 직렬로 줄을 서므로 한 번에 받는다.
  */
 export default async function EducationPage() {
-  const experts = await getPublicExperts();
+  const [
+    experts,
+    stats,
+    regularClasses,
+    orgTraining,
+    cohorts,
+    tiers,
+    programs,
+    reviews,
+    faqs,
+  ] = await Promise.all([
+    getPublicExperts(),
+    getPublicEducationStats(),
+    getPublicRegularClasses(),
+    getPublicOrgTraining(),
+    getPublicClubCohorts(),
+    getPublicClubTiers(),
+    getPublicPastPrograms(),
+    getPublicEducationReviews(),
+    getPublicEducationFaqs(),
+  ]);
 
   return (
     <>
@@ -91,13 +124,18 @@ export default async function EducationPage() {
         <EduSubnav />
         <EduExploreProvider>
           <PurposeSelect />
-          <EduStats />
-          <EduPrograms />
+          <EduStats stats={stats} />
+          <EduPrograms
+            regularClasses={regularClasses}
+            orgTraining={orgTraining}
+            cohorts={cohorts}
+            tiers={tiers}
+          />
         </EduExploreProvider>
-        <PastPrograms />
+        <PastPrograms programs={programs} />
         <Instructors experts={experts} />
-        <Reviews />
-        <Faq />
+        <Reviews reviews={reviews} />
+        <Faq faqs={faqs} />
         <InquiryForm />
       </main>
       <Footer />
