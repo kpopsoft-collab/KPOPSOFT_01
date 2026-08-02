@@ -4,11 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 
 import type { Accent } from "@/lib/site";
-import {
-  WORK_LAYOUT_TYPES,
-  type WorkItem,
-  type WorkLayoutType,
-} from "@/lib/admin/content-types";
+import type { WorkItem } from "@/lib/admin/content-types";
 import {
   TextField,
   TextAreaField,
@@ -21,14 +17,7 @@ import { GalleryField } from "@/components/admin/content/work/gallery-field";
 
 type WorkInput = Omit<WorkItem, "id" | "sortOrder">;
 
-const selectClass =
-  "h-12 w-full rounded-2xl border border-ink/15 bg-ivory/60 px-4 text-base font-medium text-ink outline-none transition-colors focus:border-brand-blue focus:bg-white";
 
-const workLayoutTypeLabel: Record<WorkLayoutType, string> = {
-  featured: "대형 카드 (featured)",
-  grid: "일반 그리드 (grid)",
-  horizontal: "가로형 (horizontal)",
-};
 
 export function WorkForm({
   initial,
@@ -52,8 +41,6 @@ export function WorkForm({
   const [userFlow, setUserFlow] = useState(initial?.userFlow ?? "");
   const [externalUrl, setExternalUrl] = useState(initial?.externalUrl ?? "");
   const [showOnHome, setShowOnHome] = useState(initial?.showOnHome ?? true);
-  const [isFeatured, setIsFeatured] = useState(initial?.isFeatured ?? false);
-  const [layoutType, setLayoutType] = useState<WorkLayoutType>(initial?.layoutType ?? "grid");
   const [isPublished, setIsPublished] = useState(initial?.isPublished ?? true);
   const [pending, start] = useTransition();
 
@@ -77,8 +64,6 @@ export function WorkForm({
         userFlow: userFlow.trim(),
         externalUrl: externalUrl.trim(),
         showOnHome,
-        isFeatured,
-        layoutType,
         isPublished,
       }),
     );
@@ -155,24 +140,9 @@ export function WorkForm({
         placeholder="https://... (있으면 '사이트 방문하기' 버튼이 생깁니다)"
       />
 
-      <label className="flex flex-col gap-2 text-sm font-semibold text-ink/70">
-        홈 레이아웃 (Home ver2 §7)
-        <select
-          value={layoutType}
-          onChange={(e) => setLayoutType(e.target.value as WorkLayoutType)}
-          className={selectClass}
-        >
-          {WORK_LAYOUT_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {workLayoutTypeLabel[t]}
-            </option>
-          ))}
-        </select>
-      </label>
-
       <div className="flex flex-wrap items-center gap-6">
+        {/* 끄면 홈 포트폴리오에서 빠지고 `/work` 목록에는 남는다. */}
         <CheckboxField label="홈 노출" checked={showOnHome} onChange={setShowOnHome} />
-        <CheckboxField label="대표 프로젝트" checked={isFeatured} onChange={setIsFeatured} />
         <CheckboxField label="공개 노출" checked={isPublished} onChange={setIsPublished} />
       </div>
 

@@ -49,6 +49,12 @@ export type PublicWork = {
   results: string[];
   imageUrl?: string;
   /**
+   * 홈 포트폴리오 노출 여부. 사례가 쌓이면 홈에는 고른 것만 띄우고 나머지는
+   * `/work` 목록에서 보게 한다. 시드 폴백에는 이 값이 없으므로 기본은 노출이다
+   * — 관리자가 끄기 전까지는 지금처럼 전부 나오는 편이 안전하다.
+   */
+  showOnHome: boolean;
+  /**
    * 갤러리 이미지. 여러 장이면 카드에 도트 페이지네이션이 붙는다
    * (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 05).
    * 비어 있으면 `imageUrl` 한 장만 쓴다.
@@ -92,7 +98,10 @@ export type PublicInquiryOption = {
 
 // site.ts seeds are `as const`; loosen them to the mutable public types for fallback.
 const fallbackExperts = seedExperts as PublicExpert[];
-const fallbackWork = seedWork as unknown as PublicWork[];
+// 시드에는 노출 플래그가 없다 — DB가 없을 때는 전부 보여준다.
+const fallbackWork = (seedWork as unknown as Omit<PublicWork, "showOnHome">[]).map(
+  (w) => ({ ...w, showOnHome: true }),
+) as PublicWork[];
 const fallbackTestimonials = seedTestimonials as unknown as PublicTestimonial[];
 const fallbackStats = seedStats as unknown as PublicStat[];
 const fallbackOptions = seedOptions as unknown as PublicInquiryOption[];
@@ -161,6 +170,7 @@ export async function getPublicWork(): Promise<PublicWork[]> {
         : {}),
       ...(r.user_flow ? { flow: r.user_flow as string } : {}),
       ...(r.external_url ? { externalUrl: r.external_url as string } : {}),
+      showOnHome: r.show_on_home !== false,
     }));
   } catch {
     return fallbackWork;

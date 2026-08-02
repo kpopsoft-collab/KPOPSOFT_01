@@ -42,8 +42,6 @@ export const mockWork: WorkItem[] = selectedWork.map((w, i) => ({
   userFlow: "",
   externalUrl: "",
   showOnHome: true,
-  isFeatured: i === 0,
-  layoutType: i === 0 ? "featured" : "grid",
 }));
 
 export const mockExperts: Expert[] = siteExperts.map((e, i) => ({

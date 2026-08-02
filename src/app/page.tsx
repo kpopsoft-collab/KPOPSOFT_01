@@ -73,7 +73,11 @@ export default async function Home() {
         <OurIdentity />
         <WhatWeDo />
         <WhyKpopsoft />
-        <SelectedWork items={work} inquiryOptions={inquiryOptions} />
+        {/* 홈에는 관리자가 고른 사례만. 전체 목록은 `/work`가 맡는다. */}
+        <SelectedWork
+          items={work.filter((item) => item.showOnHome)}
+          inquiryOptions={inquiryOptions}
+        />
         <Process />
         <Suspense>
           <FinalCta inquiryOptions={inquiryOptions} />

@@ -55,8 +55,6 @@ const FIELDS: Record<string, FieldMap> = {
     ["userFlow", "user_flow"],
     ["externalUrl", "external_url"],
     ["showOnHome", "show_on_home"],
-    ["isFeatured", "is_featured"],
-    ["layoutType", "layout_type"],
   ],
   experts: [
     ...COMMON,

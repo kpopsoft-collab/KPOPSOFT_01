@@ -19,15 +19,6 @@ export type ContentBase = {
   isPublished: boolean;
 };
 
-/** Home ver2 §7 — how a work item lays out when featured on the home page. */
-export type WorkLayoutType = "featured" | "grid" | "horizontal";
-
-export const WORK_LAYOUT_TYPES: readonly WorkLayoutType[] = [
-  "featured",
-  "grid",
-  "horizontal",
-] as const;
-
 export type WorkItem = ContentBase & {
   client: string;
   title: string;
@@ -46,12 +37,8 @@ export type WorkItem = ContentBase & {
   features: string[];
   userFlow: string;
   externalUrl: string;
-  /** Home ver2 §7 — 홈 노출 여부(별도 컬럼, sortOrder는 재사용). */
+  /** 홈 포트폴리오 노출 여부. 끄면 `/work` 목록에만 남는다. */
   showOnHome: boolean;
-  /** Home ver2 §7 — 대표 프로젝트 여부(대형 카드). */
-  isFeatured: boolean;
-  /** Home ver2 §7 — 홈에서 이 카드가 사용할 레이아웃. */
-  layoutType: WorkLayoutType;
 };
 
 export type Insight = ContentBase & {
