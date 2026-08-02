@@ -1,9 +1,9 @@
-# HTML 정제 + CSS 스코프 설계
+# HTML 정제 설계
 
 [07-실행계획-확정.md](07-실행계획-확정.md) 3단계의 상세 설계다.
 D5가 **`<style>` 유지 + 셀렉터 스코프**로 확정돼 필요해졌다.
 
-## 1. 왜 별도 문서인가
+## 1. 왜 파서를 쓰는가
 
 `<style>`을 살리기로 하면 정제기가 HTML만 다루면 끝나는 물건이 아니게 된다.
 정규식으로 셀렉터 앞에 `.course-html `을 붙이는 방식은 아래에서 전부 깨진다.
@@ -28,8 +28,9 @@ raw
       ├─ <style> 텍스트 전부 수집 (head·body 무관)하고 트리에서 제거
       └─ <body> 서브트리만 직렬화              ← 정규식 추출을 안 쓰는 이유
  ├─ 2. sanitizeHtml(bodyHtml, COURSE_HTML_OPTIONS)
- ├─ 3. scopeCss(collectedCss)                postcss. §3
- └─ 4. `<div class="course-html">` + `<style>`(있으면) + 본문 + `</div>`
+ ├─ 3. scopeCss(collectedCss)                postcss. → 09
+ └─ 4. `<div class="course-html-shell"><div class="course-html">`
+       + `<style>`(있으면) + 본문 + `</div></div>`      ← 껍데기는 09 §3-5
 ```
 
 `KEEP_STYLE` 상수를 파일 최상단에 둔다. `false`로 두면 1단계에서 CSS를 버리고
@@ -64,80 +65,16 @@ export const COURSE_HTML_OPTIONS: sanitizeHtml.IOptions = {
   버리는 쪽이 맞다. **sanitize-html에 `<style>`을 통과시키면 안 된다**:
   텍스트로 취급돼 `>`가 `&gt;`로 이스케이프되면서 `.a > .b`가 깨진다.
 
-## 3. CSS 스코프 규칙 (`scopeCss`)
+## 3. CSS 스코프
 
-postcss로 파싱한 뒤 아래를 적용한다. 파싱 자체가 실패하면 **CSS 전체를 버린다**(fail closed).
+분량이 커서 별도 문서로 뺐다 → **[09-CSS스코프-설계.md](09-CSS스코프-설계.md)**.
+셀렉터 접두, at-rule 허용목록, `</style>` 탈출 차단, 컨테인먼트, postcss 실측이
+거기 있다. 이 문서만 읽고 구현하면 **CSS 쪽이 통째로 빠진다.**
 
-### 3-1. 셀렉터
+## 4. HTML 정제 테스트 케이스 (`sanitize-html.test.ts`)
 
-- `rule.selectors`로 콤마 분할한다. postcss의 `list.comma`는 괄호·따옴표를
-  인식하므로 `:is(a,b)`나 `content:"a,b"`에서 오분할하지 않는다.
-- 각 항목 앞에 `.course-html `를 붙인다.
-- `:root` / `html` / `body`는 `.course-html` **자체로 치환**한다
-  (`.course-html body`는 매치될 리가 없어 스타일이 통째로 사라진다).
-- **`@keyframes` 안쪽 규칙은 건드리지 않는다.**
-  `rule.parent.type === "atrule" && /(-)?keyframes$/i.test(rule.parent.name)`이면 건너뛴다.
-
-### 3-2. at-rule 허용목록
-
-`media`, `supports`, `keyframes`(벤더 접두 포함), `font-face`만 남기고 **나머지는 제거**한다.
-특히 `@import`는 외부 CSS를 끌어오므로 반드시 제거 대상이다.
-
-### 3-3. 선언 값
-
-- `url()` 안의 스킴은 `http`/`https`/`data:image/`만 허용. 나머지는 그 선언을 제거.
-- `expression(`, `behavior:`, `-moz-binding`이 보이면 그 선언 제거.
-- **`position: fixed` 제거.** 화면 전체를 덮는 가짜 UI를 만드는 가장 짧은 길이다.
-
-### 3-4. `</style>` 탈출 차단 (놓치기 쉬움)
-
-CSS 문자열 안에 `</style>`을 넣으면 브라우저 파서가 거기서 `<style>`을 닫는다.
-
-```css
-.x::after { content: "</style><img src=x onerror=alert(1)>"; }
-```
-
-정제된 HTML을 아무리 잘 만들어도 여기서 뚫린다. postcss 직렬화 **결과 문자열의
-`<`를 전부 `\3c `로 치환**한다. CSS 문자열·식별자에서 유효한 이스케이프이고,
-그 밖의 위치에서 `<`는 원래 유효하지 않으므로 치환해도 잃는 게 없다.
-
-### 3-5. 컨테이너 쪽 방어
-
-우리 전역 스타일에 다음을 둔다.
-
-```css
-.course-html { contain: layout; }
-```
-
-레이아웃 컨테인먼트는 이 요소를 **`position: fixed` 자손의 컨테이닝 블록으로**
-만든다. 업로드 CSS의 `fixed`(3-3)와 번들에 이미 있는 Tailwind `fixed inset-0 z-50`
-같은 클래스(D5로 `class`를 허용했으므로 쓸 수 있다) **양쪽 다** 본문 영역 밖으로
-못 나가게 막는 이중 방어다. `contain: paint`는 쓰지 않는다 — 내용이 잘린다.
-
-### 3-6. 크기
-
-스코프 후 CSS가 **64KB를 넘으면 CSS 전체를 버린다.** 본문과 합쳐 `detail_html`이
-무한정 커지는 것을 막는다. 512KB 상한(07 §3 6단계)은 raw 기준이라 별개다.
-
-## 4. 테스트 케이스 (`sanitize-html.test.ts`)
-
-`node --test`. 경로 별칭이 안 먹으므로 상대 경로로 import한다.
-
-**CSS 스코프**
-
-- `h2{color:red}` → `.course-html h2` 로 시작한다
-- `@media (max-width:600px){h2{…}}` → `@media`는 남고 안쪽만 접두된다
-- `@keyframes spin{0%{opacity:0}100%{opacity:1}}` → `0%`/`100%`가 **그대로다**
-- `.a,.b>.c` → 두 항목 모두 접두되고 `>` 결합자가 살아 있다
-- `body{font-family:x}` → `.course-html{font-family:x}` (자손 셀렉터가 아니다)
-- `@import url("//evil.com/x.css")` → 결과에 `@import`가 **없다**
-- `content:"</style><script>alert(1)</script>"` → 결과에 `</style`가 **없다**
-- `background:url(javascript:alert(1))` → 그 선언이 **없다**
-- `.x{position:fixed}` → `position:fixed`가 **없다**
-- 깨진 CSS(`h2{color:`) → CSS 전체가 버려지고 **본문은 남는다**
-- 64KB 초과 CSS → CSS만 버려진다
-
-**HTML 정제** — 05 §3-1 페이로드 전부에 더해
+`node --test`. CSS 쪽 케이스는 [09 §4-1](09-CSS스코프-설계.md).
+아래는 05 §3-1의 XSS 페이로드 전부에 **더해서** 확인할 것들이다.
 
 - 통짜 문서(`<!doctype html>` + `<head><title>T</title><style>…</style></head>`)
   → `T`가 본문에 **없고**, head 안 `<style>`은 **수집된다**
@@ -146,11 +83,16 @@ CSS 문자열 안에 `</style>`을 넣으면 브라우저 파서가 거기서 `<
 - `<div style="position:fixed">` → `style` 속성이 없다
 - `<div class="course-box">` → `class`가 **남는다**(D5)
 - 빈 문자열·공백만 → 빈 문자열(컨테이너 div도 만들지 않는다)
+- 결과가 `.course-html-shell` > `.course-html` **두 겹**으로 감싸여 있다
+
+> 컨테인먼트([09 §3-5](09-CSS스코프-설계.md))는 단위 테스트로 확인할 수 없다. `.course-html-shell`에
+> `contain: paint`가 실제로 적용됐는지는 `position:absolute; inset:-100vmax`
+> 페이로드를 올린 뒤 **브라우저에서 눈으로** 확인한다(playwright 스크린샷).
 
 ## 5. 남는 위험 (수용)
 
-- **업로드 CSS는 본문 영역 안에서는 자유롭다.** `contain: layout`이 밖으로
-  나가는 것만 막는다. 관리자가 올리는 파일이라는 전제에서 수용한다.
+- **업로드 CSS는 본문 영역 안에서는 자유롭다.** 껍데기의 `contain: paint`가
+  밖으로 나가는 것만 막는다. 관리자가 올리는 파일이라는 전제에서 수용한다.
 - **정제 규칙이 바뀌면 기존 행은 옛 규칙으로 정제된 상태로 남는다.** 그래서
   원본을 동반 테이블에 둔다(07 §2). 재정제 스크립트는 필요해질 때 만든다.
 - **백로그 02가 렌더 직전에 다시 정제해야** 이 설계가 실제로 닫힌다(06 §P1-3).
