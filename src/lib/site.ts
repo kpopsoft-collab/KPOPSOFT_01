@@ -21,6 +21,12 @@ export const site = {
 export const route = {
   home: "/",
   education: "/education",
+  /**
+   * 정규 교육 과정 상세. `/education` 프로그램 카드의 CTA가 여기로 온다.
+   * **아직 빈 페이지다** — 내용은 다른 작업자가 채운다. 라우트를 먼저 열어
+   * 두는 이유는 CTA가 404로 떨어지지 않게 하기 위해서다.
+   */
+  educationPrograms: "/education/programs",
   /** 전체 프로젝트 목록. 홈 PROJECTS 섹션 하단 CTA가 여기로 온다. */
   work: "/work",
 } as const;

@@ -18,7 +18,7 @@ import {
   type RegularClass,
   sortRegularClassesByTrack,
 } from "@/lib/education-content";
-import { accentText, educationSectionId } from "@/lib/site";
+import { accentText, educationSectionId, route } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
@@ -239,11 +239,15 @@ function Fact({ label, value }: { label: string; value: string }) {
 /**
  * 분류별 CTA.
  *
- * 요청서 §7은 조직·기업을 "기업교육 상세 페이지", 정규를 "정규 과정 상세
- * 페이지"로 보내라고 했지만 두 페이지는 이번 범위에서 제외됐다(사용자 결정).
- * 그래서 **라벨을 요청서 문구 그대로 두지 않았다** — 없는 페이지를 가리키는
- * `자세히 보기`는 클릭하기 전까지 알 수 없는 거짓말이 된다. 대신 지금 실제로
- * 할 수 있는 행동(문의)으로 보낸다. 상세 페이지가 생기면 여기만 바꾸면 된다.
+ * 요청서 §7은 세 분류를 각각 기업교육 상세 페이지 / 정규 과정 상세 페이지 /
+ * 상세 모달로 보내라고 했다. 현재 상태는 이렇다.
+ *  - 정규 과정 — `/education/programs`로 보낸다. 페이지는 아직 비어 있고
+ *    내용은 다른 작업자가 채운다(사용자 지시). 라우트를 먼저 열어 뒀으므로
+ *    404는 나지 않는다.
+ *  - 바이브데이즈 — 상세 모달. 요청대로 동작한다.
+ *  - 조직·기업 — 상세 페이지가 아직 없어 문의 섹션으로 보낸다. 없는 페이지를
+ *    가리키는 `자세히 보기`는 클릭하기 전까지 알 수 없는 거짓말이 되므로,
+ *    라벨도 지금 실제로 하는 일(문의)에 맞춰 뒀다.
  */
 function ProgramCta({
   category,
@@ -252,6 +256,18 @@ function ProgramCta({
   category: EduCategoryId;
   highlighted: boolean;
 }) {
+  if (category === "regular") {
+    return (
+      <CtaButton
+        variant={highlighted ? "primary" : "secondary"}
+        href={route.educationPrograms}
+        className="w-full"
+      >
+        정규 교육과정 알아보기
+      </CtaButton>
+    );
+  }
+
   if (category === "club") {
     return (
       <VibedaysModal>
@@ -275,7 +291,7 @@ function ProgramCta({
       href={`#${educationSectionId.inquiry}`}
       className="w-full"
     >
-      {category === "org" ? orgTraining.cta.label : "정규 과정 문의하기"}
+      {orgTraining.cta.label}
     </CtaButton>
   );
 }
