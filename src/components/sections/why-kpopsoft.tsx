@@ -338,9 +338,9 @@ export function WhyKpopsoft() {
         <div className="lg:col-span-7">
           <Eyebrow dotClassName="bg-brand-red">WHY KPOPSOFT</Eyebrow>
           <h2 className="text-section mt-6 text-ink">
-            기획부터 구현, 실제 활용까지
+            하나의 흐름으로
             <br />
-            하나의 흐름으로 연결합니다.
+            연결하는 원팀
           </h2>
           <p className="mt-6 max-w-xl text-body-lg text-ink/70">
             KPOPSOFT는 전략과 디자인, 소프트웨어 개발, AI와 교육을 하나의 팀으로
