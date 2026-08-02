@@ -187,9 +187,11 @@ export const programHighlights: ProgramHighlight[] = [
     audience: "팀 단위 5명 이상의 조직·기업",
     format: "인원·직무·기간에 맞춘 맞춤 설계, 방문 또는 온라인",
     outcome: "조직의 실제 과제를 다룬 커리큘럼과 실습 결과물",
+    // 조직·기업 전용 사진(사용자 제공). 기존 `b2b-01`은 다른 카드와 같은
+    // 강의실이라 세 카드가 구분되지 않았다.
     image: {
-      src: "/education/education-b2b-01.jpg",
-      alt: "기업 맞춤형 교육 워크숍에서 참가자들이 모여 협업하는 모습",
+      src: "/education/education-org-01.png",
+      alt: "기업 교육 현장에서 강사가 화면을 가리키며 설명하고 참가자들이 노트북으로 따라 하는 모습",
     },
   },
   {
@@ -210,9 +212,10 @@ export const programHighlights: ProgramHighlight[] = [
     audience: "배운 것을 계속 이어가고 싶은 사람",
     format: "기수제 스터디와 세미나, 실무 커뮤니티",
     outcome: "매월 쌓이는 실험 기록과 함께 만드는 동료",
+    // 바이브데이즈 전용 사진(사용자 제공).
     image: {
-      src: "/education/education-practice-01.jpg",
-      alt: "커뮤니티 클럽 모임에서 참가자들이 각자 노트북으로 작업하는 모습",
+      src: "/education/education-club-01.jpg",
+      alt: "바이브데이즈 클럽 모임에서 발표자가 화면을 설명하고 참가자들이 노트북으로 함께 실습하는 모습",
     },
   },
 ];
