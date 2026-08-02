@@ -6,7 +6,7 @@ import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { useEduExplore } from "@/components/sections/education/explore-context";
 import { eduPurposes, eduSectionId } from "@/lib/education-content";
-import { accentBg, accentText } from "@/lib/site";
+import { accentText } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
@@ -60,17 +60,8 @@ export function PurposeSelect() {
                     : "border-ink/10 bg-white/60",
                 )}
               >
-                <span className="flex items-center gap-3">
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "size-2.5 rounded-full transition-transform duration-200 group-hover:scale-125",
-                      accentBg[purpose.accent],
-                    )}
-                  />
-                  <span className="text-eyebrow text-ink/40">
-                    {purpose.index}
-                  </span>
+                <span className="text-eyebrow text-ink/40">
+                  {purpose.index}
                 </span>
 
                 <span className="text-xl leading-tight font-extrabold tracking-tight text-ink md:text-2xl">

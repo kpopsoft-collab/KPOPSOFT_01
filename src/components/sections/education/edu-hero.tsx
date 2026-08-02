@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CtaButton } from "@/components/ui/cta-button";
 import { CoverVisual } from "@/components/ui/cover-visual";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { Circle, Wave } from "@/components/shapes";
+import { Wave } from "@/components/shapes";
 import { educationSectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -176,7 +176,9 @@ export function EduHero() {
                   transition: "transform 400ms ease-out",
                 }}
               >
-                <Circle className="absolute -top-7 -left-7 size-20 text-brand-blue sm:size-24" />
+                {/* 파란 원은 뺐다 — 사진 왼쪽 위 모서리를 덮어 강의실 공간이
+                    잘려 보였다. 물결은 사진 아래 여백에 걸쳐 있어 가리는 것이
+                    없으므로 남긴다. */}
                 <Wave className="absolute -right-6 -bottom-7 w-28 text-brand-mint sm:w-36" />
               </div>
             </div>
