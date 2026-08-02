@@ -194,7 +194,24 @@ export function Header() {
       )}
     >
       <div className="container-editorial flex h-16 items-center justify-between md:h-[76px]">
-        <Link href={route.home} className="flex items-center">
+        {/*
+          로고는 언제나 "홈 맨 위"로 보낸다. 홈이 아닐 때는 평범한 이동이지만,
+          이미 홈에 있을 때 `/`로 가는 링크는 아무 일도 일어나지 않은 것처럼
+          보인다 — 라우트가 같아 스크롤이 그대로 남기 때문이다. 그래서 홈에서는
+          기본 동작을 막고 직접 맨 위로 올린다. 주소창에 남은 앵커(`/#work`)도
+          함께 지운다. 그대로 두면 새로고침했을 때 다시 그 섹션으로 튄다.
+        */}
+        <Link
+          href={route.home}
+          onClick={(event) => {
+            if (pathname !== route.home) return;
+            event.preventDefault();
+            window.history.replaceState(null, "", route.home);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          aria-label="홈 맨 위로"
+          className="flex items-center"
+        >
           <BrandLockup />
         </Link>
 
