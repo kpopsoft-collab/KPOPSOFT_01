@@ -137,9 +137,15 @@ const pointAt = (i: number, r: number) => [
 const polygonPoints = (radii: number[]) =>
   radii.map((r, i) => pointAt(i, r).join(",")).join(" ");
 
-/** 라벨 위치 — 축 방향 바깥쪽. 좌우 축은 정렬을 바꿔 겹침을 피한다. */
+/**
+ * 라벨 위치 — 축 방향 바깥쪽. 좌우 축은 정렬을 바꿔 겹침을 피한다.
+ *
+ * 여백(+46)은 **강조된 축이 가장 길어졌을 때**를 기준으로 잡는다.
+ * `BASE_R × SELECTED_SCALE × (1 + IDLE_AMPLITUDE)` ≈ 160이라, 예전 +34
+ * (=166)로는 켜진 축의 점이 글자에 닿았다.
+ */
 const labelLayout = (i: number) => {
-  const [x, y] = pointAt(i, BASE_R + 34);
+  const [x, y] = pointAt(i, BASE_R + 46);
   const cos = Math.cos(angleOf(i));
   return {
     x,
@@ -444,8 +450,12 @@ export function WhyKpopsoft() {
                     x2={CENTER}
                     y2={CENTER}
                     stroke={axis.color}
-                    strokeWidth={isActive ? 2.5 : 1.5}
-                    strokeOpacity={isActive ? 0.9 : 0.45}
+                    /* 강조는 굵기가 아니라 **농도**로 준다. 예전에는 1.5 →
+                       2.5로 키웠는데, 선이 두꺼워지는 순간 레이더가 도형이
+                       아니라 그래프처럼 보였다. 굵기 차이는 눈에 겨우 걸릴
+                       만큼만 둔다. */
+                    strokeWidth={isActive ? 1.8 : 1.2}
+                    strokeOpacity={isActive ? 0.9 : 0.4}
                     className="transition-[stroke-width,stroke-opacity] duration-300"
                   />
                   <circle
@@ -454,7 +464,8 @@ export function WhyKpopsoft() {
                     }}
                     cx={CENTER}
                     cy={CENTER}
-                    r={isActive ? 9 : 6}
+                    /* 점도 마찬가지 — 6 → 9는 1.5배라 켜질 때 툭 튀어나왔다. */
+                    r={isActive ? 6 : 4.5}
                     fill={axis.color}
                     className="transition-[r] duration-300"
                   />
