@@ -27,6 +27,11 @@ export const route = {
    * 두는 이유는 CTA가 404로 떨어지지 않게 하기 위해서다.
    */
   educationPrograms: "/education/programs",
+  /**
+   * 교육 사례 전체 목록. `/education` 교육 사례 섹션의 `전체보기`가 여기로 온다.
+   * `educationPrograms`와 마찬가지로 **아직 빈 페이지**다.
+   */
+  educationCases: "/education/cases",
   /** 전체 프로젝트 목록. 홈 PROJECTS 섹션 하단 CTA가 여기로 온다. */
   work: "/work",
 } as const;

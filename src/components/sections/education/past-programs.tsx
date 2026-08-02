@@ -1,10 +1,8 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { Section } from "@/components/layout/section";
-import { cn } from "@/lib/utils";
+import { route } from "@/lib/site";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { CoverVisual } from "@/components/ui/cover-visual";
 import { Tag } from "@/components/ui/tag";
@@ -38,22 +36,18 @@ import {
  * 바꾼다(데스크톱 행을 좁게 눌러 담지 않는다).
  */
 /**
- * 접힌 상태에서 보여줄 사례 수.
+ * 이 섹션에서 보여줄 사례 수. 나머지는 전체 목록 페이지에서 본다.
  *
- * 행 하나가 사진까지 포함해 화면을 꽤 차지하므로, 처음부터 전부 펼치면 이
- * 섹션 하나가 페이지의 절반을 먹는다. 사례는 어드민에서 계속 늘어날 값이라
- * 상한이 없기도 하다.
+ * 행 하나가 사진까지 포함해 화면을 꽤 차지하므로, 사례가 쌓일수록 여기서 다
+ * 펼치면 이 섹션 하나가 페이지를 먹는다. 사례는 어드민에서 계속 늘어날 값이라
+ * 상한도 없다.
  */
-const COLLAPSED_COUNT = 2;
+const PREVIEW_COUNT = 3;
 
 export function PastPrograms() {
-  const [expanded, setExpanded] = useState(false);
-
   if (pastPrograms.length === 0) return null;
 
-  const hasMore = pastPrograms.length > COLLAPSED_COUNT;
-  const visible =
-    expanded || !hasMore ? pastPrograms : pastPrograms.slice(0, COLLAPSED_COUNT);
+  const visible = pastPrograms.slice(0, PREVIEW_COUNT);
 
   return (
     <Section id={eduSectionId.cases} className="scroll-mt-36 bg-ivory">
@@ -72,26 +66,18 @@ export function PastPrograms() {
           </p>
         </div>
 
-        {/* 전부 보이는 상태에서 버튼이 남아 있으면 눌러도 아무 일이 없다. */}
-        {hasMore ? (
-          <button
-            type="button"
-            onClick={() => setExpanded((prev) => !prev)}
-            aria-expanded={expanded}
-            className="group inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors outline-none hover:border-ink/40 focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory md:self-auto"
-          >
-            {expanded ? "접기" : `전체보기 (${pastPrograms.length})`}
-            <ArrowRight
-              className={cn(
-                "size-4 transition-transform duration-200",
-                expanded
-                  ? "-rotate-90"
-                  : "rotate-90 group-hover:translate-y-0.5",
-              )}
-              aria-hidden
-            />
-          </button>
-        ) : null}
+        {/* 펼치는 게 아니라 전체 목록 페이지로 보낸다(사용자 지시).
+            페이지는 아직 비어 있고 내용은 다른 작업자가 채운다. */}
+        <Link
+          href={route.educationCases}
+          className="group inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors outline-none hover:border-ink/40 focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory md:self-auto"
+        >
+          전체보기
+          <ArrowRight
+            className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </Link>
       </div>
 
       <ul className="mt-14 flex flex-col gap-6 lg:mt-20">
