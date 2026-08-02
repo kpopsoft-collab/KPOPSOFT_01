@@ -2,10 +2,12 @@
 
 import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
   Modal,
+  ModalClose,
   ModalContent,
   ModalDescription,
   ModalTitle,
@@ -20,7 +22,7 @@ import { cn } from "@/lib/utils";
  * What We Do 카드에서 여는 예시 사례 모달.
  *
  * 사례가 여러 개라 한 화면에 다 펼치지 않고 **한 번에 하나씩** 보여주고
- * 좌우 화살표로 넘긴다. 딤 처리·Esc/배경 클릭 닫기·포커스 트랩·배경 스크롤
+ * 좌우 화살표·방향키·스와이프로 넘긴다. 딤 처리·Esc/배경 클릭 닫기·포커스 트랩·배경 스크롤
  * 잠금은 `ui/modal.tsx`가 감싼 base-ui Dialog가 처리한다.
  *
  * 순환(마지막 → 처음)은 하지 않는다. 끝에서 버튼을 비활성화하면 "몇 개짜리
@@ -32,11 +34,17 @@ import { cn } from "@/lib/utils";
 export function PillarExamplesModal({
   label,
   examples,
+  contact,
   children,
 }: {
   /** 모달 제목 대신 읽히는 맥락. 예: "Software" */
   label: string;
   examples: PillarExample[];
+  /**
+   * 사례를 다 본 다음 이어질 행동. 카드에서 CTA pill을 걷어내면서
+   * 문의 폼으로 가는 경로를 이 모달 안으로 옮겼다.
+   */
+  contact?: { label: string; href: string };
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -55,6 +63,39 @@ export function PillarExamplesModal({
     },
     [total],
   );
+
+  /**
+   * 좌우 스와이프로 넘기기 — 모바일에서는 화살표 버튼보다 이쪽이 먼저 손에
+   * 붙는다. `touchmove`를 막지는 않는다. 팝업 자체가 세로 스크롤 영역이라
+   * 가로 제스처만 골라내야 하고(가로 이동이 세로보다 확실히 커야 한다),
+   * 손가락 두 개(핀치 줌)는 제스처로 치지 않는다.
+   */
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (event: React.TouchEvent) => {
+    if (event.touches.length !== 1) {
+      touchStart.current = null;
+      return;
+    }
+    const touch = event.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start) return;
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    // 48px는 "스크롤하다 손이 조금 틀어진 것"과 "넘기려 그은 것"이 갈리는 선.
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+
+    go(dx < 0 ? 1 : -1);
+  };
 
   // 열 때마다 첫 사례부터. 닫았다 다시 열었는데 이전 위치에 남아 있으면
   // "다시 처음부터 보려면 어떻게 하지"가 된다.
@@ -83,6 +124,8 @@ export function PillarExamplesModal({
           if (event.key === "ArrowRight") go(1);
           if (event.key === "ArrowLeft") go(-1);
         }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* 스크롤 영역은 팝업 하나뿐이다. 안쪽에 별도 스크롤 박스를 두고 화살표
             줄을 그 밖에 고정하면, 화살표 줄 위에서는 휠이 아무 데도 먹지 않는
@@ -90,15 +133,18 @@ export function PillarExamplesModal({
             화살표 줄은 `sticky`로 바닥에 붙여 둔다 — 어디서든 스크롤되면서도
             다음 장으로 넘어갈 버튼은 늘 보인다. */}
         <div>
-          {/* 화면 목업은 잘리면 무엇인지 알아볼 수 없어 `object-contain`으로 전체를
-              보여준다. 비율이 제각각이라 남는 여백은 배경색으로 채운다. */}
-          <div className="relative aspect-[16/9] max-h-[38vh] w-full shrink-0 overflow-hidden bg-ink/5 sm:rounded-t-[2rem]">
+          {/* 이미지 칸을 여백 없이 꽉 채운다(사용자 지시). 사례마다 원본
+              비율이 달라(16:9 / 6:5 / 3:4) `object-contain`으로는 좌우에 빈
+              띠가 남았다 — 고정 16:9 칸에 `object-cover`로 채우고, 넘치는
+              부분은 잘라낸다. 16:9는 소프트웨어 목업 4장의 원본 비율이라
+              그쪽은 잘리지 않고, 세로형 AI 사진만 위아래가 잘린다. */}
+          <div className="relative aspect-[16/9] max-h-[52vh] w-full shrink-0 overflow-hidden sm:rounded-t-[2rem]">
             <Image
               src={current.image.src}
               alt={current.image.alt}
               fill
               sizes="(max-width: 640px) 100vw, 44rem"
-              className="object-contain"
+              className="object-cover object-center"
             />
           </div>
 
@@ -131,6 +177,27 @@ export function PillarExamplesModal({
                 </li>
               ))}
             </ul>
+
+            {/* 사례별로 문구가 바뀌지 않는 고정 CTA — 눌러서 닫고 홈 문의
+                폼으로 간다(`?ct=`로 문의 유형이 미리 선택된다). 모달을 닫지
+                않고 이동하면 스크롤 잠금이 풀리기 전에 앵커가 걸린다. */}
+            {contact && (
+              <ModalClose
+                nativeButton={false}
+                render={
+                  <Link
+                    href={contact.href}
+                    className="group inline-flex h-13 items-center justify-center gap-2 self-start rounded-full bg-brand-blue px-7 text-[0.95rem] font-semibold whitespace-nowrap text-white transition-all outline-none hover:bg-brand-navy focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
+                  />
+                }
+              >
+                {contact.label}
+                <ArrowUpRight
+                  className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  aria-hidden
+                />
+              </ModalClose>
+            )}
           </div>
         </div>
 

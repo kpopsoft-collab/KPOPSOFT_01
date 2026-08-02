@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { Section } from "@/components/layout/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Circle, Star, Wave } from "@/components/shapes";
@@ -92,6 +94,42 @@ export function OurIdentity() {
                 </div>
               </li>
             ))}
+
+            <li className="relative isolate min-h-44 overflow-hidden rounded-3xl bg-ink p-6 md:p-7">
+              <div
+                className="absolute inset-y-0 right-0 w-[48%] bg-[radial-gradient(circle_at_center,rgba(49,91,219,0.2),transparent_68%)]"
+                aria-hidden
+              >
+                <Image
+                  src="/assets/Pattern/Diamond%20L.svg"
+                  alt=""
+                  fill
+                  unoptimized
+                  sizes="(min-width: 1024px) 240px, 42vw"
+                  className="object-cover object-center opacity-85"
+                />
+              </div>
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-ink via-ink/95 to-transparent"
+                aria-hidden
+              />
+
+              <div className="relative z-10 flex min-h-32 max-w-[72%] flex-col justify-center">
+                <p className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                  <span className="text-lg font-extrabold tracking-tight text-white md:text-xl">
+                    KPOPSOFT
+                  </span>
+                  <span className="text-eyebrow text-white/50">
+                    HARMONY IN FLOW
+                  </span>
+                </p>
+                <p className="mt-2 text-base leading-relaxed text-white/75">
+                  서로 다른 요소를 연결해
+                  <br />
+                  하나의 조화로운 흐름으로 확장합니다
+                </p>
+              </div>
+            </li>
           </ul>
         </div>
       </div>

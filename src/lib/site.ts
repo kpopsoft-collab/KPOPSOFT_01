@@ -888,7 +888,7 @@ export const insights = [
 export const stats = [
   { value: 120, suffix: "+", label: "프로젝트 완료" },
   { value: 40, suffix: "+", label: "파트너 기업" },
-  { value: 1800, suffix: "+", label: "교육 수료생" },
+  { value: 200, suffix: "+", label: "교육 수료생" },
   { value: 96, suffix: "%", label: "교육 만족도" },
 ] as const;
 

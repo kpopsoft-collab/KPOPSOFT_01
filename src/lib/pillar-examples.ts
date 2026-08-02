@@ -42,7 +42,7 @@ export const softwareExamples: PillarExample[] = [
       "데스크톱과 모바일 모두 대응하는 반응형 구현",
     ],
     image: {
-      src: "/work/sindohr-mockup.png",
+      src: "/work/software-web-sindohr-v2.png",
       alt: "신도H렌탈 랜딩페이지 화면 — 데스크톱과 모바일 목업",
     },
     accent: "blue",
@@ -59,7 +59,7 @@ export const softwareExamples: PillarExample[] = [
       "스토어 등록과 이후 업데이트 운영까지",
     ],
     image: {
-      src: "/work/app-portfolio.jpg",
+      src: "/work/software-mobile-app-v2.png",
       alt: "모바일 앱 화면 예시 — 스마트폰 크기에 맞춘 목록과 상세 화면",
     },
     accent: "sky",
@@ -76,7 +76,7 @@ export const softwareExamples: PillarExample[] = [
       "엑셀 업로드·다운로드 같은 실무 흐름 반영",
     ],
     image: {
-      src: "/work/admin-portfolio.jpg",
+      src: "/work/software-admin-system-v2.png",
       alt: "관리자 시스템 화면 예시 — 목록 테이블과 필터가 놓인 백오피스 레이아웃",
     },
     accent: "navy",
@@ -93,7 +93,7 @@ export const softwareExamples: PillarExample[] = [
       "기존 사내 시스템·스프레드시트와 연결",
     ],
     image: {
-      src: "/work/dashboard-01.png",
+      src: "/work/software-internal-tool-v2.png",
       alt: "내부 운영 도구 화면 예시 — 업무 현황을 모아 보여주는 대시보드",
     },
     accent: "mint",
@@ -116,7 +116,7 @@ export const aiExamples: PillarExample[] = [
       "답하기 어려운 문의는 담당자에게 자동 이관",
     ],
     image: {
-      src: "/work/ai-chatbot-hermes.jpg",
+      src: "/work/ai-chatbot-hermes-v3.png",
       alt: "카카오톡 오픈채팅에서 그날의 AI 뉴스를 정리해 답하는 챗봇 화면",
     },
     accent: "red",
@@ -133,7 +133,7 @@ export const aiExamples: PillarExample[] = [
       "판단이 필요한 지점에서는 멈추고 사람에게 확인",
     ],
     image: {
-      src: "/work/ai-agent.jpg",
+      src: "/work/ai-agent-v2.png",
       alt: "AI 에이전트 실행 화면 — 요구사항 분석부터 리포트 생성까지 단계별 진행 상황",
     },
     accent: "navy",
@@ -150,7 +150,7 @@ export const aiExamples: PillarExample[] = [
       "결과는 Slack·메일 등 보고 있는 곳으로 발송",
     ],
     image: {
-      src: "/work/ai-automation.jpg",
+      src: "/work/ai-automation-v2.png",
       alt: "자동화 워크플로우 화면 — 문의 접수, AI 분류, 알림 발송으로 이어지는 3단계 흐름",
     },
     accent: "mint",
@@ -167,7 +167,7 @@ export const aiExamples: PillarExample[] = [
       "자주 쓰는 요청은 버튼 한 번으로 실행되게 구성",
     ],
     image: {
-      src: "/work/ai-chatbot.jpg",
+      src: "/work/ai-internal-tool-v2.png",
       alt: "사내 AI 도구 화면 — 매출 리포트를 요약하고 PDF로 내보내는 대화 화면",
     },
     accent: "coral",

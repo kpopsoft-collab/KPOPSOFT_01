@@ -34,13 +34,14 @@ type Pillar = {
   alt: string;
   description: string;
   tags: string[];
-  cta: { label: string; href: string };
   /**
    * 있으면 카드 본문이 버튼이 되어 예시 사례 모달을 연다. 태그로만 적혀
    * 있던 범위를 실제 화면과 함께 보여주기 위한 것 — 없는 카드는 종전대로
    * 정적인 카드로 남는다.
    */
   examples?: PillarExample[];
+  /** 예시 모달 안에 놓을 문의 CTA. `examples`가 있는 카드에만 쓴다. */
+  contact?: { label: string; href: string };
   /**
    * 있으면 카드 본문 전체가 이 경로로 가는 링크가 된다.
    * `examples`(모달)와는 배타적 — 한 카드가 두 동작을 가질 수는 없다.
@@ -55,13 +56,13 @@ const pillars: Pillar[] = [
     icon: <Circle className="size-7 shrink-0 text-brand-blue" aria-hidden />,
     title: "Software",
     accent: "blue",
-    image: "/work/software-overview.png",
+    image: "/work/software-overview-v2.png",
     alt: "소프트웨어 제작 범위 — 웹, 모바일 앱, 관리자 시스템, 내부 운영 도구 화면 모음",
     description: "웹·앱 서비스와 업무 시스템을 기획하고 개발합니다.",
     tags: ["웹 서비스", "모바일 앱", "관리자 시스템", "내부 운영 도구"],
     examples: softwareExamples,
-    cta: {
-      label: "소프트웨어 알아보기",
+    contact: {
+      label: "소프트웨어 문의하기",
       href: `/?ct=${encodeURIComponent("소프트웨어 개발")}#${sectionId.contact}`,
     },
   },
@@ -76,8 +77,8 @@ const pillars: Pillar[] = [
       "반복 업무를 줄이고 의사결정을 돕는 맞춤형 AI 솔루션을 구축합니다.",
     tags: ["AI 챗봇", "AI 에이전트", "업무 자동화", "사내 AI Tool"],
     examples: aiExamples,
-    cta: {
-      label: "AI 솔루션 알아보기",
+    contact: {
+      label: "AI 솔루션 문의하기",
       href: `/?ct=${encodeURIComponent("AI 솔루션")}#${sectionId.contact}`,
     },
   },
@@ -99,7 +100,6 @@ const pillars: Pillar[] = [
     // Software/AI는 카드 본문이 예시 모달을 열지만, 교육은 상세가 별도
     // 페이지에 있으므로 본문을 눌러도 그 페이지로 간다.
     bodyHref: route.education,
-    cta: { label: "교육 프로그램 알아보기", href: route.education },
   },
 ];
 
@@ -130,12 +130,12 @@ export function WhatWeDo() {
 }
 
 /**
- * 한 사업 카드 — 세 기둥 모두 같은 골격(커버 → 도형·타이틀 → 정의 → 태그 → CTA)
- * 으로 동일 비중을 유지한다. `scroll-mt-24`로 고정 헤더 앵커 오프셋을 준다.
+ * 한 사업 카드 — 세 기둥 모두 같은 골격(타이틀 → 커버 → 정의 → 태그)으로
+ * 동일 비중을 유지한다. `scroll-mt-24`로 고정 헤더 앵커 오프셋을 준다.
  *
- * `examples`가 있으면 본문(커버~태그)이 통째로 모달 트리거 버튼이 된다.
- * CTA 링크는 그 버튼 **밖**에 둔다 — 버튼 안에 링크를 넣으면 중첩 인터랙티브가
- * 되어 키보드·스크린리더에서 깨진다.
+ * 카드 하나에 동작은 하나다. 예전에는 본문(모달·교육 페이지)과 CTA(문의 폼)가
+ * 서로 다른 곳으로 갈라져 어디를 눌러야 할지 모호했다 — CTA pill을 걷어내고
+ * 카드 전체를 하나의 트리거로 통일했다. 클릭 유도는 타이틀 옆 화살표가 맡는다.
  */
 function PillarCard({ pillar }: { pillar: Pillar }) {
   const body = (
@@ -150,6 +150,12 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
         >
           {pillar.title}
         </h3>
+        {/* 버튼 대신 남긴 클릭 유도 신호. 카드 전체가 이미 눌리는 영역이라
+            문구 없이 화살표만 두고, hover에서 진해지며 살짝 움직인다. */}
+        <ArrowUpRight
+          className="ml-auto size-5 shrink-0 text-ink/35 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
+          aria-hidden
+        />
       </div>
 
       <CoverVisual
@@ -164,7 +170,7 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
       <p className="text-body-lg text-ink/70">{pillar.description}</p>
 
       {/* 다루는 범위(폭) 신호 — 버튼처럼 보이지 않게 가운뎃점으로 이은 담백한
-          텍스트 한 줄로 둔다. 아래 CTA(pill)와 형태가 겹치지 않도록 칩 대신 텍스트. */}
+          텍스트 한 줄로 둔다. 칩으로 만들면 누를 수 있는 것으로 읽힌다. */}
       <p className="text-sm leading-relaxed text-ink/50">
         {pillar.tags.join(" · ")}
       </p>
@@ -177,14 +183,17 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
       className="flex scroll-mt-24 flex-col gap-5 rounded-3xl bg-white p-8"
     >
       {pillar.examples ? (
-        <PillarExamplesModal label={pillar.title} examples={pillar.examples}>
-          {/* 눌러서 여는 카드라는 신호는 커서와 hover 배경으로만 준다. 안내
-              문구는 CTA 링크와 나란히 놓이면 버튼이 두 개로 읽혀서 뺐다.
-              대신 카드 전체가 무엇을 여는 버튼인지는 `aria-label`로 밝힌다. */}
+        <PillarExamplesModal
+          label={pillar.title}
+          examples={pillar.examples}
+          contact={pillar.contact}
+        >
+          {/* 눌러서 여는 카드라는 신호는 커서·hover 배경과 타이틀 옆 화살표로
+              준다. 카드 전체가 무엇을 여는 버튼인지는 `aria-label`로 밝힌다. */}
           <button
             type="button"
             aria-label={`${pillar.title} 예시 사례 ${pillar.examples.length}가지 보기`}
-            className="-m-2 flex cursor-pointer flex-col gap-5 rounded-3xl p-2 text-left transition-colors outline-none hover:bg-ink/[0.03] focus-visible:ring-3 focus-visible:ring-brand-blue/40"
+            className="group -m-2 flex cursor-pointer flex-col gap-5 rounded-3xl p-2 text-left transition-colors outline-none hover:bg-ink/[0.03] focus-visible:ring-3 focus-visible:ring-brand-blue/40"
           >
             {body}
           </button>
@@ -192,30 +201,13 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
       ) : pillar.bodyHref ? (
         <Link
           href={pillar.bodyHref}
-          className="group/card -m-2 flex flex-col gap-5 rounded-3xl p-2 transition-colors outline-none hover:bg-ink/[0.03] focus-visible:ring-3 focus-visible:ring-brand-blue/40"
+          className="group -m-2 flex flex-col gap-5 rounded-3xl p-2 transition-colors outline-none hover:bg-ink/[0.03] focus-visible:ring-3 focus-visible:ring-brand-blue/40"
         >
           {body}
         </Link>
       ) : (
         body
       )}
-
-      <Link
-        href={pillar.cta.href}
-        /*
-          요청서 §7·§17: 세 카드의 버튼 위치와 높이를 통일한다.
-          폭을 내용에 맞추면(`w-fit`) 문구가 긴 카드에서만 두 줄로 접혀 버튼
-          높이가 달라지고, 그만큼 바닥 정렬도 어긋난다. 카드 폭을 꽉 채우고
-          줄바꿈을 막아 세 버튼이 항상 같은 크기·같은 높이에 놓이게 한다.
-        */
-        className="group mt-auto inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-full border-[1.25px] border-ink/70 px-5 py-3 font-semibold whitespace-nowrap text-ink transition-colors hover:bg-ink hover:text-ivory focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
-      >
-        {pillar.cta.label}
-        <ArrowUpRight
-          className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-          aria-hidden
-        />
-      </Link>
     </div>
   );
 }
