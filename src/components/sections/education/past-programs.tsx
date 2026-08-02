@@ -1,4 +1,10 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowRight } from "lucide-react";
+
 import { Section } from "@/components/layout/section";
+import { cn } from "@/lib/utils";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { CoverVisual } from "@/components/ui/cover-visual";
 import { Tag } from "@/components/ui/tag";
@@ -31,23 +37,65 @@ import {
  * Desktop은 고정폭 이미지 열 + 정보, Mobile은 이미지 상단형으로 마크업 자체를
  * 바꾼다(데스크톱 행을 좁게 눌러 담지 않는다).
  */
+/**
+ * 접힌 상태에서 보여줄 사례 수.
+ *
+ * 행 하나가 사진까지 포함해 화면을 꽤 차지하므로, 처음부터 전부 펼치면 이
+ * 섹션 하나가 페이지의 절반을 먹는다. 사례는 어드민에서 계속 늘어날 값이라
+ * 상한이 없기도 하다.
+ */
+const COLLAPSED_COUNT = 2;
+
 export function PastPrograms() {
+  const [expanded, setExpanded] = useState(false);
+
   if (pastPrograms.length === 0) return null;
+
+  const hasMore = pastPrograms.length > COLLAPSED_COUNT;
+  const visible =
+    expanded || !hasMore ? pastPrograms : pastPrograms.slice(0, COLLAPSED_COUNT);
 
   return (
     <Section id={eduSectionId.cases} className="scroll-mt-36 bg-ivory">
-      <div className="max-w-2xl">
-        <Eyebrow dotClassName="bg-brand-yellow">교육 사례</Eyebrow>
-        <h2 className="text-section mt-6 text-ink">배우고, 직접 만든 결과들</h2>
-        <p className="mt-6 text-body-lg text-ink/70">
-          기업교육과 정규 과정, 바이브데이즈에서
-          <br className="hidden sm:inline" /> 함께 배우고 만든 실제 과정과
-          결과물을 확인해보세요.
-        </p>
+      {/* 보조 문구와 같은 줄, 오른쪽 끝에 전체보기를 둔다(사용자 지시).
+          `items-end`라 문구가 몇 줄이든 버튼이 마지막 줄에 맞춰 앉는다. */}
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-10">
+        <div className="max-w-2xl">
+          <Eyebrow dotClassName="bg-brand-yellow">교육 사례</Eyebrow>
+          <h2 className="text-section mt-6 text-ink">
+            배우고, 직접 만든 결과들
+          </h2>
+          <p className="mt-6 text-body-lg text-ink/70">
+            기업교육과 정규 과정, 바이브데이즈에서
+            <br className="hidden sm:inline" /> 함께 배우고 만든 실제 과정과
+            결과물을 확인해보세요.
+          </p>
+        </div>
+
+        {/* 전부 보이는 상태에서 버튼이 남아 있으면 눌러도 아무 일이 없다. */}
+        {hasMore ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((prev) => !prev)}
+            aria-expanded={expanded}
+            className="group inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors outline-none hover:border-ink/40 focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory md:self-auto"
+          >
+            {expanded ? "접기" : `전체보기 (${pastPrograms.length})`}
+            <ArrowRight
+              className={cn(
+                "size-4 transition-transform duration-200",
+                expanded
+                  ? "-rotate-90"
+                  : "rotate-90 group-hover:translate-y-0.5",
+              )}
+              aria-hidden
+            />
+          </button>
+        ) : null}
       </div>
 
       <ul className="mt-14 flex flex-col gap-6 lg:mt-20">
-        {pastPrograms.map((item) => (
+        {visible.map((item) => (
           <li key={item.slug}>
             <ProgramRow item={item} />
           </li>

@@ -766,8 +766,7 @@ export const selectedWork = [
      * 운영자가 아니라 **고객이 자기 캠페인과 성과를 직접 관리하는** 사용자용
      * 대시보드이기 때문이다.
      *
-     * 대표 이미지가 아직 없다. 잘못된 화면을 붙이는 것보다 비워 두는 편이
-     * 나아서 `imageUrl`을 두지 않았고, 카드는 도형 폴백으로 렌더된다.
+     * 대표 이미지는 실제 BLUE EGG biz 홈 대시보드 화면이다.
      */
     client: "BLUE EGG",
     title: "셀프 마케팅 캠페인 운영 플랫폼",
@@ -792,6 +791,7 @@ export const selectedWork = [
       "광고대행 및 제휴 문의 연결",
     ],
     flow: "캠페인 등록 → 진행 현황 확인 → 채널별 순위 추적 → 마케팅 성과 관리",
+    imageUrl: "/work/blueegg-dashboard.png",
   },
   {
     /**
