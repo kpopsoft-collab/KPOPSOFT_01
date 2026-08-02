@@ -1,0 +1,31 @@
+# 01. 정규 클래스 폼 — 일정 유형과 HTML 상세 업로드
+
+정규 클래스 등록/수정 폼에 **강의 일정**과 **HTML 상세 본문**을 추가한다.
+
+대상 화면
+- `src/app/admin/(shell)/content/education/regular-classes/[id]/page.tsx` (수정)
+- `src/app/admin/(shell)/content/education/regular-classes/new/page.tsx` (추가)
+- 실제 폼 본체: `src/components/admin/content/education/regular-classes/regular-class-form.tsx`
+
+> 위 두 페이지는 얇은 껍데기이고 폼은 한 컴포넌트를 공유한다. 그래서 이 작업의
+> 코드 변경은 사실상 `regular-class-form.tsx` 한 파일 + 데이터 층에서 끝난다.
+> 껍데기 두 개를 하나로 합치는 일은 [03-regular-class-form-merge](../03-regular-class-form-merge/00-START-HERE.md)에서 다룬다.
+
+## 읽는 순서
+
+1. [01-요구사항.md](01-요구사항.md) — 무엇을 만드는가, 받아들임 기준
+2. [02-현황분석.md](02-현황분석.md) — 지금 폼·스키마가 어떻게 생겼는가
+3. [03-데이터모델.md](03-데이터모델.md) — 추가 컬럼과 마이그레이션 DDL 초안
+4. [04-구현계획.md](04-구현계획.md) — 단계별 작업 순서 (파일별 diff 지점)
+5. [05-검증체크리스트.md](05-검증체크리스트.md) — 끝났다고 말하기 전 확인할 것
+
+## 결정이 필요한 것 (착수 전 사용자 확인)
+
+| # | 질문 | 기본안(답 없으면 이걸로 간다) |
+|---|------|------------------------------|
+| D1 | HTML 본문을 **DB 컬럼**에 넣을지, **Storage 파일**로 둘지 | DB 컬럼(`detail_html`). 이유는 [03-데이터모델.md](03-데이터모델.md) §3 |
+| D2 | 업로드한 HTML을 공개 페이지에 **그대로 렌더**할지, 정제(sanitize) 후 렌더할지 | 정제 후 렌더. 정제 전 원본은 저장해 둔다 |
+| D3 | 원데이 클래스에 **시간(HH:MM)**까지 받을지 | 날짜만. 시간은 기존 `duration` 자유 텍스트로 적는다 |
+| D4 | 기존 4개 과정(4주·6주 등)의 일정 유형 초기값 | `multi`(다회차), 날짜는 비움 |
+
+D1·D2는 보안과 직결되므로 [01-요구사항.md](01-요구사항.md) §4를 반드시 읽고 결정한다.
