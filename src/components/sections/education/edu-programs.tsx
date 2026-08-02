@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 
 import { Section } from "@/components/layout/section";
@@ -164,14 +165,39 @@ function ProgramCard({
       )}
     >
       {highlight ? (
-        <CoverVisual
-          accent={accent}
-          imageUrl={highlight.image.src}
-          alt={highlight.image.alt}
-          ratio="16/9"
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="rounded-none"
-        />
+        highlight.fit === "contain" ? (
+          /*
+            그래픽은 잘라내지 않고 통째로 담는다. 사진은 잘려도 분위기가
+            남지만, 키비주얼은 잘리는 순간 무엇을 그린 것인지 알 수 없다.
+            비율(16/9)은 옆 카드와 맞춰 세 장의 이미지 높이를 같게 둔다.
+          */
+          <div
+            className={cn(
+              "flex aspect-[16/9] items-center justify-center overflow-hidden p-6",
+              highlight.backdropClass,
+            )}
+          >
+            <Image
+              src={highlight.image.src}
+              alt={highlight.image.alt}
+              width={1469}
+              height={607}
+              // SVG는 옵티마이저가 `dangerouslyAllowSVG` 없이는 거부한다.
+              // 우리 자산이므로 원본을 그대로 내보낸다.
+              unoptimized
+              className="h-auto max-h-full w-full object-contain"
+            />
+          </div>
+        ) : (
+          <CoverVisual
+            accent={accent}
+            imageUrl={highlight.image.src}
+            alt={highlight.image.alt}
+            ratio="16/9"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="rounded-none"
+          />
+        )
       ) : null}
 
       <div className="flex flex-1 flex-col gap-4 p-7 md:p-8">

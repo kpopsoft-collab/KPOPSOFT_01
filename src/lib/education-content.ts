@@ -157,6 +157,18 @@ export function sortRegularClassesByTrack(track?: EduTrack): RegularClass[] {
   });
 }
 
+/**
+ * 바이브데이즈 대표 이미지(키비주얼).
+ *
+ * 프로그램 카드와 아래 `clubIntro`가 함께 쓴다. 두 곳에 따로 적어 두면 자산을
+ * 교체할 때 한쪽만 바뀐다. `programHighlights`가 이 파일 위쪽에 있어
+ * `clubIntro`보다 먼저 선언해 둔다 — 뒤에 두면 초기화 순서에 걸린다.
+ */
+export const clubKeyVisual = {
+  src: "/assets/vibedays-main.svg",
+  alt: "VIBEDAYS 캐릭터들이 vibe code · build together · ship good vibes · repeat 가 적힌 터미널 옆에 서 있는 그림",
+} as const;
+
 /* ------------------------------------------------------------------ *
  * 프로그램 섹션 — 분류별 요약 (Sticky 패널이 읽는 공통 형식)
  * ------------------------------------------------------------------ */
@@ -179,6 +191,13 @@ export type ProgramHighlight = {
   /** 무엇이 남는가 */
   outcome: string;
   image: EduImage;
+  /**
+   * 사진이 아니라 **그래픽**일 때 `contain`. 사진은 잘려도 분위기가 남지만
+   * 키비주얼은 잘리는 순간 무엇을 그린 것인지 알 수 없게 된다.
+   * `contain`이면 카드가 `backdropClass` 색을 깔고 그 위에 통째로 얹는다.
+   */
+  fit?: "cover" | "contain";
+  backdropClass?: string;
 };
 
 export const programHighlights: ProgramHighlight[] = [
@@ -212,11 +231,21 @@ export const programHighlights: ProgramHighlight[] = [
     audience: "배운 것을 계속 이어가고 싶은 사람",
     format: "기수제 스터디와 세미나, 실무 커뮤니티",
     outcome: "매월 쌓이는 실험 기록과 함께 만드는 동료",
-    // 바이브데이즈 전용 사진(사용자 제공).
+    /*
+      사진이 아니라 바이브데이즈 대표 이미지(키비주얼)를 쓴다(사용자 지시).
+      클럽은 강의가 아니라 브랜드를 가진 활동이라, 옆 두 카드와 같은 강의실
+      사진보다 이쪽이 성격을 더 정확히 전한다.
+
+      배경이 노랑인 이유 — 키비주얼의 세 캐릭터 중 하나가 민트라 민트 배경
+      위에서는 형태가 묻힌다. 노랑은 검은 터미널과 세 캐릭터(민트·빨강·파랑)
+      모두와 대비가 선다.
+    */
     image: {
-      src: "/education/education-club-01.jpg",
-      alt: "바이브데이즈 클럽 모임에서 발표자가 화면을 설명하고 참가자들이 노트북으로 함께 실습하는 모습",
+      src: clubKeyVisual.src,
+      alt: clubKeyVisual.alt,
     },
+    fit: "contain",
+    backdropClass: "bg-brand-yellow",
   },
 ];
 
@@ -446,7 +475,7 @@ export type CohortStatus =
 /** 상태별 표시 문구 — 컴포넌트가 조건 분기를 직접 쓰지 않도록 여기 모은다. */
 export const cohortStatusLabel: Record<CohortStatus, string> = {
   upcoming: "모집 예정",
-  open: "모집 중",
+  open: "준비 중",
   closed: "모집 마감",
   ended: "운영 종료",
 };
