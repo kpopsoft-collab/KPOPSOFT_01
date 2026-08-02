@@ -15,11 +15,13 @@ import {
   ListChecks,
   Settings,
   GraduationCap,
-  Images,
-  FolderKanban,
-  HelpCircle,
+  Building2,
   Sparkles,
-  SlidersHorizontal,
+  UsersRound,
+  FolderKanban,
+  Star,
+  HelpCircle,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -57,16 +59,34 @@ export const adminNav: AdminNavGroup[] = [
   {
     heading: "Education",
     items: [
-      { label: "프로그램", href: "/admin/content/education/programs", icon: GraduationCap },
-      { label: "결과물", href: "/admin/content/education/outputs", icon: Images },
-      { label: "사례", href: "/admin/content/education/cases", icon: FolderKanban },
-      { label: "FAQ", href: "/admin/content/education/faqs", icon: HelpCircle },
-      { label: "VIBEDAYS CLUB", href: "/admin/content/education/vibedays", icon: Sparkles },
       {
-        label: "페이지 설정",
-        href: "/admin/content/education/settings",
-        icon: SlidersHorizontal,
+        label: "정규 클래스",
+        href: "/admin/content/education/regular-classes",
+        icon: GraduationCap,
       },
+      {
+        label: "조직·기업 교육",
+        href: "/admin/content/education/org-training",
+        icon: Building2,
+      },
+      {
+        label: "클럽 기수",
+        href: "/admin/content/education/club-cohorts",
+        icon: Sparkles,
+      },
+      {
+        label: "클럽 참여 유형",
+        href: "/admin/content/education/club-tiers",
+        icon: UsersRound,
+      },
+      {
+        label: "지난 프로그램",
+        href: "/admin/content/education/past-programs",
+        icon: FolderKanban,
+      },
+      { label: "수강 후기", href: "/admin/content/education/reviews", icon: Star },
+      { label: "FAQ", href: "/admin/content/education/faqs", icon: HelpCircle },
+      { label: "교육 성과", href: "/admin/content/education/stats", icon: TrendingUp },
     ],
   },
   {

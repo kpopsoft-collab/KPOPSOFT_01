@@ -12,17 +12,19 @@ import {
   stats as siteStats,
 } from "@/lib/site";
 import type {
-  EducationCase,
+  EducationClubCohort,
+  EducationClubTier,
   EducationFaq,
-  EducationImage,
-  EducationOutput,
-  EducationPageSettings,
-  EducationProgram,
+  EducationOrgTraining,
+  EducationPastProgram,
+  EducationPastProgramImage,
+  EducationRegularClass,
+  EducationReview,
+  EducationStat,
   Expert,
   Insight,
   Stat,
   Testimonial,
-  VibedaysRole,
   WorkItem,
 } from "./content-types";
 
@@ -95,36 +97,28 @@ export const mockStats: Stat[] = siteStats.map((s, i) => ({
 }));
 
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/KPOPSOFT_Education_Page_ver2.md §27) — no site.ts seed
-// exists yet (Education content is new), so these start empty and Admin
-// screens show the existing "등록된 항목이 없습니다" empty state until content
-// is entered. Track A's mock education-* data (page-level, non-Admin) is a
-// separate concern and is not touched here.
+// Education (docs/KPOPSOFT_Education_Page_ver3.md — 3분류 체계)
+//
+// 목 모드는 DB 없이 앱을 띄우기 위한 것이라 전부 빈 배열에서 시작한다. 실제
+// 콘텐츠는 Supabase에 있고(`scripts/seed-education-ver3.cjs`로 시딩), 공개
+// 화면은 DB가 비면 `src/lib/education-content.ts`로 폴백한다.
 // ─────────────────────────────────────────────────────────────────────────
 
-export const mockEducationPrograms: EducationProgram[] = [];
-export const mockEducationOutputs: EducationOutput[] = [];
-export const mockEducationCases: EducationCase[] = [];
+export const mockEducationRegularClasses: EducationRegularClass[] = [];
+export const mockEducationClubCohorts: EducationClubCohort[] = [];
+export const mockEducationClubTiers: EducationClubTier[] = [];
+export const mockEducationPastPrograms: EducationPastProgram[] = [];
+export const mockEducationPastProgramImages: EducationPastProgramImage[] = [];
+export const mockEducationReviews: EducationReview[] = [];
 export const mockEducationFaqs: EducationFaq[] = [];
-export const mockVibedaysRoles: VibedaysRole[] = [];
+export const mockEducationStats: EducationStat[] = [];
 
-/** Program ↔ Instructor links (mock mode) — mirrors education_program_instructors. */
-export const mockProgramInstructorLinks: { programId: string; expertId: string }[] = [];
-
-/** Polymorphic image gallery rows (mock mode) — mirrors education_images. */
-export const mockEducationImages: EducationImage[] = [];
-
-/** Singleton Education page settings (mock mode) — mirrors education_page_settings. */
-export const mockEducationSettings: EducationPageSettings = {
-  heroEyebrow: "KPOPSOFT EDUCATION",
-  heroTitle: "배우며, 만들고\n적용까지.",
-  heroDescription: "누구나 쉽게 AI를 알고\n시작할 수 있게 교육합니다",
-  heroCtaPrimaryLabel: "무료 상담 신청하기",
-  heroCtaPrimaryHref: "#education-inquiry",
-  heroCtaSecondaryLabel: "교육 프로그램 보기",
-  heroCtaSecondaryHref: "#programs",
-  vibedaysTitle: "서로 다른 바이브가 만나,\n배우고 만든 날들이 쌓입니다.",
-  vibedaysDescription:
-    "VIBEDAYS CLUB은 서로 다른 경험과 수준을 가진 사람들이\n배우고, 만들고, 자신의 결과를 나누는\nKPOPSOFT의 실습형 러닝 커뮤니티입니다.",
-  sections: {},
+/** 조직·기업 맞춤 교육 — 싱글턴이라 배열이 아니라 객체다. */
+export const mockOrgTraining: EducationOrgTraining = {
+  title: "",
+  description: "",
+  minParticipants: "",
+  imageAlt: "",
+  imageCaption: "",
+  ctaLabel: "",
 };

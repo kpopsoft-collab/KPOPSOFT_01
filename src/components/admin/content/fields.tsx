@@ -250,3 +250,39 @@ export function StringListField({
     </div>
   );
 }
+
+/**
+ * 고정된 선택지 하나를 고르는 필드 — 모집 상태·분류처럼 값이 도메인으로
+ * 정해져 있어 자유 입력이면 DB 제약에 걸리는 것들에 쓴다.
+ */
+export function SelectField<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+  hint,
+}: {
+  label: string;
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+  hint?: string;
+}) {
+  return (
+    <label className={labelClass}>
+      {label}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        className={cn(inputClass, "appearance-none")}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      {hint && <span className="text-xs font-medium text-ink/45">{hint}</span>}
+    </label>
+  );
+}

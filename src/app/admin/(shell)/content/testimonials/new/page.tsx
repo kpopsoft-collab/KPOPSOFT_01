@@ -8,8 +8,8 @@ import { createTestimonial } from "../actions";
 export default async function NewTestimonialPage() {
   const data = getContentData();
   const [programs, cases] = await Promise.all([
-    data.education.programs.list(),
-    data.education.cases.list(),
+    data.education.regularClasses.list(),
+    data.education.pastPrograms.list(),
   ]);
 
   return (

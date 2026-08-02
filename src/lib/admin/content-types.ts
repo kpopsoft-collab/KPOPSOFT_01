@@ -117,229 +117,182 @@ export const ACCENTS: readonly Accent[] = [
   "navy",
 ] as const;
 
+
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/KPOPSOFT_Education_Page_ver2.md §27 Admin 구성)
+// Education (docs/KPOPSOFT_Education_Page_ver3.md — 3분류 체계)
+//
+// ver2의 평면 프로그램·결과물·사례·VIBEDAYS 역할·이미지 갤러리·페이지 설정
+// 타입은 지웠다. 그 스키마는 DB에 만들어진 적이 없고, ver3에서 프로그램이
+// 조직·기업 / 정규 클래스 / 커뮤니티 클럽 세 갈래로 재편되면서 모양 자체가
+// 달라졌다. 공개 화면이 쓰는 타입은 `src/lib/education-content.ts`에 있고,
+// 여기 있는 것은 **어드민 폼이 다루는 모양**이다(ContentBase 기반).
 // ─────────────────────────────────────────────────────────────────────────
 
-/** 모집 상태 (§27.2). */
-export type EducationRecruitStatus =
-  | "scheduled"
-  | "open"
-  | "closed"
-  | "always"
-  | "hidden";
+/** 정규 클래스 학습 트랙 — 방문자가 고르는 탐색 축(3분류와 별개). */
+export type EducationTrack = "beginner" | "practical";
 
-export const EDUCATION_RECRUIT_STATUSES: readonly EducationRecruitStatus[] = [
-  "scheduled",
+export const EDUCATION_TRACKS: readonly EducationTrack[] = [
+  "beginner",
+  "practical",
+] as const;
+
+export const educationTrackLabel: Record<EducationTrack, string> = {
+  beginner: "AI 입문",
+  practical: "실무 활용",
+};
+
+/** 교육 3분류 — 지난 프로그램이 어디에 속하는지 표시할 때 쓴다. */
+export type EducationCategoryId = "org" | "regular" | "club";
+
+export const EDUCATION_CATEGORIES: readonly EducationCategoryId[] = [
+  "org",
+  "regular",
+  "club",
+] as const;
+
+export const educationCategoryLabel: Record<EducationCategoryId, string> = {
+  org: "조직·기업 맞춤 교육",
+  regular: "정규 클래스",
+  club: "커뮤니티 클럽",
+};
+
+/**
+ * 클럽 기수 모집 상태. 공개 화면 표기(`cohortStatusLabel`)와 같은 어휘를
+ * 쓴다 — 어드민에서 "모집 중"으로 고른 것이 사이트에 "준비 중"으로 나오면
+ * 무엇을 고른 것인지 알 수 없다.
+ */
+export type ClubCohortStatus = "upcoming" | "open" | "closed" | "ended";
+
+export const CLUB_COHORT_STATUSES: readonly ClubCohortStatus[] = [
+  "upcoming",
   "open",
   "closed",
-  "always",
-  "hidden",
+  "ended",
 ] as const;
 
-export const educationRecruitStatusLabel: Record<EducationRecruitStatus, string> = {
-  scheduled: "모집 예정",
-  open: "모집 중",
-  closed: "마감",
-  always: "상시 문의",
-  hidden: "비공개",
+export const clubCohortStatusLabel: Record<ClubCohortStatus, string> = {
+  upcoming: "모집 예정",
+  open: "준비 중",
+  closed: "모집 마감",
+  ended: "운영 종료",
 };
 
-/** 교육 방식 — §20 문의 폼 옵션과 동일 어휘. */
-export type EducationFormat = "offline" | "online" | "hybrid" | "flexible";
-
-export const EDUCATION_FORMATS: readonly EducationFormat[] = [
-  "offline",
-  "online",
-  "hybrid",
-  "flexible",
-] as const;
-
-export const educationFormatLabel: Record<EducationFormat, string> = {
-  offline: "오프라인",
-  online: "온라인",
-  hybrid: "온·오프라인 혼합",
-  flexible: "협의 필요",
-};
-
-/** FAQ 카테고리 (§27.8). */
-export type EducationFaqCategory =
-  | "personal"
-  | "company"
-  | "preparation"
-  | "operations";
-
-export const EDUCATION_FAQ_CATEGORIES: readonly EducationFaqCategory[] = [
-  "personal",
-  "company",
-  "preparation",
-  "operations",
-] as const;
-
-export const educationFaqCategoryLabel: Record<EducationFaqCategory, string> = {
-  personal: "개인 프로그램",
-  company: "기업 교육",
-  preparation: "준비 사항",
-  operations: "신청 및 운영",
-};
-
-export type EducationProgram = ContentBase & {
+export type EducationRegularClass = ContentBase & {
   slug: string;
+  /** "01" — 화면에 그대로 찍는 표기. */
+  indexLabel: string;
   name: string;
-  /** 감성 라벨 (예: START DAY). */
-  vibeLabel: string;
-  category: string;
-  /** 한 줄 설명. */
-  summary: string;
-  /** 상세 설명. */
+  subtitle: string;
   description: string;
-  targetAudience: string;
-  difficulty: string;
   duration: string;
-  format?: EducationFormat;
-  location: string;
+  /** "입문·중급" — 사람이 읽는 표기. 분기에는 tracks를 쓴다. */
+  level: string;
+  tracks: EducationTrack[];
+  accent: Accent;
+  imageUrl?: string;
+  imageAlt: string;
+  imageCaption: string;
+  curriculum: string[];
+  detailHref: string;
+  seoTitle: string;
+  seoDescription: string;
+};
+
+/** 조직·기업 맞춤 교육 — 상품이 하나뿐이라 싱글턴이다. */
+export type EducationOrgTraining = {
+  title: string;
+  description: string;
+  minParticipants: string;
+  imageUrl?: string;
+  imageAlt: string;
+  imageCaption: string;
+  ctaLabel: string;
+};
+
+export type EducationClubCohort = ContentBase & {
+  /** "1기" */
+  label: string;
+  status: ClubCohortStatus;
+  recruitPeriod: string;
+  runPeriod: string;
   price: string;
-  recruitStatus: EducationRecruitStatus;
-  recruitStartDate?: string;
-  recruitEndDate?: string;
-  coverImageUrl?: string;
-  heroImageUrl?: string;
-  /** 대표 프로그램 여부. */
-  isFeatured: boolean;
-  /** 상세 페이지 사용 여부(2차 확장 대비, §4). */
-  hasDetailPage: boolean;
-  seoTitle?: string;
-  seoDescription?: string;
-  /** Program ↔ Instructor 관계형 연결(§28) — expert id 목록. */
-  instructorIds: string[];
+  /** 할인 전 정가. 있으면 가격 옆에 취소선으로 함께 나온다. */
+  listPrice: string;
+  capacity: string;
+  /** 마감·연기 사유 한 줄. */
+  note: string;
+  /** 신청 버튼을 없애지 않고 비활성만 시킨다(아직 신청을 받지 않는 기간). */
+  ctaDisabled: boolean;
+  showPrice: boolean;
+  showCapacity: boolean;
+  showSchedule: boolean;
+  showCta: boolean;
 };
 
-export type EducationOutput = ContentBase & {
-  title: string;
-  /** 관련 프로그램(§28 관계형 연결). */
-  programId?: string;
-  category: string;
-  description: string;
-  coverImageUrl?: string;
+export type EducationClubTier = ContentBase & {
+  name: string;
+  role: string;
+  points: string[];
+  accent: Accent;
+  characterSrc: string;
+  /** 캐릭터 원본 크기 — 파일마다 달라 행마다 적는다. */
+  characterWidth: number;
+  characterHeight: number;
 };
 
-export type EducationCase = ContentBase & {
+export type EducationPastProgram = ContentBase & {
+  slug: string;
   title: string;
-  industry: string;
-  companyName: string;
-  targetAudience: string;
-  participantCount: string;
+  category: EducationCategoryId;
+  /** "2026년 3월" */
+  period: string;
+  audience: string;
   duration: string;
-  format?: EducationFormat;
-  goal: string;
-  mainTask: string;
-  outputs: string;
+  summary: string;
   outcome: string;
+  accent: Accent;
   coverImageUrl?: string;
+  coverImageAlt: string;
+  coverImageCaption: string;
+  /** 자산 교체 시 캐시 잔상을 피해야 하는 목업에만 켠다. */
+  coverUnoptimized: boolean;
+};
+
+/** 지난 프로그램 갤러리 이미지 — 부모 행에 딸린다(ContentBase 아님). */
+export type EducationPastProgramImage = {
+  id: string;
+  programId: string;
+  imageUrl: string;
+  alt: string;
+  caption: string;
+  sortOrder: number;
+};
+
+export type EducationPastProgramImageInput = Omit<EducationPastProgramImage, "id">;
+
+export type EducationReview = ContentBase & {
+  /** 정적 데이터에서 승계한 식별 키. */
+  key: string;
+  /** 5점 만점. */
+  rating: number;
+  body: string;
+  /** 닉네임 대신 수강 레벨로 표기한다. */
+  author: string;
+  program: string;
+  /** "2026년 7월" */
+  dateLabel: string;
+  accent: Accent;
 };
 
 export type EducationFaq = ContentBase & {
-  category: EducationFaqCategory;
+  key: string;
   question: string;
   answer: string;
 };
 
-export type VibedaysRole = ContentBase & {
-  roleName: string;
-  tagline: string;
-  description: string;
-  characterImageUrl?: string;
-};
-
-/** 이미지 소유자 종류(§24 설계 근거는 supabase/migrations 참고). */
-export type EducationImageOwner = "program" | "output" | "case";
-
-/** 갤러리 역할 — owner별 허용 role은 Admin 화면에서 제한한다. */
-export type EducationImageRole = "output" | "site" | "result" | "detail" | "gallery";
-
-/** 이미지별 공개/Blur/대표/순서/alt/caption 메타 (Education §24). */
-export type EducationImage = {
-  id: string;
-  ownerType: EducationImageOwner;
-  ownerId: string;
-  role: EducationImageRole;
-  imageUrl: string;
-  altText: string;
-  caption?: string;
-  isPublic: boolean;
-  isBlurred: boolean;
-  isFeatured: boolean;
-  displayOrder: number;
-};
-
-export type EducationImageInput = Omit<EducationImage, "id">;
-
-/** Education Hero/CTA/섹션 노출 설정 (§27.1) — 싱글턴. */
-export type EducationSectionKey =
-  | "hero"
-  | "intent"
-  | "programs"
-  | "outputs"
-  | "vibedays"
-  | "howWeLearn"
-  | "forOrganizations"
-  | "process"
-  | "cases"
-  | "instructors"
-  | "testimonials"
-  | "faq"
-  | "cta"
-  | "contactForm";
-
-export type EducationSectionConfig = {
-  isPublished: boolean;
-  order: number;
-};
-
-export type EducationPageSettings = {
-  heroEyebrow: string;
-  heroTitle: string;
-  heroDescription: string;
-  heroImageUrl?: string;
-  heroCtaPrimaryLabel: string;
-  heroCtaPrimaryHref: string;
-  heroCtaSecondaryLabel: string;
-  heroCtaSecondaryHref: string;
-  vibedaysTitle: string;
-  vibedaysDescription: string;
-  sections: Partial<Record<EducationSectionKey, EducationSectionConfig>>;
-};
-
-export const EDUCATION_SECTION_KEYS: readonly EducationSectionKey[] = [
-  "hero",
-  "intent",
-  "programs",
-  "outputs",
-  "vibedays",
-  "howWeLearn",
-  "forOrganizations",
-  "process",
-  "cases",
-  "instructors",
-  "testimonials",
-  "faq",
-  "cta",
-  "contactForm",
-] as const;
-
-export const educationSectionLabel: Record<EducationSectionKey, string> = {
-  hero: "Hero",
-  intent: "방문 목적 선택",
-  programs: "대표 교육 프로그램",
-  outputs: "교육 결과물",
-  vibedays: "VIBEDAYS CLUB",
-  howWeLearn: "교육 방식",
-  forOrganizations: "기업 맞춤형 교육",
-  process: "교육 진행 프로세스",
-  cases: "교육 사례",
-  instructors: "강사진",
-  testimonials: "고객 후기",
-  faq: "FAQ",
-  cta: "개인 신청 / 기업 상담 CTA",
-  contactForm: "기업 교육 문의 폼",
+/** 교육 성과 수치 — 홈 `Stat`과 달리 표기까지 포함된 문자열이다("200+"). */
+export type EducationStat = ContentBase & {
+  key: string;
+  value: string;
+  label: string;
 };

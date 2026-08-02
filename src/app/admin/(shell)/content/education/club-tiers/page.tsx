@@ -7,24 +7,24 @@ import {
   EditLink,
   PublishToggle,
 } from "@/components/admin/content/row-actions";
-import { deleteFaq, setFaqPublished } from "./actions";
+import { deleteTier, setTierPublished } from "./actions";
 
-export default async function FaqListPage() {
-  const items = await getContentData().education.faqs.list();
+export default async function TierListPage() {
+  const items = await getContentData().education.clubTiers.list();
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-ink">FAQ</h1>
-          <p className="mt-2 text-sm text-ink/55">교육 페이지 FAQ를 관리합니다.</p>
+          <h1 className="text-2xl font-extrabold tracking-tight text-ink">클럽 참여 유형</h1>
+          <p className="mt-2 text-sm text-ink/55">바이브데이즈 참여 유형 3단계를 관리합니다.</p>
         </div>
         <Link
-          href="/admin/content/education/faqs/new"
+          href="/admin/content/education/club-tiers/new"
           className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-brand-navy"
         >
           <Plus className="size-4" aria-hidden />
-          FAQ 추가
+          클럽 참여 유형 추가
         </Link>
       </div>
 
@@ -40,16 +40,16 @@ export default async function FaqListPage() {
               className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-ink">{item.question}</p>
-                <p className="mt-0.5 truncate text-sm text-ink/55">{item.answer}</p>
+                <p className="truncate font-semibold text-ink">{item.name}</p>
+                <p className="mt-0.5 truncate text-sm text-ink/55">{item.role}</p>
               </div>
               <PublishToggle
                 id={item.id}
                 isPublished={item.isPublished}
-                action={setFaqPublished}
+                action={setTierPublished}
               />
-              <EditLink href={`/admin/content/education/faqs/${item.id}`} />
-              <DeleteButton id={item.id} action={deleteFaq} label={`'${item.question}'`} />
+              <EditLink href={`/admin/content/education/club-tiers/${item.id}`} />
+              <DeleteButton id={item.id} action={deleteTier} label={`'${item.name}'`} />
             </li>
           ))}
         </ul>

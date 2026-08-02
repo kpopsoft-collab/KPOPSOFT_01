@@ -4,24 +4,25 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   ContentData,
   ContentRepo,
-  EducationImagesRepo,
-  EducationSettingsRepo,
+  EducationOrgTrainingRepo,
+  EducationPastProgramImagesRepo,
 } from "./content-data";
 import type {
   ContentBase,
-  EducationCase,
+  EducationClubCohort,
+  EducationClubTier,
   EducationFaq,
-  EducationImage,
-  EducationImageInput,
-  EducationImageOwner,
-  EducationOutput,
-  EducationPageSettings,
-  EducationProgram,
+  EducationOrgTraining,
+  EducationPastProgram,
+  EducationPastProgramImage,
+  EducationPastProgramImageInput,
+  EducationRegularClass,
+  EducationReview,
+  EducationStat,
   Expert,
   Insight,
   Stat,
   Testimonial,
-  VibedaysRole,
   WorkItem,
 } from "./content-types";
 
@@ -97,65 +98,88 @@ const FIELDS: Record<string, FieldMap> = {
     ["suffix", "suffix"],
     ["label", "label"],
   ],
-  education_programs: [
+  education_regular_classes: [
     ...COMMON,
     ["slug", "slug"],
+    ["indexLabel", "index_label"],
     ["name", "name"],
-    ["vibeLabel", "vibe_label"],
-    ["category", "category"],
-    ["summary", "summary"],
+    ["subtitle", "subtitle"],
     ["description", "description"],
-    ["targetAudience", "target_audience"],
-    ["difficulty", "difficulty"],
     ["duration", "duration"],
-    ["format", "format"],
-    ["location", "location"],
-    ["price", "price"],
-    ["recruitStatus", "recruit_status"],
-    ["recruitStartDate", "recruit_start_date"],
-    ["recruitEndDate", "recruit_end_date"],
-    ["coverImageUrl", "cover_image_url"],
-    ["heroImageUrl", "hero_image_url"],
-    ["isFeatured", "is_featured"],
-    ["hasDetailPage", "has_detail_page"],
+    ["level", "level"],
+    ["tracks", "tracks"],
+    ["accent", "accent"],
+    ["imageUrl", "image_url"],
+    ["imageAlt", "image_alt"],
+    ["imageCaption", "image_caption"],
+    ["curriculum", "curriculum"],
+    ["detailHref", "detail_href"],
     ["seoTitle", "seo_title"],
     ["seoDescription", "seo_description"],
   ],
-  education_outputs: [
+  education_club_cohorts: [
     ...COMMON,
-    ["title", "title"],
-    ["programId", "program_id"],
-    ["category", "category"],
-    ["description", "description"],
-    ["coverImageUrl", "cover_image_url"],
+    ["label", "label"],
+    ["status", "status"],
+    ["recruitPeriod", "recruit_period"],
+    ["runPeriod", "run_period"],
+    ["price", "price"],
+    ["listPrice", "list_price"],
+    ["capacity", "capacity"],
+    ["note", "note"],
+    ["ctaDisabled", "cta_disabled"],
+    ["showPrice", "show_price"],
+    ["showCapacity", "show_capacity"],
+    ["showSchedule", "show_schedule"],
+    ["showCta", "show_cta"],
   ],
-  education_cases: [
+  education_club_tiers: [
     ...COMMON,
+    ["name", "name"],
+    ["role", "role"],
+    ["points", "points"],
+    ["accent", "accent"],
+    ["characterSrc", "character_src"],
+    ["characterWidth", "character_width"],
+    ["characterHeight", "character_height"],
+  ],
+  education_past_programs: [
+    ...COMMON,
+    ["slug", "slug"],
     ["title", "title"],
-    ["industry", "industry"],
-    ["companyName", "company_name"],
-    ["targetAudience", "target_audience"],
-    ["participantCount", "participant_count"],
+    ["category", "category"],
+    ["period", "period"],
+    ["audience", "audience"],
     ["duration", "duration"],
-    ["format", "format"],
-    ["goal", "goal"],
-    ["mainTask", "main_task"],
-    ["outputs", "outputs"],
+    ["summary", "summary"],
     ["outcome", "outcome"],
+    ["accent", "accent"],
     ["coverImageUrl", "cover_image_url"],
+    ["coverImageAlt", "cover_image_alt"],
+    ["coverImageCaption", "cover_image_caption"],
+    ["coverUnoptimized", "cover_unoptimized"],
+  ],
+  education_reviews: [
+    ...COMMON,
+    ["key", "key"],
+    ["rating", "rating"],
+    ["body", "body"],
+    ["author", "author"],
+    ["program", "program"],
+    ["dateLabel", "date_label"],
+    ["accent", "accent"],
   ],
   education_faqs: [
     ...COMMON,
-    ["category", "category"],
+    ["key", "key"],
     ["question", "question"],
     ["answer", "answer"],
   ],
-  vibedays_roles: [
+  education_stats: [
     ...COMMON,
-    ["roleName", "role_name"],
-    ["tagline", "tagline"],
-    ["description", "description"],
-    ["characterImageUrl", "character_image_url"],
+    ["key", "key"],
+    ["value", "value"],
+    ["label", "label"],
   ],
 };
 
@@ -244,204 +268,132 @@ class SupabaseRepo<T extends ContentBase> implements ContentRepo<T> {
 }
 
 /**
- * Programs need base CRUD plus the education_program_instructors junction
- * (§28 — relational, not a column), so it wraps SupabaseRepo instead of
- * extending it directly (mirrors MockEducationProgramsRepo).
+ * 지난 프로그램 갤러리 — 부모 행에 딸린 목록이라 ContentBase 모양이 아니고
+ * (공개 여부·정렬을 부모가 정한다) 별도 리포지토리로 둔다.
  */
-class SupabaseEducationProgramsRepo implements ContentRepo<EducationProgram> {
-  private base = new SupabaseRepo<EducationProgram>("education_programs");
+class SupabasePastProgramImagesRepo implements EducationPastProgramImagesRepo {
+  private map(row: Record<string, unknown>): EducationPastProgramImage {
+    return {
+      id: row.id as string,
+      programId: row.program_id as string,
+      imageUrl: (row.image_url as string) ?? "",
+      alt: (row.alt as string) ?? "",
+      caption: (row.caption as string) ?? "",
+      sortOrder: (row.sort_order as number) ?? 0,
+    };
+  }
 
-  private async linksFor(programId: string): Promise<string[]> {
+  private toRow(input: Partial<EducationPastProgramImageInput>) {
+    const out: Record<string, unknown> = {};
+    if (input.programId !== undefined) out.program_id = input.programId;
+    if (input.imageUrl !== undefined) out.image_url = input.imageUrl;
+    if (input.alt !== undefined) out.alt = input.alt;
+    if (input.caption !== undefined) out.caption = input.caption;
+    if (input.sortOrder !== undefined) out.sort_order = input.sortOrder;
+    return out;
+  }
+
+  async listByProgram(programId: string): Promise<EducationPastProgramImage[]> {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
-      .from("education_program_instructors")
-      .select("expert_id")
-      .eq("program_id", programId);
-    if (error) throw error;
-    return (data ?? []).map((r) => r.expert_id as string);
-  }
-
-  private async setLinks(programId: string, expertIds: string[]): Promise<void> {
-    const supabase = await createSupabaseServerClient();
-    const { error: delError } = await supabase
-      .from("education_program_instructors")
-      .delete()
-      .eq("program_id", programId);
-    if (delError) throw delError;
-    if (expertIds.length === 0) return;
-    const { error: insError } = await supabase
-      .from("education_program_instructors")
-      .insert(expertIds.map((expert_id) => ({ program_id: programId, expert_id })));
-    if (insError) throw insError;
-  }
-
-  async list(): Promise<EducationProgram[]> {
-    const rows = await this.base.list();
-    return Promise.all(
-      rows.map(async (r) => ({ ...r, instructorIds: await this.linksFor(r.id) })),
-    );
-  }
-
-  async get(id: string): Promise<EducationProgram | null> {
-    const row = await this.base.get(id);
-    if (!row) return null;
-    return { ...row, instructorIds: await this.linksFor(id) };
-  }
-
-  async create(
-    input: Omit<EducationProgram, "id" | "sortOrder">,
-  ): Promise<EducationProgram> {
-    const { instructorIds, ...rest } = input;
-    const row = await this.base.create({ ...rest, instructorIds: [] });
-    await this.setLinks(row.id, instructorIds ?? []);
-    return { ...row, instructorIds: instructorIds ?? [] };
-  }
-
-  async update(
-    id: string,
-    patch: Partial<Omit<EducationProgram, "id">>,
-  ): Promise<EducationProgram> {
-    const { instructorIds, ...rest } = patch;
-    const row = await this.base.update(id, rest);
-    if (instructorIds !== undefined) await this.setLinks(id, instructorIds);
-    return { ...row, instructorIds: await this.linksFor(id) };
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.base.remove(id);
-  }
-}
-
-const IMAGE_FIELDS: FieldMap = [
-  ["ownerType", "owner_type"],
-  ["ownerId", "owner_id"],
-  ["role", "role"],
-  ["imageUrl", "image_url"],
-  ["altText", "alt_text"],
-  ["caption", "caption"],
-  ["isPublic", "is_public"],
-  ["isBlurred", "is_blurred"],
-  ["isFeatured", "is_featured"],
-  ["displayOrder", "display_order"],
-];
-
-function imageFromRow(row: Record<string, unknown>): EducationImage {
-  const out: Record<string, unknown> = { id: row.id };
-  for (const [camel, snake] of IMAGE_FIELDS) {
-    const v = row[snake];
-    if (v === null || v === undefined) continue;
-    out[camel] = v;
-  }
-  return out as EducationImage;
-}
-
-function imageToRow(obj: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [camel, snake] of IMAGE_FIELDS) {
-    if (obj[camel] !== undefined) out[snake] = obj[camel];
-  }
-  return out;
-}
-
-/** Polymorphic image-gallery repo (Education §24) — see migration for design rationale. */
-class SupabaseEducationImagesRepo implements EducationImagesRepo {
-  async listByOwner(
-    ownerType: EducationImageOwner,
-    ownerId: string,
-  ): Promise<EducationImage[]> {
-    const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
-      .from("education_images")
+      .from("education_past_program_images")
       .select("*")
-      .eq("owner_type", ownerType)
-      .eq("owner_id", ownerId)
-      .order("display_order", { ascending: true });
+      .eq("program_id", programId)
+      .order("sort_order", { ascending: true });
     if (error) throw error;
-    return (data as Record<string, unknown>[]).map(imageFromRow);
+    return (data as Record<string, unknown>[]).map((r) => this.map(r));
   }
 
-  async create(input: EducationImageInput): Promise<EducationImage> {
+  async create(input: EducationPastProgramImageInput): Promise<EducationPastProgramImage> {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
-      .from("education_images")
-      .insert(imageToRow(input as Record<string, unknown>))
+      .from("education_past_program_images")
+      .insert(this.toRow(input))
       .select("*")
       .single();
     if (error) throw error;
-    return imageFromRow(data);
+    return this.map(data);
   }
 
   async update(
     id: string,
-    patch: Partial<EducationImageInput>,
-  ): Promise<EducationImage> {
+    patch: Partial<EducationPastProgramImageInput>,
+  ): Promise<EducationPastProgramImage> {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
-      .from("education_images")
-      .update(imageToRow(patch as Record<string, unknown>))
+      .from("education_past_program_images")
+      .update(this.toRow(patch))
       .eq("id", id)
       .select("*")
       .single();
     if (error) throw error;
-    return imageFromRow(data);
+    return this.map(data);
   }
 
   async remove(id: string): Promise<void> {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.from("education_images").delete().eq("id", id);
+    const { error } = await supabase
+      .from("education_past_program_images")
+      .delete()
+      .eq("id", id);
     if (error) throw error;
   }
 }
 
-const SETTINGS_FIELDS: FieldMap = [
-  ["heroEyebrow", "hero_eyebrow"],
-  ["heroTitle", "hero_title"],
-  ["heroDescription", "hero_description"],
-  ["heroImageUrl", "hero_image_url"],
-  ["heroCtaPrimaryLabel", "hero_cta_primary_label"],
-  ["heroCtaPrimaryHref", "hero_cta_primary_href"],
-  ["heroCtaSecondaryLabel", "hero_cta_secondary_label"],
-  ["heroCtaSecondaryHref", "hero_cta_secondary_href"],
-  ["vibedaysTitle", "vibedays_title"],
-  ["vibedaysDescription", "vibedays_description"],
-  ["sections", "sections"],
-];
+/** 조직·기업 맞춤 교육 — 행이 하나뿐이라 get/update만 있다. */
+class SupabaseOrgTrainingRepo implements EducationOrgTrainingRepo {
+  private empty: EducationOrgTraining = {
+    title: "",
+    description: "",
+    minParticipants: "",
+    imageAlt: "",
+    imageCaption: "",
+    ctaLabel: "",
+  };
 
-/** Singleton Education page settings repo (Education §27.1) — always id=true. */
-class SupabaseEducationSettingsRepo implements EducationSettingsRepo {
-  async get(): Promise<EducationPageSettings> {
-    const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
-      .from("education_page_settings")
-      .select("*")
-      .eq("id", true)
-      .maybeSingle();
-    if (error) throw error;
-    const out: Record<string, unknown> = { sections: {} };
-    if (data) {
-      for (const [camel, snake] of SETTINGS_FIELDS) {
-        const v = (data as Record<string, unknown>)[snake];
-        if (v === null || v === undefined) continue;
-        out[camel] = v;
-      }
-    }
-    return out as EducationPageSettings;
+  private map(row: Record<string, unknown> | null): EducationOrgTraining {
+    if (!row) return this.empty;
+    return {
+      title: (row.title as string) ?? "",
+      description: (row.description as string) ?? "",
+      minParticipants: (row.min_participants as string) ?? "",
+      ...(row.image_url ? { imageUrl: row.image_url as string } : {}),
+      imageAlt: (row.image_alt as string) ?? "",
+      imageCaption: (row.image_caption as string) ?? "",
+      ctaLabel: (row.cta_label as string) ?? "",
+    };
   }
 
-  async update(patch: Partial<EducationPageSettings>): Promise<EducationPageSettings> {
+  async get(): Promise<EducationOrgTraining> {
     const supabase = await createSupabaseServerClient();
-    const row: Record<string, unknown> = {};
-    for (const [camel, snake] of SETTINGS_FIELDS) {
-      if ((patch as Record<string, unknown>)[camel] !== undefined) {
-        row[snake] = (patch as Record<string, unknown>)[camel];
-      }
-    }
-    const { error } = await supabase
-      .from("education_page_settings")
-      .update(row)
-      .eq("id", true);
+    const { data, error } = await supabase
+      .from("education_org_training")
+      .select("*")
+      .maybeSingle();
     if (error) throw error;
-    return this.get();
+    return this.map(data);
+  }
+
+  async update(patch: Partial<EducationOrgTraining>): Promise<EducationOrgTraining> {
+    const supabase = await createSupabaseServerClient();
+    const row: Record<string, unknown> = { singleton: true };
+    if (patch.title !== undefined) row.title = patch.title;
+    if (patch.description !== undefined) row.description = patch.description;
+    if (patch.minParticipants !== undefined) row.min_participants = patch.minParticipants;
+    if (patch.imageUrl !== undefined) row.image_url = patch.imageUrl;
+    if (patch.imageAlt !== undefined) row.image_alt = patch.imageAlt;
+    if (patch.imageCaption !== undefined) row.image_caption = patch.imageCaption;
+    if (patch.ctaLabel !== undefined) row.cta_label = patch.ctaLabel;
+
+    // 행이 없을 수도 있어(시딩 전) upsert로 만든다 — singleton 유니크 제약이
+    // 두 번째 행을 막으므로 항상 같은 행이 갱신된다.
+    const { data, error } = await supabase
+      .from("education_org_training")
+      .upsert(row, { onConflict: "singleton" })
+      .select("*")
+      .single();
+    if (error) throw error;
+    return this.map(data);
   }
 }
 
@@ -452,12 +404,14 @@ export const supabaseContentData: ContentData = {
   experts: new SupabaseRepo<Expert>("experts"),
   stats: new SupabaseRepo<Stat>("stats"),
   education: {
-    programs: new SupabaseEducationProgramsRepo(),
-    outputs: new SupabaseRepo<EducationOutput>("education_outputs"),
-    cases: new SupabaseRepo<EducationCase>("education_cases"),
+    regularClasses: new SupabaseRepo<EducationRegularClass>("education_regular_classes"),
+    orgTraining: new SupabaseOrgTrainingRepo(),
+    clubCohorts: new SupabaseRepo<EducationClubCohort>("education_club_cohorts"),
+    clubTiers: new SupabaseRepo<EducationClubTier>("education_club_tiers"),
+    pastPrograms: new SupabaseRepo<EducationPastProgram>("education_past_programs"),
+    pastProgramImages: new SupabasePastProgramImagesRepo(),
+    reviews: new SupabaseRepo<EducationReview>("education_reviews"),
     faqs: new SupabaseRepo<EducationFaq>("education_faqs"),
-    vibedaysRoles: new SupabaseRepo<VibedaysRole>("vibedays_roles"),
-    images: new SupabaseEducationImagesRepo(),
-    settings: new SupabaseEducationSettingsRepo(),
+    stats: new SupabaseRepo<EducationStat>("education_stats"),
   },
 };

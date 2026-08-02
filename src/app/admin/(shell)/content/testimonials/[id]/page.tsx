@@ -15,8 +15,8 @@ export default async function EditTestimonialPage({
   const data = getContentData();
   const [item, programs, cases] = await Promise.all([
     data.testimonials.get(id),
-    data.education.programs.list(),
-    data.education.cases.list(),
+    data.education.regularClasses.list(),
+    data.education.pastPrograms.list(),
   ]);
   if (!item) notFound();
 

@@ -9,35 +9,37 @@
  */
 
 import {
-  mockEducationCases,
+  mockEducationClubCohorts,
+  mockEducationClubTiers,
   mockEducationFaqs,
-  mockEducationImages,
-  mockEducationOutputs,
-  mockEducationPrograms,
-  mockEducationSettings,
+  mockEducationPastProgramImages,
+  mockEducationPastPrograms,
+  mockEducationRegularClasses,
+  mockEducationReviews,
+  mockEducationStats,
   mockExperts,
   mockInsights,
-  mockProgramInstructorLinks,
+  mockOrgTraining,
   mockStats,
   mockTestimonials,
-  mockVibedaysRoles,
   mockWork,
 } from "./mock-content";
 import type {
   ContentBase,
-  EducationCase,
+  EducationClubCohort,
+  EducationClubTier,
   EducationFaq,
-  EducationImage,
-  EducationImageInput,
-  EducationImageOwner,
-  EducationOutput,
-  EducationPageSettings,
-  EducationProgram,
+  EducationOrgTraining,
+  EducationPastProgram,
+  EducationPastProgramImage,
+  EducationPastProgramImageInput,
+  EducationRegularClass,
+  EducationReview,
+  EducationStat,
   Expert,
   Insight,
   Stat,
   Testimonial,
-  VibedaysRole,
   WorkItem,
 } from "./content-types";
 
@@ -51,28 +53,34 @@ export interface ContentRepo<T extends ContentBase> {
   remove(id: string): Promise<void>;
 }
 
-/** Polymorphic image-gallery repo (Education §24) — not ContentBase-shaped. */
-export interface EducationImagesRepo {
-  listByOwner(ownerType: EducationImageOwner, ownerId: string): Promise<EducationImage[]>;
-  create(input: EducationImageInput): Promise<EducationImage>;
-  update(id: string, patch: Partial<EducationImageInput>): Promise<EducationImage>;
+/** 지난 프로그램 갤러리 — 부모에 딸린 목록이라 ContentBase 모양이 아니다. */
+export interface EducationPastProgramImagesRepo {
+  listByProgram(programId: string): Promise<EducationPastProgramImage[]>;
+  create(input: EducationPastProgramImageInput): Promise<EducationPastProgramImage>;
+  update(
+    id: string,
+    patch: Partial<EducationPastProgramImageInput>,
+  ): Promise<EducationPastProgramImage>;
   remove(id: string): Promise<void>;
 }
 
-/** Singleton Education page settings repo (Education §27.1). */
-export interface EducationSettingsRepo {
-  get(): Promise<EducationPageSettings>;
-  update(patch: Partial<EducationPageSettings>): Promise<EducationPageSettings>;
+/** 조직·기업 맞춤 교육 — 상품이 하나뿐이라 목록이 아니라 싱글턴이다. */
+export interface EducationOrgTrainingRepo {
+  get(): Promise<EducationOrgTraining>;
+  update(patch: Partial<EducationOrgTraining>): Promise<EducationOrgTraining>;
 }
 
 export interface EducationContentData {
-  programs: ContentRepo<EducationProgram>;
-  outputs: ContentRepo<EducationOutput>;
-  cases: ContentRepo<EducationCase>;
+  regularClasses: ContentRepo<EducationRegularClass>;
+  orgTraining: EducationOrgTrainingRepo;
+  clubCohorts: ContentRepo<EducationClubCohort>;
+  clubTiers: ContentRepo<EducationClubTier>;
+  pastPrograms: ContentRepo<EducationPastProgram>;
+  pastProgramImages: EducationPastProgramImagesRepo;
+  reviews: ContentRepo<EducationReview>;
   faqs: ContentRepo<EducationFaq>;
-  vibedaysRoles: ContentRepo<VibedaysRole>;
-  images: EducationImagesRepo;
-  settings: EducationSettingsRepo;
+  /** 교육 성과 수치 — 홈 `stats`와 다른 항목이라 테이블도 다르다. */
+  stats: ContentRepo<EducationStat>;
 }
 
 export interface ContentData {
@@ -123,105 +131,42 @@ class MockRepo<T extends ContentBase> implements ContentRepo<T> {
   }
 }
 
-/**
- * Programs need the base CRUD plus the Program ↔ Instructor junction
- * (§28 — relational, not a column) layered on top, so it wraps a MockRepo
- * instead of extending it directly.
- */
-class MockEducationProgramsRepo implements ContentRepo<EducationProgram> {
-  private base = new MockRepo<EducationProgram>(mockEducationPrograms, "edu_program");
-
-  private linksFor(programId: string): string[] {
-    return mockProgramInstructorLinks
-      .filter((l) => l.programId === programId)
-      .map((l) => l.expertId);
+class MockPastProgramImagesRepo implements EducationPastProgramImagesRepo {
+  async listByProgram(programId: string): Promise<EducationPastProgramImage[]> {
+    return mockEducationPastProgramImages
+      .filter((img) => img.programId === programId)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
   }
 
-  private setLinks(programId: string, expertIds: string[]) {
-    for (let i = mockProgramInstructorLinks.length - 1; i >= 0; i--) {
-      if (mockProgramInstructorLinks[i].programId === programId) {
-        mockProgramInstructorLinks.splice(i, 1);
-      }
-    }
-    for (const expertId of expertIds) {
-      mockProgramInstructorLinks.push({ programId, expertId });
-    }
-  }
-
-  async list(): Promise<EducationProgram[]> {
-    const rows = await this.base.list();
-    return rows.map((r) => ({ ...r, instructorIds: this.linksFor(r.id) }));
-  }
-
-  async get(id: string): Promise<EducationProgram | null> {
-    const row = await this.base.get(id);
-    return row ? { ...row, instructorIds: this.linksFor(row.id) } : null;
-  }
-
-  async create(
-    input: Omit<EducationProgram, "id" | "sortOrder">,
-  ): Promise<EducationProgram> {
-    const { instructorIds, ...rest } = input;
-    const row = await this.base.create({ ...rest, instructorIds: [] });
-    this.setLinks(row.id, instructorIds ?? []);
-    return { ...row, instructorIds: instructorIds ?? [] };
-  }
-
-  async update(
-    id: string,
-    patch: Partial<Omit<EducationProgram, "id">>,
-  ): Promise<EducationProgram> {
-    const { instructorIds, ...rest } = patch;
-    const row = await this.base.update(id, rest);
-    if (instructorIds !== undefined) this.setLinks(id, instructorIds);
-    return { ...row, instructorIds: this.linksFor(id) };
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.base.remove(id);
-    this.setLinks(id, []);
-  }
-}
-
-class MockEducationImagesRepo implements EducationImagesRepo {
-  async listByOwner(
-    ownerType: EducationImageOwner,
-    ownerId: string,
-  ): Promise<EducationImage[]> {
-    return mockEducationImages
-      .filter((img) => img.ownerType === ownerType && img.ownerId === ownerId)
-      .sort((a, b) => a.displayOrder - b.displayOrder);
-  }
-
-  async create(input: EducationImageInput): Promise<EducationImage> {
-    const row: EducationImage = { ...input, id: `edu_image_${Date.now()}` };
-    mockEducationImages.push(row);
+  async create(input: EducationPastProgramImageInput): Promise<EducationPastProgramImage> {
+    const row: EducationPastProgramImage = { ...input, id: `edu_past_image_${Date.now()}` };
+    mockEducationPastProgramImages.push(row);
     return row;
   }
 
   async update(
     id: string,
-    patch: Partial<EducationImageInput>,
-  ): Promise<EducationImage> {
-    const row = mockEducationImages.find((img) => img.id === id);
-    if (!row) throw new Error(`education image not found: ${id}`);
+    patch: Partial<EducationPastProgramImageInput>,
+  ): Promise<EducationPastProgramImage> {
+    const row = mockEducationPastProgramImages.find((img) => img.id === id);
+    if (!row) throw new Error(`past program image not found: ${id}`);
     Object.assign(row, patch);
     return row;
   }
 
   async remove(id: string): Promise<void> {
-    const idx = mockEducationImages.findIndex((img) => img.id === id);
-    if (idx >= 0) mockEducationImages.splice(idx, 1);
+    const idx = mockEducationPastProgramImages.findIndex((img) => img.id === id);
+    if (idx >= 0) mockEducationPastProgramImages.splice(idx, 1);
   }
 }
 
-class MockEducationSettingsRepo implements EducationSettingsRepo {
-  async get(): Promise<EducationPageSettings> {
-    return { ...mockEducationSettings, sections: { ...mockEducationSettings.sections } };
+class MockOrgTrainingRepo implements EducationOrgTrainingRepo {
+  async get(): Promise<EducationOrgTraining> {
+    return { ...mockOrgTraining };
   }
 
-  async update(patch: Partial<EducationPageSettings>): Promise<EducationPageSettings> {
-    Object.assign(mockEducationSettings, patch);
+  async update(patch: Partial<EducationOrgTraining>): Promise<EducationOrgTraining> {
+    Object.assign(mockOrgTraining, patch);
     return this.get();
   }
 }
@@ -233,13 +178,15 @@ const data: ContentData = {
   experts: new MockRepo(mockExperts, "expert"),
   stats: new MockRepo(mockStats, "stat"),
   education: {
-    programs: new MockEducationProgramsRepo(),
-    outputs: new MockRepo(mockEducationOutputs, "edu_output"),
-    cases: new MockRepo(mockEducationCases, "edu_case"),
+    regularClasses: new MockRepo(mockEducationRegularClasses, "edu_class"),
+    orgTraining: new MockOrgTrainingRepo(),
+    clubCohorts: new MockRepo(mockEducationClubCohorts, "edu_cohort"),
+    clubTiers: new MockRepo(mockEducationClubTiers, "edu_tier"),
+    pastPrograms: new MockRepo(mockEducationPastPrograms, "edu_past"),
+    pastProgramImages: new MockPastProgramImagesRepo(),
+    reviews: new MockRepo(mockEducationReviews, "edu_review"),
     faqs: new MockRepo(mockEducationFaqs, "edu_faq"),
-    vibedaysRoles: new MockRepo(mockVibedaysRoles, "vibedays_role"),
-    images: new MockEducationImagesRepo(),
-    settings: new MockEducationSettingsRepo(),
+    stats: new MockRepo(mockEducationStats, "edu_stat"),
   },
 };
 

@@ -3,7 +3,11 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 
-import type { EducationCase, EducationProgram, Testimonial } from "@/lib/admin/content-types";
+import type {
+  EducationPastProgram,
+  EducationRegularClass,
+  Testimonial,
+} from "@/lib/admin/content-types";
 import {
   TextField,
   TextAreaField,
@@ -24,8 +28,10 @@ export function TestimonialForm({
 }: {
   initial?: Testimonial;
   /** Education §28 — 관계형 연결 옵션. 빈 배열이면 선택지가 없을 뿐 폼은 정상 동작. */
-  programs?: EducationProgram[];
-  cases?: EducationCase[];
+  /** 관련 정규 클래스 — DB FK가 education_regular_classes를 가리킨다. */
+  programs?: EducationRegularClass[];
+  /** 관련 지난 프로그램 — DB FK가 education_past_programs를 가리킨다. */
+  cases?: EducationPastProgram[];
   onSave: (input: TestimonialInput) => Promise<void>;
 }) {
   const [quote, setQuote] = useState(initial?.quote ?? "");
@@ -104,7 +110,7 @@ export function TestimonialForm({
             </select>
           </label>
           <label className="flex flex-col gap-2 text-sm font-semibold text-ink/70">
-            관련 교육 사례
+            관련 지난 프로그램
             <select
               value={caseId}
               onChange={(e) => setCaseId(e.target.value)}
