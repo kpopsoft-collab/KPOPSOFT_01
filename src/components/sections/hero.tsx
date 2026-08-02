@@ -16,13 +16,23 @@ import { consultCta, sectionId, site } from "@/lib/site";
  * 분리됐어도 회사를 구성하는 세 꼭지라는 판단(브랜드 락업의 원·스파크·물결도
  * 셋을 함께 표현한다).
  */
+/*
+ * 하단 여백을 두지 않는다 — 도형 구성이 아래 네이비 성과 수치 박스에
+ * 맞닿아야 두 섹션이 한 덩어리로 읽힌다. 아치는 컨테이너 아래로 조금 더
+ * 내려가 경계에서 평평하게 잘린다(`overflow-hidden`).
+ *
+ * 대신 데스크톱에서는 카피 열에 같은 크기의 여백을 따로 준다. 글까지
+ * 네이비에 붙으면 읽는 자리가 답답해지기 때문이다. 그래서 두 열의 정렬도
+ * 가운데가 아니라 **바닥 기준**으로 바꿨다 — 가운데 정렬로 두면 카피
+ * 여백만큼 도형 열이 위로 밀려 경계에서 떨어진다.
+ */
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28">
+    <section className="relative overflow-hidden pt-16 md:pt-24">
       <div className="container-editorial">
-        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-12 lg:gap-8">
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-12 lg:items-end lg:gap-8">
           {/* Copy block — occupies ~58% of the grid, left-aligned. */}
-          <div className="max-w-2xl space-y-8 lg:col-span-7">
+          <div className="max-w-2xl space-y-8 lg:col-span-7 lg:pb-28">
             <Eyebrow>{site.tagline}</Eyebrow>
 
             <h1 className="text-display text-ink">
@@ -60,8 +70,11 @@ export function Hero() {
             className="relative mx-auto aspect-square w-full max-w-sm sm:max-w-md lg:col-span-5 lg:mx-0 lg:max-w-none"
             aria-hidden
           >
-            {/* 아치 — 구성의 무게중심. 좌하단에 앉혀 프레임 밖으로 잘리게 둔다. */}
-            <Arch className="absolute -bottom-[5%] -left-[7%] h-auto w-[54%] text-brand-blue" />
+            {/* 아치 — 구성의 무게중심. 좌하단에 앉혀 프레임 밖으로 잘리게 둔다.
+                섹션 바닥까지 내려가 네이비 박스 경계에서 잘린다. 색은 그대로
+                Blue다(사용자 지시) — 네이비 위로 넘기지 않고 맞닿기만 하므로
+                대비 문제가 생기지 않는다. */}
+            <Arch className="absolute -bottom-[9%] -left-[7%] h-auto w-[54%] text-brand-blue" />
             {/* 별 — 아치의 어깨에 얹어 둘을 한 덩어리로 읽히게 한다. */}
             <Star className="absolute top-[33%] left-[17%] h-auto w-[18%] rotate-12 text-brand-red" />
             {/* 원 + 링 — 서로 겹쳐 우상단의 한 덩어리를 만든다. */}
