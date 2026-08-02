@@ -50,9 +50,57 @@ const REVEAL_OFFSET = 90;
 export function EduSubnav() {
   const [active, setActive] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
+  /** 상단 메뉴 축에 맞추기 위한 좌우 보정값(px). */
+  const [offsetX, setOffsetX] = useState(0);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const itemRefs = useRef(new Map<string, HTMLAnchorElement>());
+
+  /**
+   * 상단 메뉴와 세로 축을 맞춘다.
+   *
+   * 전역 헤더는 `로고 — 메뉴 — CTA` 양끝 정렬이라, 로고(넓음)와 CTA(좁음)의
+   * 폭 차이만큼 **메뉴가 페이지 중앙보다 오른쪽**에 있다. 서브바를 그냥
+   * 가운데 두면 두 줄의 축이 어긋나 서브바가 왼쪽으로 밀린 것처럼 보인다.
+   *
+   * 상수로 박지 않고 실측하는 이유 — 헤더 CTA 문구가 페이지마다 다르고
+   * (`headerCta`), 로고·메뉴 폭도 폰트 로드 전후로 달라진다. 그때마다
+   * 어긋나지 않으려면 실제 위치를 재는 수밖에 없다.
+   */
+  useEffect(() => {
+    const align = () => {
+      const list = listRef.current;
+      if (!list) return;
+
+      const headerNav = document.querySelector<HTMLElement>(
+        'nav[aria-label="주요 메뉴"]',
+      );
+      const headerRect = headerNav?.getBoundingClientRect();
+
+      // 헤더 메뉴가 숨는 폭(lg 미만)에서는 맞출 대상이 없다.
+      if (!headerRect || headerRect.width === 0) {
+        setOffsetX(0);
+        return;
+      }
+
+      setOffsetX((prev) => {
+        const rect = list.getBoundingClientRect();
+        // 이미 적용된 보정을 빼서 "보정 없는 원래 중심"을 구한다.
+        const naturalCenter = rect.left + rect.width / 2 - prev;
+        const target = headerRect.left + headerRect.width / 2;
+        return Math.round(target - naturalCenter);
+      });
+    };
+
+    align();
+    window.addEventListener("resize", align);
+
+    // 폰트가 늦게 로드되면 로고·메뉴 폭이 바뀐다.
+    document.fonts?.ready.then(align).catch(() => {});
+
+    return () => window.removeEventListener("resize", align);
+  }, []);
 
   // 프로그램 섹션이 헤더 아래로 올라오면 나타나고, 위로 되돌아가면 사라진다.
   // 스크롤 위치 하나만 보면 되는 판정이라 스크롤 스파이와 같은 핸들러에서
@@ -139,18 +187,24 @@ export function EduSubnav() {
     >
       <div className="container-editorial">
         {/*
-            상위 메뉴가 가운데 정렬이라 하위도 가운데에 둔다 — 둘의 축이
-            어긋나면 서브바가 헤더에 딸린 것이 아니라 별개의 바처럼 보인다.
+          `w-max mx-auto`로 가운데 모으고, 위 effect가 상단 메뉴 축까지
+          미세 보정한다. 페이지 정중앙에만 두면 헤더 메뉴(로고·CTA 폭 차이로
+          오른쪽에 치우쳐 있다)와 어긋나 서브바가 왼쪽으로 밀려 보인다.
 
-            `w-max mx-auto`인 이유: 항목이 컨테이너보다 좁으면 가운데로 모이고,
-            넘치면(모바일) 왼쪽부터 시작해 가로 스크롤된다. `justify-center`만
-            쓰면 넘칠 때 앞쪽 항목이 스크롤로 닿지 않는 영역에 잘린다.
-          */}
+          `justify-center`가 아닌 이유: 항목이 컨테이너보다 넓어지면(모바일)
+          앞쪽 항목이 스크롤로 닿지 않는 영역에 잘린다.
+        */}
         <div
           ref={scrollerRef}
           className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          <ul className="mx-auto flex w-max items-center gap-1">
+          <ul
+            ref={listRef}
+            style={
+              offsetX ? { transform: `translateX(${offsetX}px)` } : undefined
+            }
+            className="mx-auto flex w-max items-center gap-1"
+          >
             {ITEMS.map((item) => {
               const isActive = active === item.id;
 
