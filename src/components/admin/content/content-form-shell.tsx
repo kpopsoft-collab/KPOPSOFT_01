@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 /**
  * 어드민 콘텐츠 추가/수정 화면의 껍데기 — 목록으로 돌아가는 링크 + 제목.
  *
@@ -22,16 +24,22 @@ export function ContentFormShell({
   backHref,
   backLabel,
   title,
+  description,
+  className,
   children,
 }: {
   backHref: string;
   backLabel: string;
   /** 행 값을 그대로 쓰는 화면이 있다 — pillars/[id], inquiry-options/[id]. */
   title: string;
+  /** 제목 아래 보조 설명. inquiry-options/new에만 있다. */
+  description?: string;
+  /** 폭·간격이 다른 화면만 덮어쓴다 — 셸의 레이아웃 기본값을 전부 덮을 수 있는 넓은 escape hatch라 꼭 필요한 화면에만 쓴다. */
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+    <div className={cn("mx-auto flex max-w-2xl flex-col gap-6", className)}>
       <div>
         <Link
           href={backHref}
@@ -43,6 +51,9 @@ export function ContentFormShell({
         <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-ink">
           {title}
         </h1>
+        {description ? (
+          <p className="mt-2 text-sm text-ink/55">{description}</p>
+        ) : null}
       </div>
       {children}
     </div>
