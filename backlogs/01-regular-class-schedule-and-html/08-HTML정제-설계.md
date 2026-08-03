@@ -89,7 +89,24 @@ export const COURSE_HTML_OPTIONS: sanitizeHtml.IOptions = {
 > `contain: paint`가 실제로 적용됐는지는 `position:absolute; inset:-100vmax`
 > 페이로드를 올린 뒤 **브라우저에서 눈으로** 확인한다(playwright 스크린샷).
 
-## 5. 남는 위험 (수용)
+## 5. 동작 실측 (2026-08-03, 설치 직후)
+
+§2의 전제를 `parse5@8.0.1` / `sanitize-html@2.17.6`으로 **직접 실행해 확인했다.**
+
+| 입력 | 결과 |
+|------|------|
+| 조각 `<h2>제목</h2><p>본문</p>` | body가 자동 생성되고 그대로 직렬화된다 |
+| 통짜 문서 (`<head><title>새는제목</title><style>…`) | **`title` 텍스트가 body에 안 섞인다.** head의 `<style>`은 정상 수집 |
+| body 안 `<style>` | 수집되고 트리에서 제거된다 |
+| `sanitizeHtml("<title>x</title><p>본문</p>")` | `nonTextTags`에 `title`을 넣으면 내용까지 버려진다 |
+| `<p>a</p><script>alert(1)</script>` | `<p>a</p>` — 스크립트는 태그·내용 모두 사라진다 |
+| `<p onclick="x()">클릭</p>` | `<p>클릭</p>` — **본문은 살아남는다**(과잉 정제 아님) |
+| `<div class="course-box">` | `class` 유지 (D5) |
+| `<a href="javascript:alert(1)">` | `href`가 통째로 사라진다 |
+
+**§2의 `<body>`만 직렬화하는 접근은 실제로 동작한다.** 정규식 추출이 필요 없다.
+
+## 6. 남는 위험 (수용)
 
 - **업로드 CSS는 본문 영역 안에서는 자유롭다.** 껍데기의 `contain: paint`가
   밖으로 나가는 것만 막는다. 관리자가 올리는 파일이라는 전제에서 수용한다.
