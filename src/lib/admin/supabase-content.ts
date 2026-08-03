@@ -9,7 +9,6 @@ import type {
   EducationRegularClassRepo,
 } from "./content-data";
 import type {
-  ContentBase,
   EducationClubCohort,
   EducationClubTier,
   EducationFaq,
@@ -24,6 +23,7 @@ import type {
   Expert,
   HomePillar,
   HomePillarExample,
+  OrderedBase,
   Stat,
   WorkItem,
 } from "./content-types";
@@ -40,6 +40,13 @@ const COMMON: FieldMap = [
   ["sortOrder", "sort_order"],
   ["isPublished", "is_published"],
 ];
+
+/**
+ * `education_club_cohorts` 전용 — 그 테이블에는 `is_published` 컬럼이 없다
+ * (의도적, 백로그 04 / RLS 주석 `..._p3_education_ver3.sql:299` 참고). 숨기는
+ * 축은 `status`(예: "ended") 하나뿐이라 여기서 `COMMON`을 안 쓴다.
+ */
+const ORDER_ONLY: FieldMap = [["sortOrder", "sort_order"]];
 
 const FIELDS: Record<string, FieldMap> = {
   work_items: [
@@ -122,7 +129,7 @@ const FIELDS: Record<string, FieldMap> = {
     ["detailHtml", "detail_html"],
   ],
   education_club_cohorts: [
-    ...COMMON,
+    ...ORDER_ONLY,
     ["label", "label"],
     ["status", "status"],
     ["recruitPeriod", "recruit_period"],
@@ -199,7 +206,7 @@ const DATE_FIELDS: Record<string, ReadonlySet<string>> = {
 
 /** DB row → domain object (id + mapped fields; null nullable columns → undefined,
  * so they line up with the optional (`?`) fields on the domain types). */
-function fromRow<T extends ContentBase>(table: string, row: Record<string, unknown>): T {
+function fromRow<T extends OrderedBase>(table: string, row: Record<string, unknown>): T {
   const out: Record<string, unknown> = { id: row.id };
   const dateFields = DATE_FIELDS[table];
   for (const [camel, snake] of FIELDS[table]) {
@@ -231,7 +238,7 @@ function toRow(table: string, obj: Record<string, unknown>): Record<string, unkn
   return out;
 }
 
-class SupabaseRepo<T extends ContentBase> implements ContentRepo<T> {
+class SupabaseRepo<T extends OrderedBase> implements ContentRepo<T> {
   constructor(
     protected table: string,
     /**

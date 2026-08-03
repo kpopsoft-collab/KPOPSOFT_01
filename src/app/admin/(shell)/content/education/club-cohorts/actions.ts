@@ -33,8 +33,5 @@ export async function deleteCohort(id: string) {
   revalidatePath(PUBLIC);
 }
 
-export async function setCohortPublished(id: string, next: boolean) {
-  await getContentData().education.clubCohorts.update(id, { isPublished: next });
-  revalidatePath(LIST);
-  revalidatePath(PUBLIC);
-}
+// setCohortPublished 없음 — 기수 테이블에 is_published 컬럼이 없다(백로그 04).
+// 숨기는 축은 status(예: "ended") 하나다.

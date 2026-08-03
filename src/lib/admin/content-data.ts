@@ -25,7 +25,6 @@ import {
   mockWork,
 } from "./mock-content";
 import type {
-  ContentBase,
   EducationClubCohort,
   EducationClubTier,
   EducationFaq,
@@ -40,11 +39,12 @@ import type {
   Expert,
   HomePillar,
   HomePillarExample,
+  OrderedBase,
   Stat,
   WorkItem,
 } from "./content-types";
 
-export interface ContentRepo<T extends ContentBase> {
+export interface ContentRepo<T extends OrderedBase> {
   /** All rows, ascending by sortOrder. */
   list(): Promise<T[]>;
   get(id: string): Promise<T | null>;
@@ -110,7 +110,7 @@ export interface ContentData {
 }
 
 /** Generic mock repo over a module-level array. */
-class MockRepo<T extends ContentBase> implements ContentRepo<T> {
+class MockRepo<T extends OrderedBase> implements ContentRepo<T> {
   constructor(
     private rows: T[],
     private prefix: string,

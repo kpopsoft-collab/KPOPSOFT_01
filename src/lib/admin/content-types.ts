@@ -3,18 +3,29 @@
  *
  * Shapes mirror the real content in src/lib/site.ts so the mock store seeds
  * losslessly and the future Supabase adapter maps 1:1. Every collection shares
- * `id` / `sortOrder` / `isPublished`. Images are plain string URLs: in mock mode
- * that's a data: URL from the upload widget; on wiring day it becomes a Supabase
- * Storage path — the field name and screens don't change.
+ * `id` / `sortOrder`(`OrderedBase`), and most also share `isPublished`
+ * (`ContentBase`) — the exception is `EducationClubCohort`, whose table has no
+ * `is_published` column (백로그 04, `status`가 숨김 축). Images are plain
+ * string URLs: in mock mode that's a data: URL from the upload widget; on
+ * wiring day it becomes a Supabase Storage path — the field name and screens
+ * don't change.
  */
 
 import type { Accent } from "@/lib/site";
 
-/** Fields every CMS row carries. */
-export type ContentBase = {
+/**
+ * 정렬만 갖는 콘텐츠 베이스. 공개/비공개 축이 없는 타입(클럽 기수)이 쓴다 —
+ * DB에 `is_published` 컬럼이 없다(백로그 04). `ContentRepo`/`SupabaseRepo` 등
+ * 제네릭이 실제로 요구하는 값은 `id`·`sortOrder`뿐이라 이 정도로 충분하다.
+ */
+export type OrderedBase = {
   id: string;
   /** Ascending display order on the public site. */
   sortOrder: number;
+};
+
+/** Fields every CMS row carries — 공개/비공개 축이 있는 콘텐츠. */
+export type ContentBase = OrderedBase & {
   /** Hidden from the public site when false. */
   isPublished: boolean;
 };
@@ -257,7 +268,12 @@ export type EducationOrgTraining = {
   ctaLabel: string;
 };
 
-export type EducationClubCohort = ContentBase & {
+/**
+ * 클럽 기수 — ContentBase가 아니라 OrderedBase다. `is_published` 컬럼이 DB에
+ * 없다(의도적, 백로그 04 참고). 숨기는 축은 `status`(예: "ended") 하나다 —
+ * 여기에 `isPublished`를 다시 추가하지 말 것.
+ */
+export type EducationClubCohort = OrderedBase & {
   /** "1기" */
   label: string;
   status: ClubCohortStatus;

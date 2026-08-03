@@ -37,7 +37,6 @@ export function CohortForm({
   const [showCapacity, setShowCapacity] = useState(initial?.showCapacity ?? false);
   const [showSchedule, setShowSchedule] = useState(initial?.showSchedule ?? true);
   const [showCta, setShowCta] = useState(initial?.showCta ?? true);
-  const [isPublished, setIsPublished] = useState(initial?.isPublished ?? true);
   const [pending, start] = useTransition();
 
   const canSave = Boolean(label.trim()) && !pending;
@@ -62,7 +61,6 @@ export function CohortForm({
             showCapacity,
             showSchedule,
             showCta,
-            isPublished,
           }),
         );
       }}
@@ -131,7 +129,6 @@ export function CohortForm({
         checked={ctaDisabled}
         onChange={setCtaDisabled}
       />
-      <CheckboxField label="공개 노출" checked={isPublished} onChange={setIsPublished} />
       <FormActions
         pending={pending}
         canSave={canSave}
