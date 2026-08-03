@@ -8,7 +8,7 @@ import { sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * WHY KPOPSOFT — 차별점 카드 + 인터랙티브 역량 레이더 (docs/신규수정사항).
+ * WHY KPOPSOFT — 차별점 카드 + 인터랙티브 역량 레이더 (docs/02-home/01-why-kpopsoft-수정요청.md).
  *
  * 섹션의 자리는 **핵심 비즈니스와 포트폴리오 사이**다(§1). "무엇을 제공하는가"
  * 다음에 "왜 우리인가"를 말하고, 바로 이어지는 포트폴리오가 그것을 증명하는

@@ -8,7 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* ---- KPOPSOFT brand palette (docs/디자인.md §2) ---- */
+  /* ---- KPOPSOFT brand palette (docs/04-design-system/02-컬러시스템.md) ---- */
   --color-ivory: #f6f1ea;
   --color-ink: #292522;
   --color-brand-blue: #315bdb;
@@ -20,7 +20,7 @@
   --color-brand-navy: #243562;
   /* Darkened companions of the light accents, for legible colored text on a
      pale tint of the same hue (WCAG AA). The base yellow/mint are too light to
-     use as text. See docs/디자인.md §2. */
+     use as text. See docs/04-design-system/02-컬러시스템.md. */
   --color-brand-yellow-ink: #8a5a12;
   --color-brand-mint-ink: #146a5b;
 
@@ -177,7 +177,7 @@
   }
 }
 
-/* ---- Editorial typography scale (docs/디자인.md §3) ---- */
+/* ---- Editorial typography scale (docs/04-design-system/03-타이포그래피.md) ---- */
 @utility text-display {
   font-weight: 800;
   font-size: clamp(2.625rem, 6vw + 1rem, 6.25rem); /* 42 → 100px */
@@ -217,7 +217,7 @@
   text-transform: uppercase;
 }
 
-/* ---- Layout rhythm (docs/디자인.md §4) ---- */
+/* ---- Layout rhythm (docs/04-design-system/04-그리드.md) ---- */
 @utility container-editorial {
   width: 100%;
   max-width: 1440px;
@@ -238,7 +238,7 @@
   padding-block: clamp(4.5rem, 8vw, 12.5rem); /* 72 → 200px */
 }
 
-/* ---- Motion (docs/디자인.md §10) ----
+/* ---- Motion (docs/04-design-system/11-모션시스템.md) ----
    Restrained scroll-reveal: each top-level section rises + fades in as it
    enters the viewport. CSS-only (scroll-driven animations) — no JS. Guarded by
    prefers-reduced-motion and @supports, so it silently no-ops (content simply
