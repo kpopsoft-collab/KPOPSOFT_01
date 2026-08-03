@@ -315,6 +315,19 @@ export type RegularClass = {
   /** "입문·중급" */
   level: string;
   /**
+   * 원데이(하루)인지 다회차인지. 어드민 폼의 라디오 선택을 그대로 옮긴다
+   * (backlogs/01-regular-class-schedule-and-html §2.1).
+   */
+  scheduleType: "oneday" | "multi";
+  /**
+   * 강의 일정 ISO 날짜(`YYYY-MM-DD`). **없으면 `undefined`** — 표기 유무를
+   * 화면이 이 값의 존재로 판단하므로 빈 문자열을 넣지 않는다. 상시 모집
+   * 과정은 지금도 날짜가 없는 게 정상이다(요구사항 §2.3).
+   */
+  startDate?: string;
+  /** `scheduleType`이 `"oneday"`면 항상 비어 있다. */
+  endDate?: string;
+  /**
    * 이 과정이 답이 되는 학습 목적. 목적 카드를 고르면 해당 트랙의 과정이
    * **앞으로 정렬**된다 — 나머지를 숨기지는 않는다. 4과정뿐이라 한 화면에 다
    * 들어오고, 감추면 "고른 것 말고는 없다"는 인상만 남기 때문이다.
@@ -346,6 +359,7 @@ export const regularClasses: RegularClass[] = [
       "ChatGPT, Claude, Cursor 등 현업에서 즉시 쓸 수 있는 AI 툴을 실무 프로젝트와 함께 배웁니다.",
     duration: "4주",
     level: "입문·중급",
+    scheduleType: "multi", // D4 — 기존 4과정 초기값. 날짜는 상시 모집이라 비운다.
     tracks: ["beginner", "practical"],
     accent: "blue",
     image: {
@@ -375,6 +389,7 @@ export const regularClasses: RegularClass[] = [
       "코드를 몰라도 괜찮습니다. AI를 페어 프로그래머로 삼아 아이디어를 실제 소프트웨어로 만드세요.",
     duration: "6주",
     level: "비개발자 환영",
+    scheduleType: "multi",
     tracks: ["beginner"],
     accent: "red",
     image: {
@@ -405,6 +420,7 @@ export const regularClasses: RegularClass[] = [
       "기획부터 배포까지. 웹사이트와 모바일 앱을 직접 설계하고 완성하는 실전 코스입니다.",
     duration: "8주",
     level: "중급",
+    scheduleType: "multi",
     tracks: ["practical"],
     accent: "yellow",
     image: {
@@ -435,6 +451,7 @@ export const regularClasses: RegularClass[] = [
     description: "보고서 자동화, 데이터 수집, 알림 시스템을 직접 구축합니다.",
     duration: "3주",
     level: "입문·중급",
+    scheduleType: "multi",
     tracks: ["practical"],
     accent: "mint",
     image: {
@@ -978,6 +995,90 @@ export const inquiryAiLevelOptions = [
   "자동화 또는 사내 도구를 운영 중",
   "잘 모르겠음",
 ] as const;
+
+/* ------------------------------------------------------------------ *
+ * 강의 일정 표기 포맷 (backlogs/01-regular-class-schedule-and-html §2.4)
+ *
+ * 목록·상세·어드민 미리보기가 이 한 함수만 쓰게 해서 표기가 갈라지지
+ * 않게 한다. 여기 두는 이유는 `RegularClass`와 같은 파일이라 타입을
+ * 다시 import하지 않아도 되기 때문이다.
+ * ------------------------------------------------------------------ */
+
+type IsoDateParts = { year: number; month: number; day: number };
+
+/**
+ * `"YYYY-MM-DD"`를 손으로 자른다. **`new Date()`를 쓰지 않는다** — 그 문자열을
+ * `new Date("2026-09-12")`에 넘기면 UTC 자정으로 해석돼 음수 UTC 오프셋
+ * 지역(미주 등)의 브라우저에서는 로컬 시각이 전날로 밀려 보인다.
+ *
+ * 형식이 안 맞거나(자릿수, 구분자) 달력에 없는 날짜(13월, 2월 30일, 평년의
+ * 2월 29일)면 `null` — 잘못 저장된 값을 화면에 억지로 표기하지 않는다.
+ */
+function parseIsoDate(value: string | undefined): IsoDateParts | null {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12) return null;
+
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  const daysInMonth = [
+    31,
+    isLeapYear ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
+  ];
+  if (day < 1 || day > daysInMonth[month - 1]) return null;
+
+  return { year, month, day };
+}
+
+/** "2026년 9월 12일" 형태. 연도를 생략할 때는 `withYear=false`. */
+function formatKoreanDate(parts: IsoDateParts, withYear: boolean): string {
+  return withYear
+    ? `${parts.year}년 ${parts.month}월 ${parts.day}일`
+    : `${parts.month}월 ${parts.day}일`;
+}
+
+/**
+ * 일정 표기 한 줄. 날짜가 없거나 둘 다 잘못된 형식이면 `null` —
+ * 화면은 이때 표기 자체를 뺀다(상시 모집 과정이 정상적으로 이 경로를 탄다).
+ */
+export function formatClassSchedule(
+  c: Pick<RegularClass, "scheduleType" | "startDate" | "endDate">,
+): string | null {
+  const start = parseIsoDate(c.startDate);
+
+  if (c.scheduleType === "oneday") {
+    // DB CHECK가 원데이+종료일 조합을 막지만, 방어적으로 endDate는 여기서
+    // 아예 참조하지 않는다 — 있어도 무시한다.
+    if (!start) return null;
+    return `${formatKoreanDate(start, true)} (하루 과정)`;
+  }
+
+  const end = parseIsoDate(c.endDate);
+
+  if (start && end) {
+    // 연도가 같으면 종료일의 연도를 생략해 짧게 쓴다. 연도가 다르면
+    // 종료일에도 연도를 붙인다 — 안 그러면 몇 해로 넘어가는지 알 수 없다.
+    const sameYear = start.year === end.year;
+    return `${formatKoreanDate(start, true)} – ${formatKoreanDate(end, !sameYear)}`;
+  }
+  if (start) return `${formatKoreanDate(start, true)} 시작`;
+  if (end) return `${formatKoreanDate(end, true)} 종료`;
+  return null;
+}
 
 /* ================================================================== *
  * 레거시 — ver3에서 페이지 노출이 빠진 섹션들의 데이터

@@ -303,30 +303,83 @@ export async function getPublicOrgTraining(): Promise<OrgTraining> {
   }
 }
 
-/** 02. 정규 클래스 4과정. */
+/**
+ * 02. 정규 클래스 4과정.
+ *
+ * 공통 헬퍼 `read()`를 쓰지 않는다 — `read()`는 "빈 결과 = 정적 폴백"으로
+ * 동작하는데(다른 리더들이 이 동작에 기대고 있어 거기는 그대로 둔다),
+ * 정규 클래스에 그대로 적용하면 관리자가 전 과정을 비공개로 돌린 **정상
+ * 상태**(빈 배열)에서 정적 4행이 되살아난다(백로그 01 §3 6단계 / 06 §P1-5).
+ * 여기서는 **조회 자체가 실패했을 때만** 폴백하고, 정상적인 0행은 빈 배열을
+ * 그대로 돌려준다.
+ *
+ * `detailHtml`은 여기서 매핑하지 않는다 — 본문은 백로그 02의 slug 단건
+ * 조회에서 읽는다. 목록 응답에 수백 KB짜리 HTML을 함께 실어 보내지 않기
+ * 위해서다.
+ */
+const REGULAR_CLASS_PUBLIC_COLUMNS = [
+  "slug",
+  "index_label",
+  "name",
+  "subtitle",
+  "description",
+  "duration",
+  "level",
+  "schedule_type",
+  "start_date",
+  "end_date",
+  "tracks",
+  "accent",
+  "image_url",
+  "image_alt",
+  "image_caption",
+  "curriculum",
+  "detail_href",
+  "seo_title",
+  "seo_description",
+  "sort_order",
+].join(",");
+
 export async function getPublicRegularClasses(): Promise<RegularClass[]> {
-  return read(
-    "education_regular_classes",
-    (rows) =>
-      rows.map((r) => ({
-        slug: str(r.slug),
-        index: str(r.index_label),
-        name: str(r.name),
-        subtitle: str(r.subtitle),
-        description: str(r.description),
-        duration: str(r.duration),
-        level: str(r.level),
-        tracks: strArray(r.tracks) as RegularClass["tracks"],
-        accent: str(r.accent) as Accent,
-        ...(toImage(r.image_url, r.image_alt, r.image_caption)
-          ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
-          : {}),
-        curriculum: strArray(r.curriculum),
-        detailHref: str(r.detail_href),
-        seo: { title: str(r.seo_title), description: str(r.seo_description) },
-      })),
-    regularClasses,
-  );
+  try {
+    const db = createSupabasePublicClient();
+    const { data, error } = await db
+      .from("education_regular_classes")
+      // 컬럼을 명시하는 이유 — `*`로 읽으면 상세 본문(detail_html)까지 행마다
+      // 딸려 온다. 이 목록은 /education이 매 요청 렌더할 때 읽히는데 본문은
+      // 거기서 쓰지도 않는다. 본문은 백로그 02의 slug 단건 조회에서만 읽는다.
+      .select(REGULAR_CLASS_PUBLIC_COLUMNS)
+      .order("sort_order", { ascending: true });
+    if (error || !data) return regularClasses;
+    // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입을 추론하지
+    // 못하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
+    // unknown을 한 번 거쳐 좁힌다(supabase-content.ts의 list()와 같은 사정).
+    return (data as unknown as Row[]).map((r) => ({
+      slug: str(r.slug),
+      index: str(r.index_label),
+      name: str(r.name),
+      subtitle: str(r.subtitle),
+      description: str(r.description),
+      duration: str(r.duration),
+      level: str(r.level),
+      // 컬럼이 비어 있으면(마이그레이션 직후 등) "multi"를 기본값으로 삼는다
+      // — 기존 4과정도 D4에 따라 multi로 시작한다.
+      scheduleType: (str(r.schedule_type) ||
+        "multi") as RegularClass["scheduleType"],
+      ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
+      ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
+      tracks: strArray(r.tracks) as RegularClass["tracks"],
+      accent: str(r.accent) as Accent,
+      ...(toImage(r.image_url, r.image_alt, r.image_caption)
+        ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
+        : {}),
+      curriculum: strArray(r.curriculum),
+      detailHref: str(r.detail_href),
+      seo: { title: str(r.seo_title), description: str(r.seo_description) },
+    }));
+  } catch {
+    return regularClasses;
+  }
 }
 
 /** 03. 커뮤니티 클럽 — 기수. */
