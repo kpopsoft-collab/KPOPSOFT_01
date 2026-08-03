@@ -24,6 +24,7 @@ import {
   type OrgTraining,
   type PastProgram,
   type RegularClass,
+  type RegularClassDetail,
   clubCohorts,
   clubTiers,
   eduFaqs,
@@ -380,6 +381,75 @@ export async function getPublicRegularClasses(): Promise<RegularClass[]> {
   } catch {
     return regularClasses;
   }
+}
+
+/**
+ * 정규 클래스 상세 — slug 단건 조회 (백로그 02 release gate G1).
+ *
+ * 목록(`getPublicRegularClasses`)은 `detail_html`을 일부러 뺀다 — 행마다
+ * 수백 KB일 수 있는데 목록에서는 쓰지 않기 때문이다. 상세 페이지는 slug 하나만
+ * 알면 되므로 목록을 통째로 읽어 find 하지 않고 여기서 단건으로 읽는다.
+ *
+ * 없거나 비공개면 null — 호출부가 notFound()를 부른다.
+ */
+export async function getPublicRegularClassBySlug(
+  slug: string,
+): Promise<RegularClassDetail | null> {
+  try {
+    const db = createSupabasePublicClient();
+    const { data, error } = await db
+      .from("education_regular_classes")
+      // 목록과 같은 컬럼 목록에 detail_html만 더한다. 상수를 재사용해 조합해야
+      // 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
+      .select(`${REGULAR_CLASS_PUBLIC_COLUMNS},detail_html`)
+      .eq("slug", slug)
+      .maybeSingle();
+    // 조회는 됐는데 행이 없다 = 관리자가 지웠거나 비공개다(RLS). 이건 진짜 404다.
+    if (!error && !data) return null;
+    // 조회 자체가 실패했다 = 장애다. 목록은 이때 정적 4행으로 폴백하므로
+    // 여기서 404를 내면 목록에는 있는 카드가 전부 깨진 링크가 된다(03-데이터흐름 §3).
+    if (error) return fallbackRegularClassBySlug(slug);
+    // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입 추론을
+    // 포기하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
+    // getPublicRegularClasses()와 같은 방식으로 unknown을 거쳐 좁힌다.
+    const r = data as unknown as Row;
+    return {
+      slug: str(r.slug),
+      index: str(r.index_label),
+      name: str(r.name),
+      subtitle: str(r.subtitle),
+      description: str(r.description),
+      duration: str(r.duration),
+      level: str(r.level),
+      scheduleType: (str(r.schedule_type) ||
+        "multi") as RegularClass["scheduleType"],
+      ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
+      ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
+      tracks: strArray(r.tracks) as RegularClass["tracks"],
+      accent: str(r.accent) as Accent,
+      ...(toImage(r.image_url, r.image_alt, r.image_caption)
+        ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
+        : {}),
+      curriculum: strArray(r.curriculum),
+      detailHref: str(r.detail_href),
+      seo: { title: str(r.seo_title), description: str(r.seo_description) },
+      ...(opt(r.detail_html) ? { detailHtml: opt(r.detail_html) } : {}),
+    };
+  } catch {
+    // createSupabasePublicClient()가 env 없이 던지는 경우 등 — 장애로 본다.
+    return fallbackRegularClassBySlug(slug);
+  }
+}
+
+/**
+ * 장애 시에만 쓰는 정적 폴백. **행이 없어서 404인 경우에는 절대 부르지 않는다** —
+ * 그러면 관리자가 지운 과정의 상세 페이지가 계속 살아 있게 된다.
+ *
+ * 폴백에는 `detailHtml`이 없다. 정적 데이터에 본문이 없기도 하고, 장애 중에
+ * 오래된 본문을 보여주느니 커리큘럼 기반 기본 레이아웃이 낫다.
+ */
+function fallbackRegularClassBySlug(slug: string): RegularClassDetail | null {
+  return regularClasses.find((c) => c.slug === slug) ?? null;
 }
 
 /** 03. 커뮤니티 클럽 — 기수. */

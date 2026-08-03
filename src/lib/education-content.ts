@@ -302,6 +302,19 @@ export type EduTrack =
   /** 이미 쓰고 있고, 업무에 제대로 붙이고 싶은 사람 */
   | "practical";
 
+/**
+ * 트랙의 공개 표기. 타입 바로 옆에 두는 이유 — 트랙을 늘리면 라벨을 빼먹을 수
+ * 없게 하기 위해서다(`Record<EduTrack, string>`이 컴파일 타임에 강제한다).
+ *
+ * `eduPurposes`의 목적 카드 제목과 지금은 문구가 같지만 **다른 것**이다.
+ * 목적 카드는 3장(기업·조직 포함)짜리 마케팅 문구라 따로 다듬을 수 있고,
+ * 이쪽은 데이터 축의 이름이다. 한쪽을 고칠 때 다른 쪽이 따라 바뀌면 안 된다.
+ */
+export const eduTrackLabel: Record<EduTrack, string> = {
+  beginner: "AI 입문",
+  practical: "실무 활용",
+};
+
 export type RegularClass = {
   slug: string;
   index: string;
@@ -347,6 +360,15 @@ export type RegularClass = {
   /** 상세 페이지 경로. 페이지 자체는 2차 범위라 아직 없다(§7). */
   detailHref: string;
   seo: { title: string; description: string };
+};
+
+/**
+ * 상세 페이지가 쓰는 모양. 목록 타입에 본문을 더한 것이다.
+ * 본문은 slug 단건 조회에서만 채워진다(목록에는 안 실린다) — 백로그 02 G1.
+ */
+export type RegularClassDetail = RegularClass & {
+  /** 정제 완료된 상세 본문. 비어 있으면 상세 페이지가 커리큘럼 기반 레이아웃을 그린다. */
+  detailHtml?: string;
 };
 
 export const regularClasses: RegularClass[] = [
