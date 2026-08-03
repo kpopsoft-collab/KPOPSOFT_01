@@ -18,8 +18,17 @@ type Input = Omit<EducationRegularClass, "id" | "sortOrder" | "detailHtml"> & {
 };
 
 const LIST = "/admin/content/education/regular-classes";
-/** 공개 페이지도 함께 무효화한다 — 어드민에서 고친 게 바로 보이지 않으면 고친 줄 모른다. */
-const PUBLIC = "/education";
+/**
+ * 공개 페이지도 함께 무효화한다 — 어드민에서 고친 게 바로 보이지 않으면
+ * 고친 줄 모른다. 정규 클래스는 세 곳에 나온다: /education 섹션, 목록 페이지,
+ * 그리고 slug 상세. 상세는 slug별로 따로 무효화해야 한다.
+ */
+const PUBLIC_PATHS = ["/education", "/education/programs"];
+
+function revalidatePublic(slug?: string) {
+  for (const p of PUBLIC_PATHS) revalidatePath(p);
+  if (slug) revalidatePath(`/education/programs/${slug}`);
+}
 
 /** oneday면 종료일을 버린다 — DB CHECK(education_regular_classes_schedule_ck)와 같은 규칙. */
 function normalize(input: Input): Input {
@@ -68,7 +77,7 @@ export async function createRegularClass(input: Input) {
   await syncHtmlSource(created.id, htmlIntent);
 
   revalidatePath(LIST);
-  revalidatePath(PUBLIC);
+  revalidatePublic(rest.slug);
   redirect(LIST);
 }
 
@@ -86,18 +95,20 @@ export async function updateRegularClass(id: string, input: Input) {
 
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
-  revalidatePath(PUBLIC);
+  revalidatePublic(rest.slug);
   redirect(LIST);
 }
 
 export async function deleteRegularClass(id: string) {
+  // slug를 모른 채 지우므로 상세 경로는 개별 무효화하지 않는다. 지워진 행은
+  // 다음 요청에서 조회가 비어 notFound()로 떨어지므로 문제되지 않는다.
   await getContentData().education.regularClasses.remove(id);
   revalidatePath(LIST);
-  revalidatePath(PUBLIC);
+  revalidatePublic();
 }
 
 export async function setRegularClassPublished(id: string, next: boolean) {
   await getContentData().education.regularClasses.update(id, { isPublished: next });
   revalidatePath(LIST);
-  revalidatePath(PUBLIC);
+  revalidatePublic();
 }

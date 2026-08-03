@@ -22,14 +22,15 @@ export const route = {
   home: "/",
   education: "/education",
   /**
-   * 정규 교육 과정 상세. `/education` 프로그램 카드의 CTA가 여기로 온다.
-   * **아직 빈 페이지다** — 내용은 다른 작업자가 채운다. 라우트를 먼저 열어
-   * 두는 이유는 CTA가 404로 떨어지지 않게 하기 위해서다.
+   * 정규 교육 과정 목록. `/education` 프로그램 카드의 CTA가 여기로 온다.
+   * DB의 공개 정규 클래스를 트랙 필터와 함께 보여주고, 카드를 누르면
+   * `/education/programs/[slug]` 상세로 간다(백로그 02).
    */
   educationPrograms: "/education/programs",
   /**
    * 교육 사례 전체 목록. `/education` 교육 사례 섹션의 `전체보기`가 여기로 온다.
-   * `educationPrograms`와 마찬가지로 **아직 빈 페이지**다.
+   * **아직 빈 페이지다** — 라우트를 먼저 열어 둔 이유는 CTA가 404로 떨어지지
+   * 않게 하기 위해서다.
    */
   educationCases: "/education/cases",
   /** 전체 프로젝트 목록. 홈 PROJECTS 섹션 하단 CTA가 여기로 온다. */

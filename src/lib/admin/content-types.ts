@@ -12,6 +12,7 @@
  */
 
 import type { Accent } from "@/lib/site";
+import { eduTrackLabel } from "@/lib/education-content";
 
 /**
  * 정렬만 갖는 콘텐츠 베이스. 공개/비공개 축이 없는 타입(클럽 기수)이 쓴다 —
@@ -137,10 +138,11 @@ export const EDUCATION_TRACKS: readonly EducationTrack[] = [
   "practical",
 ] as const;
 
-export const educationTrackLabel: Record<EducationTrack, string> = {
-  beginner: "AI 입문",
-  practical: "실무 활용",
-};
+/**
+ * 어드민 표기는 공개 표기를 **그대로 가져다 쓴다**. 두 곳에 같은 문자열을
+ * 적어 두면 한쪽만 고쳤을 때 어드민에서 고른 트랙과 사이트 표기가 갈라진다.
+ */
+export const educationTrackLabel: Record<EducationTrack, string> = eduTrackLabel;
 
 /** 교육 3분류 — 지난 프로그램이 어디에 속하는지 표시할 때 쓴다. */
 export type EducationCategoryId = "org" | "regular" | "club";

@@ -11,7 +11,7 @@
 | # | 폴더 | 한 줄 | 상태 |
 |---|------|-------|------|
 | 1 | [01-regular-class-schedule-and-html](01-regular-class-schedule-and-html/00-START-HERE.md) | 정규 클래스 폼에 일정 유형(원데이/다회차)과 HTML 상세 업로드 추가 | **완료** (2026-08-03) |
-| 2 | [02-education-programs-public-pages](02-education-programs-public-pages/00-START-HERE.md) | `/education/programs` 목록·상세 페이지를 DB에 연결해 구현 | 대기 |
+| 2 | [02-education-programs-public-pages](02-education-programs-public-pages/00-START-HERE.md) | `/education/programs` 목록·상세 페이지를 DB에 연결해 구현 | **완료** (2026-08-03) |
 | 3 | [03-regular-class-form-merge](03-regular-class-form-merge/00-START-HERE.md) | 정규 클래스 `new`와 `[id]` 페이지를 하나로 병합 | 대기 |
 | 4 | [04-club-cohort-publish-mismatch](04-club-cohort-publish-mismatch/00-START-HERE.md) | **버그** — 클럽 기수 저장이 없는 `is_published` 컬럼 때문에 실패 | **완료** (2026-08-03) |
 

@@ -194,11 +194,14 @@ export function RegularClassForm({
 
       <div className="grid gap-6 sm:grid-cols-2">
         <TextField label="슬러그" value={slug} onChange={setSlug} required placeholder="ai-tools" />
+        {/* 상세 페이지는 슬러그로 자동 생성된다(/education/programs/[슬러그]).
+            이 칸은 사내 상세가 따로 있는 과정을 위한 예외 통로라, http로
+            시작하는 주소일 때만 카드가 그쪽으로 간다. */}
         <TextField
-          label="상세 페이지 경로"
+          label="외부 상세 링크 (선택)"
           value={detailHref}
           onChange={setDetailHref}
-          placeholder="/education/programs/ai-tools"
+          placeholder="https://... (비우면 슬러그 상세로 간다)"
         />
       </div>
       <TextField label="SEO 제목" value={seoTitle} onChange={setSeoTitle} />

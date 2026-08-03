@@ -24,30 +24,28 @@
 `formatClassSchedule()`(`src/lib/education-content.ts`)과
 `sanitizeCourseHtml()`(`src/lib/admin/sanitize-html.ts`)도 준비돼 있다.
 
-## ⚠️ 이 백로그가 **반드시 닫아야 하는 것** (release gate)
+## release gate — **2026-08-03 전부 닫힘**
 
-1번이 데이터 계약까지만 내고 넘긴 것들이다. 하나라도 빠지면 1번의 보안 설계가
-실제로는 닫히지 않는다.
+| # | 할 일 | 어디서 |
+|---|-------|--------|
+| G1 | 상세 본문은 slug 단건 조회로 읽는다 | `public-content.ts` `getPublicRegularClassBySlug()` |
+| G2 | 렌더 직전 재정제 | `course-html.tsx` — DB에 직접 심은 XSS를 실제로 막는 것을 확인 |
+| G3 | `dangerouslySetInnerHTML`에는 정제 통과분만 + 근거 주석 | `course-html.tsx` |
+| G4 | `.course-html-shell` 셸을 그대로 렌더 | `course-html.tsx` (셸 CSS 미수정) |
+| G5 | 일정 표기는 `formatClassSchedule()` | `program-card.tsx`, `program-detail-hero.tsx` |
+| G6 | CSP 검토 | **미이행** — 인라인 `<style>`을 허용해야 해서 정책과 충돌 여지가 있다. 별도로 판단한다 |
 
-| # | 할 일 | 안 하면 |
-|---|-------|---------|
-| G1 | 상세 본문은 **slug 단건 조회**로 읽는다 | 목록 응답에 행마다 수백 KB HTML이 실린다. 목록 리더는 `detail_html`을 일부러 뺐다 |
-| G2 | **렌더 직전에 `sanitizeCourseHtml()`을 한 번 더** 부른다 | 관리자는 RLS상 테이블을 직접 고칠 수 있어 서버 액션을 우회한 값이 그대로 렌더된다 |
-| G3 | `dangerouslySetInnerHTML`에 넣는 값은 **G2를 통과한 것만**. 그 자리에 왜 안전한지 주석을 남긴다 | 다음 사람이 정제 없이 값을 바꿔 끼운다 |
-| G4 | 정제 결과를 감싼 `.course-html-shell`을 **그대로 렌더**한다(`globals.css`의 `contain: paint`) | 업로드 CSS가 본문 밖으로 나가 가짜 전면 UI를 만들 수 있다 |
-| G5 | 일정 표기는 `formatClassSchedule()`을 쓴다. `null`이면 줄 자체를 뺀다 | 목록·상세·어드민이 서로 다른 문자열을 쓰게 된다 |
-| G6 | (선택) CSP 검토 | 인라인 `<style>`을 허용해야 하므로 정책과 충돌하는지 먼저 본다 |
+## 실제 DB로 확인한 것 (2026-08-03)
 
-근거: [01/08 §6](../01-regular-class-schedule-and-html/08-HTML정제-설계.md),
-[01/09 §3-5](../01-regular-class-schedule-and-html/09-CSS스코프-설계.md),
-[01/06 §P1-3](../01-regular-class-schedule-and-html/06-교차검증-결과.md).
+- 4개 slug 상세 전부 200, 없는 slug 404, 목록 200
+- `<title>`이 `seo_title`을 따르고 canonical·og:url이 정식 도메인
+- **비공개로 바꾸면 상세 404 + 목록에서 빠진다.** 나머지 과정은 그대로다
+  (정적 4행으로 튀지 않는다)
+- **정제 안 된 XSS를 DB `detail_html`에 직접 심어도** 렌더 직전 정제가
+  `<script>`·`on*`·`<iframe>`·`javascript:`·`@import`·`position:fixed`를
+  전부 막고 본문만 남긴다 (G2 실증)
 
-## 아직 열려 있는 검증 (DB 키가 필요하다)
-
-1번이 코드까지 냈지만 `.env.local`이 비어 로컬이 목 모드다. 2번을 시작하기 전에
-[01/07 §5](../01-regular-class-schedule-and-html/07-실행계획-확정.md)의
-"DB 적용 후로 미루는 항목"을 먼저 닫는 편이 안전하다 — 특히 **전 과정을
-비공개로 했을 때 정적 4행이 되살아나지 않는지**는 이 페이지 동작과 직결된다.
+**남은 것**: 어드민 화면에서 사람이 직접 HTML을 올려 상세에 나오는지 보는 것.
 
 ## 결정이 필요한 것
 
