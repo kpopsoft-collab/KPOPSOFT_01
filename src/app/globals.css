@@ -290,3 +290,23 @@
     transform: translateX(0);
   }
 }
+
+/*
+ * 정규 클래스 상세 HTML 업로드 컨테인먼트
+ * (backlogs/01-regular-class-schedule-and-html/09-CSS스코프-설계.md §3-5).
+ *
+ * 업로드 CSS는 셀렉터 스코프(src/lib/admin/sanitize-html.ts)를 거치지만,
+ * `position`처럼 값으로만 판단하는 규칙은 이스케이프나 `var()`로 우회될 수
+ * 있어 셀렉터 스코프만으로는 못 이긴다. 실제 경계는 여기, 페인트 컨테인먼트다.
+ *
+ * `contain: layout`으로는 안 된다 — 레이아웃 컨테인먼트는 컨테이닝 블록만
+ * 만들 뿐 자손이 박스 밖으로 "그려지는" 것을 자르지 않는다. 그래서
+ * `position: fixed`를 막아도 `position: absolute; inset: -100vmax`
+ * 한 방에 뚫린다. `contain: paint`는 자손의 페인트를 패딩 박스로 자르는
+ * 동시에 absolute/fixed 자손의 컨테이닝 블록이 되어, 업로드 CSS가 만드는
+ * position(값 검사를 우회한 것 포함)과 번들에 이미 있는 Tailwind
+ * `fixed inset-0` 류 양쪽 다 이 박스 밖으로 못 나가게 막는다.
+ */
+.course-html-shell {
+  contain: paint;
+}
