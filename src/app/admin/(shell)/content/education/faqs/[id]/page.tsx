@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import { getContentData } from "@/lib/admin/content-data";
+import { ContentFormShell } from "@/components/admin/content/content-form-shell";
 import { FaqForm } from "@/components/admin/content/education/faqs/faq-form";
 import { updateFaq } from "../actions";
 
@@ -16,20 +15,12 @@ export default async function EditFaqPage({
   if (!item) notFound();
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <div>
-        <Link
-          href="/admin/content/education/faqs"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/55 transition-colors hover:text-ink"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          FAQ
-        </Link>
-        <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-ink">
-          FAQ 수정
-        </h1>
-      </div>
+    <ContentFormShell
+      backHref="/admin/content/education/faqs"
+      backLabel="FAQ"
+      title="FAQ 수정"
+    >
       <FaqForm initial={item} onSave={updateFaq.bind(null, id)} />
-    </div>
+    </ContentFormShell>
   );
 }
