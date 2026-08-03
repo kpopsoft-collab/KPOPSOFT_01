@@ -31,24 +31,26 @@
 > 스키마와 시드는 서로 맞고 **어드민 타입만 어긋나 있다**는 증거다 →
 > [02](02-수정계획.md) 안 A의 근거.
 
-## 착수 전 확인 (중요)
+## 착수 전 확인 — **2026-08-03 운영 DB로 확정됨**
 
-이 판단의 근거는 **저장소의 마이그레이션 파일**이다. 운영 DB에 누가
-`alter table ... add column is_published`를 수동으로 실행했다면 컬럼이 실재할 수도
-있다. 이 저장소는 대시보드 수동 적용 이력이 남지 않는 구조다
-([01/07 D8](../01-regular-class-schedule-and-html/07-실행계획-확정.md)).
+마이그레이션 파일 기준 추론이었던 것을 실제 DB에 붙어 확인했다. 진단이 맞다.
 
-→ **1단계는 실제 DB 조회다.**
+```
+컬럼 목록: id, label, status, recruit_period, run_period, price, list_price,
+          capacity, note, cta_disabled, show_price, show_capacity,
+          show_schedule, show_cta, sort_order, created_at, updated_at
+          → is_published 없음
 
-```sql
-select column_name from information_schema.columns
-where table_schema = 'public' and table_name = 'education_club_cohorts';
+select is_published → column education_club_cohorts.is_published does not exist
+update is_published → PGRST204 Could not find the 'is_published' column
 ```
 
-컬럼이 **있으면** 이 백로그는 "마이그레이션 파일에 누락된 컬럼을 되살리는"
-작업으로 바뀐다(스키마 드리프트). **없으면** [02-수정계획.md](02-수정계획.md)대로 간다.
+- **컬럼이 실재하지 않는다.** 수동으로 추가된 적도 없다(스키마 드리프트 아님)
+- **쓰기가 실제로 거부된다.** 예상한 `PGRST204` 그대로다
+- 기수 **4행이 들어 있다** — 시드 스크립트(`seed-education-ver3.cjs`)가 돌았다는 뜻이고,
+  그 스크립트가 `is_published` 없이 넣는다는 §1-5의 근거와 일치한다
 
-Supabase MCP가 현재 `Unauthorized`이므로 `SUPABASE_ACCESS_TOKEN`이 필요하다.
+→ [02-수정계획.md](02-수정계획.md) 안 A로 그대로 간다. 0단계(DB 확인)는 끝났다.
 
 ## 결정이 필요한 것
 
