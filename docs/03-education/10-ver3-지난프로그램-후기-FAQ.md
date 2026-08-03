@@ -4,6 +4,9 @@
 > **읽는 순서** ← 이전 [ver3 ④ 바이브데이즈 랜딩 모달](09-ver3-바이브데이즈-모달.md) · [00-START-HERE](00-START-HERE.md) · 다음 [ver3 ⑥ CONTACT · Footer](11-ver3-contact-footer.md) →
 
 ---
+
+## SECTION 06. 지난 프로그램
+
 신설 섹션. ver2 §15(교육 사례)의 카드 구조를 재사용합니다.
 
 ```text

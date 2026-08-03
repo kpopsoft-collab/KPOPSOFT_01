@@ -6,33 +6,36 @@
 > **함께 보기** 현행 기준은 [../../02-home/00-START-HERE.md](../../02-home/00-START-HERE.md)
 
 ---
-### Eyebrow
+
+## SECTION 07. Contact
+
+#### Eyebrow
 
 ```text
 CONTACT
 ```
 
-### Title
+#### Title
 
 ```text
 기획서가 없어도,
 문제부터 이야기할 수 있습니다.
 ```
 
-### Description
+#### Description
 
 ```text
 아이디어를 소프트웨어와 AI 솔루션으로 옮기는
 다음 프로젝트를 시작해 보세요.
 ```
 
-### CTA
+#### CTA
 
 ```text
 프로젝트 의뢰하기
 ```
 
-### 문의 유형
+#### 문의 유형
 
 ```text
 Software 제작
@@ -43,7 +46,7 @@ Partnership
 기타
 ```
 
-### 세부 유형
+#### 세부 유형
 
 Software 제작:
 
@@ -76,7 +79,7 @@ Education:
 기타
 ```
 
-### 폼 필드
+#### 폼 필드
 
 - 문의 유형
 - 세부 유형

@@ -1,9 +1,12 @@
 # ver3 ④ CONTACT · Footer · 반응형 · 완료 조건
 
-> **위치** `docs/02-home/11-ver3-contact-footer-완료조건.md` · **원본** `docs/KPOPSOFT_Home_Landing_ver3.md` L309–443
+> **위치** `docs/02-home/11-ver3-contact-footer-완료조건.md` · **원본** `docs/KPOPSOFT_Home_Landing_ver3.md` L309–442
 > **읽는 순서** ← 이전 [ver3 ③ 통계바 · 포트폴리오](10-ver3-통계바와-포트폴리오.md) · [00-START-HERE](00-START-HERE.md)
 
 ---
+
+## SECTION 06. CONTACT / 프로젝트 문의
+
 ver2의 폼 구조를 유지하고 **문의 유형과 세부 유형만 IA에 맞춰 재편**합니다.
 
 #### Title

@@ -28,7 +28,7 @@ ver3 전면 개편의 **정보구조 요약**이다. 홈과 교육 기획서 두
 
 | 나타나는 곳 | 파일 |
 |------------|------|
-| 홈 핵심 비즈니스 교육 카드 | `src/components/sections/business-overview.tsx` |
+| 홈 핵심 비즈니스 교육 카드 | `src/components/sections/what-we-do.tsx` |
 | 홈 포트폴리오 필터 | `src/lib/work-category.ts` |
 | 홈 Contact 교육 세부 유형 | **Supabase `inquiry_subtypes`** (코드 아님 — 4번 문서 참조) |
 | `/education` 프로그램 정보 | `src/components/sections/education/edu-programs.tsx` |

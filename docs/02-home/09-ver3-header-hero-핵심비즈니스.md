@@ -4,6 +4,9 @@
 > **읽는 순서** ← 이전 [ver3 ① ver2→ver3 변경 요약과 최종 구조](08-ver3-변경요약과-구조.md) · [00-START-HERE](00-START-HERE.md) · 다음 [ver3 ③ 통계바 · 포트폴리오](10-ver3-통계바와-포트폴리오.md) →
 
 ---
+
+## SECTION 01. Header
+
 ver2 유지. 고정 네비게이션.
 
 #### 메뉴

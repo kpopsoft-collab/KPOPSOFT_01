@@ -44,7 +44,7 @@
 | Hero | [03 §4](03-최종수정요청-섹션순서와-히어로.md), [09](09-ver3-header-hero-핵심비즈니스.md) | `sections/hero.tsx` |
 | 주요 성과 수치(통계바) | [03 §5](03-최종수정요청-섹션순서와-히어로.md), [10](10-ver3-통계바와-포트폴리오.md) | `sections/stats-bar.tsx` |
 | OUR IDENTITY | [03 §6](03-최종수정요청-섹션순서와-히어로.md) | `sections/our-identity.tsx` |
-| 핵심 사업 영역 | [04](04-최종수정요청-핵심사업과-프로젝트개요.md), [02 §2](02-홈-4차-수정요청.md) | `sections/business-overview.tsx` |
+| 핵심 사업 영역 | [04](04-최종수정요청-핵심사업과-프로젝트개요.md), [02 §2](02-홈-4차-수정요청.md) | `sections/what-we-do.tsx` |
 | WHY KPOPSOFT | **[01](01-why-kpopsoft-수정요청.md)** | `sections/why-kpopsoft.tsx` |
 | 주요 프로젝트(포트폴리오) | [05](05-최종수정요청-프로젝트-3건.md), [02 §1](02-홈-4차-수정요청.md), [10](10-ver3-통계바와-포트폴리오.md) | `sections/selected-work.tsx` |
 | 프로젝트 진행 방식 | [07 §14](07-최종수정요청-프로세스-문의-푸터.md), [02 §4](02-홈-4차-수정요청.md) | `sections/process.tsx` |
@@ -53,6 +53,11 @@
 
 > **WHY KPOPSOFT는 포트폴리오 앞**이다 — [01](01-why-kpopsoft-수정요청.md) §1에서
 > 옮겼다. 판단 근거는 [../07-dev/04-작업로그-2026-08-02.md](../07-dev/04-작업로그-2026-08-02.md).
+
+> ⚠️ `sections/business-overview.tsx`, `ai-solutions.tsx`, `software.tsx`,
+> `about-summary.tsx`, `education-banner.tsx` 등은 **`page.tsx`가 import하지 않는
+> 옛 파일**이다(ver3에서 제거하며 파일만 보존). 실제 화면을 고치려면 위 표의
+> 파일을 고쳐야 한다. 어느 것이 살아 있는지는 `src/app/page.tsx`의 import가 기준이다.
 
 ## 콘텐츠는 코드에 없다
 

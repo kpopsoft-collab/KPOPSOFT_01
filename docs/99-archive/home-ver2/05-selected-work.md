@@ -6,29 +6,32 @@
 > **함께 보기** 현행 기준은 [../../02-home/00-START-HERE.md](../../02-home/00-START-HERE.md)
 
 ---
+
+## SECTION 04. Selected Work
+
 홈에서 가장 중요한 섹션입니다.
 
-### Eyebrow
+#### Eyebrow
 
 ```text
 SELECTED WORK
 ```
 
-### Title
+#### Title
 
 ```text
 실제로 작동하는
 제품과 도구를 만들었습니다.
 ```
 
-### Description
+#### Description
 
 ```text
 고객의 아이디어와 업무 문제를
 실제로 사용할 수 있는 서비스와 업무 도구로 구현했습니다.
 ```
 
-### 기본 구성
+#### 기본 구성
 
 ```text
 대표 프로젝트 대형 카드 1개
@@ -38,7 +41,7 @@ SELECTED WORK
 
 모든 카드를 같은 크기와 동일한 레이아웃으로 반복하지 않습니다.
 
-### 대표 프로젝트 카드
+#### 대표 프로젝트 카드
 
 - 실제 화면 이미지
 - 산업군 또는 카테고리
@@ -62,7 +65,7 @@ INTERNAL TOOLS · AI AUTOMATION
 커머스 스타트업 · Web Admin · AI Automation ↗
 ```
 
-### 보조 사례 예시
+#### 보조 사례 예시
 
 ```text
 고객 문의 AI 챗봇
@@ -75,7 +78,7 @@ INTERNAL TOOLS · AI AUTOMATION
 교육기관 · Web Platform
 ```
 
-### 카드 이미지 원칙
+#### 카드 이미지 원칙
 
 이미지는 카드 면적의 약 65~75%를 차지합니다.
 

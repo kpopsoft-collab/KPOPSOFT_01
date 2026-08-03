@@ -20,7 +20,7 @@
 |---|------|---------------------|
 | 1 | [01-개편목적과-핵심메시지.md](01-개편목적과-핵심메시지.md) | Hero 카피는 ver3에서 **그대로 유지** |
 | 2 | [02-브랜드심볼과-페이지구조.md](02-브랜드심볼과-페이지구조.md) | 브랜드 심볼 원칙 유효, 구조는 7섹션으로 교체 |
-| 3 | [03-header-hero.md](03-header-hero.md) | 메뉴 교체(`ABOUT·CORE BUSINESS·WORK·CONTACT`), Hero 유지 |
+| 3 | [03-header-hero.md](03-header-hero.md) | Hero 유지. 메뉴는 ver3에서 6개(`ABOUT/WORK/SOFTWARE/AI SOLUTIONS/EDUCATION/CONTACT`)였다가 2026-07-31에 `ABOUT · CORE BUSINESS(3개 하위) · WORK · CONTACT`로 다시 조정됐다 |
 | 4 | [04-about-summary-numbers.md](04-about-summary-numbers.md) | About Summary **독립 섹션 폐지** → Hero 하단 리드로 압축. Numbers는 통계바로 독립 |
 | 5 | [05-selected-work.md](05-selected-work.md) | 레이아웃 유지, 3분류 필터 추가 → 포트폴리오 |
 | 6 | [06-what-we-do.md](06-what-we-do.md) | **핵심 비즈니스**로 개칭, 교육이 3번째 축으로 승격 |

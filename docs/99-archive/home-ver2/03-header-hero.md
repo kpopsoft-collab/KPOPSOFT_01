@@ -6,6 +6,9 @@
 > **함께 보기** 현행 기준은 [../../02-home/00-START-HERE.md](../../02-home/00-START-HERE.md)
 
 ---
+
+## SECTION 01. Header
+
 기존 공통 Header를 재사용합니다.
 
 #### 메뉴

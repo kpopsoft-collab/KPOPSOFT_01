@@ -6,6 +6,9 @@
 > **함께 보기** 현행 기준은 [../../03-education/00-START-HERE.md](../../03-education/00-START-HERE.md)
 
 ---
+
+## 21. Footer
+
 기존 공통 Footer를 재사용합니다.
 
 Education 페이지에서는 다음 메시지를 활용할 수 있습니다.

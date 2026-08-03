@@ -6,6 +6,9 @@
 > **함께 보기** 현행 기준은 [../../03-education/00-START-HERE.md](../../03-education/00-START-HERE.md)
 
 ---
+
+## 3. 브랜드 구조
+
 ### 3.1 메인 브랜드
 
 ```text

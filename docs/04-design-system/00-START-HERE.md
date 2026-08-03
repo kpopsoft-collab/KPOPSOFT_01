@@ -20,7 +20,7 @@
 | 6 | [06-컴포넌트-네비와-버튼.md](06-컴포넌트-네비와-버튼.md) | §6 (Navigation, Buttons) | 네비게이션, 버튼(radius `999px`, primary는 Blue) |
 | 7 | [07-컴포넌트-카드와-다이어그램.md](07-컴포넌트-카드와-다이어그램.md) | §6 (Program Cards, Tags, Testimonial, Process Diagram) | 프로그램 카드, 전문 태그, 후기, 프로세스 다이어그램 |
 | 8 | [08-히어로-디자인.md](08-히어로-디자인.md) | §7 | 히어로 구성과 도형 배치 |
-| 9 | [09-섹션별-디자인원칙.md](09-섹션별-디자인원칙.md) | §8 (INTRODUCTION, PROGRAMS, EXPERT NETWORK, FINAL CTA 등) | 섹션 유형별 레이아웃 원칙 |
+| 9 | [09-섹션별-디자인원칙.md](09-섹션별-디자인원칙.md) | §8 (HERO, TRUST / PARTNERS, INTRODUCTION, PROGRAMS, SOFTWARE DEVELOPMENT, AI PROTOTYPE LAB, EXPERT NETWORK, PROCESS, CUSTOM TRAINING, FINAL CTA) | 섹션 유형별 레이아웃 원칙 |
 | 10 | [10-이미지-방향.md](10-이미지-방향.md) | §9 | 이미지 톤·비율·처리 원칙 |
 | 11 | [11-모션시스템.md](11-모션시스템.md) | §10 | 진입/hover 모션, 타이밍, `prefers-reduced-motion` |
 | 12 | [12-모바일과-접근성.md](12-모바일과-접근성.md) | §11, §12 | 모바일 재구성, WCAG AA, 최종 원칙 |

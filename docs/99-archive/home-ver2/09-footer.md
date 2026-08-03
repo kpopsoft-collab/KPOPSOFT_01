@@ -6,7 +6,10 @@
 > **함께 보기** 현행 기준은 [../../02-home/00-START-HERE.md](../../02-home/00-START-HERE.md)
 
 ---
-### 메시지
+
+## SECTION 08. Footer
+
+#### 메시지
 
 ```text
 SOFTWARE · AI SOLUTIONS · EDUCATION
@@ -15,7 +18,7 @@ SOFTWARE · AI SOLUTIONS · EDUCATION
 작동하는 기술로.
 ```
 
-### 링크
+#### 링크
 
 ```text
 Work
@@ -27,7 +30,7 @@ Contact
 프로젝트 의뢰
 ```
 
-### Copyright
+#### Copyright
 
 ```text
 © 2026 KPOPSOFT

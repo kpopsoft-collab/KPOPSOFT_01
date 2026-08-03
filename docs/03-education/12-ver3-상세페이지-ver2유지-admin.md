@@ -1,9 +1,10 @@
 # ver3 ⑦ 상세 페이지(2차) · 유지되는 ver2 규정 · Admin · 완료 조건
 
-> **위치** `docs/03-education/12-ver3-상세페이지-ver2유지-admin.md` · **원본** `docs/KPOPSOFT_Education_Page_ver3.md` L503–593
+> **위치** `docs/03-education/12-ver3-상세페이지-ver2유지-admin.md` · **원본** `docs/KPOPSOFT_Education_Page_ver3.md` L503–592
 > **읽는 순서** ← 이전 [ver3 ⑥ CONTACT · Footer](11-ver3-contact-footer.md) · [00-START-HERE](00-START-HERE.md)
 
 ---
+
 ## 3. 교육 프로그램 상세 페이지 (2차 범위 — 이번엔 구현하지 않음)
 
 IA에서 회색 처리된 영역입니다. **이번 개편에서는 만들지 않습니다.**

@@ -6,6 +6,9 @@
 > **함께 보기** 현행 기준은 [../../03-education/00-START-HERE.md](../../03-education/00-START-HERE.md)
 
 ---
+
+## 6. Header
+
 기존 KPOPSOFT 공통 Header를 재사용합니다.
 
 ### 메뉴

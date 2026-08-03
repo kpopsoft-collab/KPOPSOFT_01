@@ -1,17 +1,20 @@
 # 홈 Contact — 문의 유형 DB 마이그레이션
 
-> **위치** `docs/01-ia/04-홈-contact-DB-마이그레이션.md` · **원본** `docs/IA_ver3_요약.md` L323–363
+> **위치** `docs/01-ia/04-홈-contact-DB-마이그레이션.md` · **원본** `docs/IA_ver3_요약.md` L323–362
 > **읽는 순서** ← 이전 [2차 범위 · Admin 변경 · 확정/미결 사항](03-2차범위-admin-확정사항.md) · [00-START-HERE](00-START-HERE.md)
 >
 > **함께 보기** 홈 상세는 [../02-home/](../02-home/00-START-HERE.md), 교육 상세는 [../03-education/](../03-education/00-START-HERE.md)
 
 ---
+
+## 홈 Contact — DB 마이그레이션 (2026-07-31 부분 완료)
+
 홈 Contact의 문의 유형·세부 유형은 `src/lib/site.ts`가 아니라 **Supabase의
 `inquiry_types` / `inquiry_subtypes` 테이블**에서 읽는다
 (`getPublicInquiryOptions()`). site.ts의 값은 DB가 비었을 때만 쓰이는
 fallback이다. 그래서 화면을 바꾸려면 코드가 아니라 DB를 고쳐야 한다.
 
-## 반영된 것
+### 반영된 것
 
 ```text
 유형 순서   프로젝트 문의 → AI 솔루션 문의 → 교육 문의   (sort_order 0/1/2)
@@ -26,7 +29,7 @@ fallback이다. 그래서 화면을 바꾸려면 코드가 아니라 DB를 고�
 교육 세부 유형 라벨이 `eduCategories`와 일치하게 되면서, 그동안 매칭 실패로
 뜨지 않던 `/education` 앵커 링크 조건도 해소됐다.
 
-## 반영하지 않기로 한 것
+### 반영하지 않기로 한 것
 
 | 항목 | 결정 |
 |---|---|
@@ -38,7 +41,7 @@ fallback이다. 그래서 화면을 바꾸려면 코드가 아니라 DB를 고�
 화면에 영향이 없지만, DB가 비거나 조회에 실패해 폴백이 뜨면 라벨이 달라진다.
 IA대로 정리하려면 DB 라벨을 바꾸거나 site.ts 시드를 DB에 맞춰야 한다.
 
-## 교육 문의는 홈에서 받지 않는다
+### 교육 문의는 홈에서 받지 않는다
 
 홈 Contact의 `교육 문의` 칩은 라디오가 아니라 **링크**다 —
 `/education#education-inquiry`로 보낸다. 교육은 대상·인원·희망 일정처럼 홈 폼에

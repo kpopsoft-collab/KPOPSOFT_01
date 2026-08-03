@@ -6,20 +6,23 @@
 > **함께 보기** 현행 기준은 [../../03-education/00-START-HERE.md](../../03-education/00-START-HERE.md)
 
 ---
-## Eyebrow
+
+## 11. SECTION 05 — VIBEDAYS CLUB
+
+### Eyebrow
 
 ```text
 VIBEDAYS CLUB
 ```
 
-## Title
+### Title
 
 ```text
 서로 다른 바이브가 만나,
 배우고 만든 날들이 쌓입니다.
 ```
 
-## Description
+### Description
 
 ```text
 VIBEDAYS CLUB은 서로 다른 경험과 수준을 가진 사람들이
@@ -32,9 +35,9 @@ KPOPSOFT의 실습형 러닝 커뮤니티입니다.
 각자의 방식으로 함께 성장합니다.
 ```
 
-## 캐릭터 역할
+### 캐릭터 역할
 
-### NEW VIBER
+#### NEW VIBER
 
 ```text
 새로운 도구를 발견하는 사람
@@ -43,7 +46,7 @@ KPOPSOFT의 실습형 러닝 커뮤니티입니다.
 AI와 디지털 제작의 기본을 차근차근 익힙니다.
 ```
 
-### VIBE MAKER
+#### VIBE MAKER
 
 ```text
 배운 것을 직접 만드는 사람
@@ -52,7 +55,7 @@ AI와 디지털 제작의 기본을 차근차근 익힙니다.
 작동하는 결과물로 구현합니다.
 ```
 
-### VIBE SHARER
+#### VIBE SHARER
 
 ```text
 경험과 결과를 나누는 사람
@@ -61,7 +64,7 @@ AI와 디지털 제작의 기본을 차근차근 익힙니다.
 서로의 성장을 돕습니다.
 ```
 
-## 디자인 방향
+### 디자인 방향
 
 - 캐릭터 3명을 각 역할과 연결
 - 스티커 또는 클럽 카드 형태

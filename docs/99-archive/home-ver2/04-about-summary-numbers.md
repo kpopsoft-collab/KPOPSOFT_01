@@ -6,24 +6,27 @@
 > **함께 보기** 현행 기준은 [../../02-home/00-START-HERE.md](../../02-home/00-START-HERE.md)
 
 ---
+
+## SECTION 03. About Summary + Numbers
+
 Hero 다음에 짧은 신뢰 영역으로 배치합니다.
 
 긴 회사소개 섹션으로 만들지 않고 약 50~70vh 안에서 압축합니다.
 
-### Eyebrow
+#### Eyebrow
 
 ```text
 ABOUT KPOPSOFT
 ```
 
-### Title
+#### Title
 
 ```text
 답답했던 문제에,
 필요한 기술로 답합니다.
 ```
 
-### Description
+#### Description
 
 ```text
 KPOPSOFT는 화려해 보이지만
@@ -33,7 +36,7 @@ KPOPSOFT는 화려해 보이지만
 실제로 사용할 수 있는 소프트웨어와 AI 솔루션을 만듭니다.
 ```
 
-### Numbers
+#### Numbers
 
 ```text
 120+
@@ -49,7 +52,7 @@ KPOPSOFT는 화려해 보이지만
 프로젝트 및 교육 만족도
 ```
 
-### 주석
+#### 주석
 
 ```text
 주요 멤버와 강사진의 누적 수행 경험을 포함한 수치입니다.

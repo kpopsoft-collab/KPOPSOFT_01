@@ -6,22 +6,25 @@
 > **함께 보기** 현행 기준은 [../../02-home/00-START-HERE.md](../../02-home/00-START-HERE.md)
 
 ---
+
+## SECTION 05. What We Do
+
 Software와 AI Solutions를 하나의 짧은 서비스 섹션으로 통합합니다.
 
-### Eyebrow
+#### Eyebrow
 
 ```text
 WHAT WE DO
 ```
 
-### Title
+#### Title
 
 ```text
 필요한 기술을
 하나의 프로젝트로 연결합니다.
 ```
 
-### Description
+#### Description
 
 ```text
 기획서가 완성되지 않아도 괜찮습니다.
@@ -30,7 +33,7 @@ WHAT WE DO
 개발 가능한 제품과 솔루션으로 구체화합니다.
 ```
 
-## Software
+### Software
 
 ```text
 웹 서비스
@@ -49,7 +52,7 @@ MVP · Prototype
 기획부터 디자인, 개발까지 한 번에 구현합니다.
 ```
 
-## AI Solutions
+### AI Solutions
 
 ```text
 AI 업무 자동화
@@ -68,7 +71,7 @@ AI Prototype
 실제 조직에서 사용할 수 있는 업무 도구로 구현합니다.
 ```
 
-### 비주얼
+#### 비주얼
 
 두 개의 큰 블록으로 구성하고 각각 실제 화면을 함께 보여줍니다.
 

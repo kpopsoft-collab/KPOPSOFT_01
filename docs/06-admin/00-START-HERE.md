@@ -19,14 +19,23 @@
 
 ## 지금 어디까지 됐나
 
+> ⚠️ 아래 원본 문서(01~05)는 **계획 시점 기준**이라 현재 구현과 어긋나는 곳이 있다.
+> 실제로 무엇이 있는지는 `src/app/admin/(shell)/content/`의 라우트가 기준이다.
+
 | 단계 | 상태 |
 |------|------|
 | P1 — 로그인, 대시보드, 문의 목록·상세·상태/메모 | 완료 |
-| P2 — 콘텐츠 CRUD(work/testimonials/experts/stats/inquiry-options) | 완료 |
-| ver3 반영 — 프로그램 3분류 2단 구조, 갤러리, 별점, 통계바 | **미구현 (범위 밖)** |
+| P2 — 콘텐츠 CRUD `work` · `experts` · `stats` · `inquiry-options` · `pillars` · `pillar-examples` | 완료 |
+| P3 — 교육 ver3 `education/{org-training, regular-classes, club-tiers, club-cohorts, past-programs, reviews, faqs, stats}` | 완료 (마이그레이션 `20260802120000_p3_education_ver3.sql`) |
 | 관리자 초대 UI | 미구현 |
-| Supabase Auth / DB | 연결됨 |
-| Storage / 이메일 발송 | 미연결 |
+| Supabase Auth / DB / Storage | 연결됨 (`20260709131208_p2_storage_buckets.sql`) |
+| 이메일 발송 | 코드는 Resend로 구현됨(`src/lib/email.ts`). 실제 발송은 `RESEND_API_KEY` 유무에 달림 |
+
+원본 §11.8의 "DB 제외 선행 구축 모드"는 **끝난 단계**다. 지금 구조는
+Supabase 환경변수가 있으면 실제 DB를, 없으면 mock 어댑터로 폴백한다.
+
+`testimonials`·`insights` 어드민 라우트는 **없다** — 후기는 교육 쪽
+`education/reviews`로 옮겨갔고 인사이트는 제거됐다.
 
 최신 상태는 [../07-dev/02-개발상태.md](../07-dev/02-개발상태.md)가 기준이다.
 

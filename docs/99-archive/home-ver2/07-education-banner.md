@@ -6,22 +6,25 @@
 > **함께 보기** 현행 기준은 [../../02-home/00-START-HERE.md](../../02-home/00-START-HERE.md)
 
 ---
+
+## SECTION 06. Education Banner
+
 교육 상세 콘텐츠는 홈에서 제거하고 `/education`으로 연결합니다.
 
-### Eyebrow
+#### Eyebrow
 
 ```text
 KPOPSOFT EDUCATION
 ```
 
-### Title
+#### Title
 
 ```text
 배우는 데서 끝나지 않고,
 직접 만들고 적용합니다.
 ```
 
-### Description
+#### Description
 
 ```text
 AI 업무 활용부터 Vibe Coding,
@@ -29,13 +32,13 @@ AI Prototype과 기업 맞춤형 교육까지
 실제 업무와 아이디어를 중심으로 진행합니다.
 ```
 
-### CTA
+#### CTA
 
 ```text
 교육 프로그램 보기
 ```
 
-### 비주얼
+#### 비주얼
 
 - 실제 교육 현장 사진
 - 수강생 결과물
