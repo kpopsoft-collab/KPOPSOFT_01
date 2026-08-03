@@ -12,7 +12,9 @@ export default async function EditRegularClassPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const item = await getContentData().education.regularClasses.get(id);
+  // 동반 테이블(업로드 원본)까지 함께 읽는다 — 일반 get()만 쓰면 폼이 원본을
+  // 빈 문자열로 들고 열려 이름만 고쳐 저장해도 HTML이 지워진다(07 §3 5-1).
+  const item = await getContentData().education.regularClasses.getForEdit(id);
   if (!item) notFound();
 
   return (

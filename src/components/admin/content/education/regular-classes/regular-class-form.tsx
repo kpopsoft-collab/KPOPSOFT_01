@@ -4,29 +4,41 @@ import { useState, useTransition } from "react";
 
 import type { Accent } from "@/lib/site";
 import {
+  EDUCATION_SCHEDULE_TYPES,
   EDUCATION_TRACKS,
+  educationScheduleTypeLabel,
   educationTrackLabel,
   type EducationRegularClass,
+  type EducationRegularClassEdit,
+  type EducationScheduleType,
   type EducationTrack,
+  type HtmlIntent,
 } from "@/lib/admin/content-types";
 import {
   CheckboxField,
   CheckboxListField,
+  DateField,
+  RadioField,
   StringListField,
   TextAreaField,
   TextField,
 } from "@/components/admin/content/fields";
+import { HtmlUpload } from "@/components/admin/content/html-upload";
 import { AccentPicker } from "@/components/admin/content/accent-picker";
 import { ImageUpload } from "@/components/admin/content/image-upload";
 import { FormActions } from "@/components/admin/content/education/form-actions";
 
-type Input = Omit<EducationRegularClass, "id" | "sortOrder">;
+// detailHtml은 서버 전용 정제 결과라 폼이 못 채운다 — 대신 htmlIntent로
+// "무엇을 할지"를 보낸다(actions.ts의 Input과 구조적으로 같아야 한다).
+type Input = Omit<EducationRegularClass, "id" | "sortOrder" | "detailHtml"> & {
+  htmlIntent: HtmlIntent;
+};
 
 export function RegularClassForm({
   initial,
   onSave,
 }: {
-  initial?: EducationRegularClass;
+  initial?: EducationRegularClassEdit;
   onSave: (input: Input) => Promise<void>;
 }) {
   const [slug, setSlug] = useState(initial?.slug ?? "");
@@ -46,9 +58,26 @@ export function RegularClassForm({
   const [seoTitle, setSeoTitle] = useState(initial?.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(initial?.seoDescription ?? "");
   const [isPublished, setIsPublished] = useState(initial?.isPublished ?? true);
+  const [scheduleType, setScheduleType] = useState<EducationScheduleType>(
+    initial?.scheduleType ?? "multi",
+  );
+  const [startDate, setStartDate] = useState(initial?.startDate ?? "");
+  const [endDate, setEndDate] = useState(initial?.endDate ?? "");
+  // 업로드 위젯이 보여줄 값 — 저장 의도(htmlIntent)와 분리해서 들고 있는다.
+  // initial이 이미 정제본이 아니라 "동반 테이블의 원본"을 주므로 다시
+  // 여는 화면에서도 원본 그대로 보인다.
+  const [htmlRaw, setHtmlRaw] = useState(initial?.detailHtmlRaw ?? "");
+  const [htmlFileName, setHtmlFileName] = useState(initial?.detailHtmlFileName ?? "");
+  const [htmlIntent, setHtmlIntent] = useState<HtmlIntent>({ kind: "keep" });
   const [pending, start] = useTransition();
 
-  const canSave = Boolean(name.trim() && slug.trim()) && !pending;
+  // DB CHECK(education_regular_classes_schedule_ck)와 같은 규칙: 종료일이 있으면
+  // 시작일도 있어야 하고(그래야 "종료일만 입력"이 막힌다), 있으면 순서도 맞아야
+  // 한다. ISO 문자열은 사전순 비교가 곧 시간순 비교라 Date 파싱이 필요 없다.
+  const dateInvalid =
+    scheduleType === "multi" && Boolean(endDate) && (!startDate || endDate < startDate);
+
+  const canSave = Boolean(name.trim() && slug.trim()) && !dateInvalid && !pending;
 
   return (
     <form
@@ -74,6 +103,12 @@ export function RegularClassForm({
             seoTitle: seoTitle.trim(),
             seoDescription: seoDescription.trim(),
             isPublished,
+            scheduleType,
+            startDate,
+            // oneday는 서버(actions.ts normalize)도 종료일을 버리지만, 화면에서
+            // 이미 감춰진 값을 실수로 들고 나가지 않도록 여기서도 비운다.
+            endDate: scheduleType === "oneday" ? "" : endDate,
+            htmlIntent,
           }),
         );
       }}
@@ -90,6 +125,35 @@ export function RegularClassForm({
         <TextField label="기간" value={duration} onChange={setDuration} placeholder="4주" />
         <TextField label="난이도 표기" value={level} onChange={setLevel} placeholder="입문·중급" />
       </div>
+
+      <fieldset className="flex flex-col gap-4 rounded-2xl border border-ink/15 p-4">
+        <legend className="px-1 text-sm font-semibold text-ink/70">강의 일정</legend>
+        <RadioField
+          label="일정 유형"
+          value={scheduleType}
+          onChange={setScheduleType}
+          options={EDUCATION_SCHEDULE_TYPES.map((t) => ({
+            value: t,
+            label: educationScheduleTypeLabel[t],
+          }))}
+        />
+        <p className="text-xs font-medium text-ink/45">
+          날짜는 비워 둬도 됩니다. 비우면 화면에 기간 표기(예: 4주)만 나옵니다.
+        </p>
+        {scheduleType === "oneday" ? (
+          <DateField label="강의일" value={startDate} onChange={setStartDate} />
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2">
+            <DateField label="시작일" value={startDate} onChange={setStartDate} />
+            <DateField label="종료일" value={endDate} onChange={setEndDate} />
+          </div>
+        )}
+        {dateInvalid && (
+          <p role="alert" className="text-sm font-medium text-brand-red">
+            종료일은 시작일보다 빠를 수 없어요.
+          </p>
+        )}
+      </fieldset>
 
       {/* 난이도 표기와 별개다 — 표기에는 "비개발자 환영" 같은 값도 들어오므로,
           목적 선택이 정렬에 쓰는 축은 이쪽 트랙으로 따로 둔다. */}
@@ -112,6 +176,21 @@ export function RegularClassForm({
       </div>
 
       <StringListField label="주차별 커리큘럼" values={curriculum} onChange={setCurriculum} />
+
+      <HtmlUpload
+        value={htmlRaw}
+        fileName={htmlFileName}
+        onChange={(raw, fileName) => {
+          setHtmlRaw(raw);
+          setHtmlFileName(fileName);
+          setHtmlIntent({ kind: "replace", raw, fileName });
+        }}
+        onRemove={() => {
+          setHtmlRaw("");
+          setHtmlFileName("");
+          setHtmlIntent({ kind: "remove" });
+        }}
+      />
 
       <div className="grid gap-6 sm:grid-cols-2">
         <TextField label="슬러그" value={slug} onChange={setSlug} required placeholder="ai-tools" />

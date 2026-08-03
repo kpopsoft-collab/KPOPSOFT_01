@@ -167,6 +167,23 @@ export const clubCohortStatusLabel: Record<ClubCohortStatus, string> = {
   ended: "운영 종료",
 };
 
+/**
+ * 정규 클래스 일정 유형 — 원데이는 하루짜리라 종료일 개념이 없고, 다회차는
+ * 시작·종료 구간을 가진다. DB의 `education_schedule_type` 도메인과 값이
+ * 같아야 한다(10-마이그레이션-DDL.md).
+ */
+export type EducationScheduleType = "oneday" | "multi";
+
+export const EDUCATION_SCHEDULE_TYPES: readonly EducationScheduleType[] = [
+  "oneday",
+  "multi",
+] as const;
+
+export const educationScheduleTypeLabel: Record<EducationScheduleType, string> = {
+  oneday: "원데이 클래스",
+  multi: "다회차 클래스",
+};
+
 export type EducationRegularClass = ContentBase & {
   slug: string;
   /** "01" — 화면에 그대로 찍는 표기. */
@@ -186,6 +203,47 @@ export type EducationRegularClass = ContentBase & {
   detailHref: string;
   seoTitle: string;
   seoDescription: string;
+  /** 원데이/다회차 — 종료일 입력 UI와 DB CHECK 분기 기준이 이 값 하나다. */
+  scheduleType: EducationScheduleType;
+  /**
+   * 강의 시작일(ISO "YYYY-MM-DD"). null 대신 빈 문자열을 쓴다 — 폼 상태·
+   * `<input type="date">`가 전부 문자열이라, null을 섞으면 화면마다
+   * `?? ""`가 따라붙는다. 비워도 되는 값이라 필수 항목이 아니다.
+   */
+  startDate: string;
+  /** 강의 종료일. scheduleType이 "oneday"면 서버가 항상 빈 문자열로 되돌린다. */
+  endDate: string;
+  /**
+   * 정제(sanitize) 완료된 상세 페이지 HTML — 공개 화면이 실제로 렌더하는
+   * 유일한 값이다. 업로드 원본(raw)은 이 필드에 없다 — admin-only 동반
+   * 테이블(`education_regular_class_html_sources`)에 따로 있다(D6, 공개
+   * API로 원본이 새는 것을 막기 위해).
+   */
+  detailHtml: string;
+};
+
+/**
+ * 폼이 상세 HTML을 어떻게 바꾸고 싶은지 나타내는 의도.
+ * `detailHtml`은 서버 전용 정제 결과라 폼이 값을 직접 채워 보낼 수 없고,
+ * 원본은 동반 테이블에 있어 목록/수정 진입 시 `detailHtml`만으로는 원본이
+ * 무엇이었는지 알 수 없다. 그래서 "새 값"이 아니라 "무엇을 할지"를 보낸다 —
+ * 그래야 이름만 고쳐 저장해도 기존 HTML이 조용히 지워지지 않는다
+ * (백로그 01 §3 5-1).
+ */
+export type HtmlIntent =
+  | { kind: "keep" } // 기본값 — 동반 테이블·detail_html 둘 다 손대지 않는다
+  | { kind: "replace"; raw: string; fileName: string }
+  | { kind: "remove" };
+
+/**
+ * 정규 클래스 편집 화면 전용 조회 결과 — 동반 테이블의 업로드 원본·파일명을
+ * 얹는다. list()/get()이 반환하는 `EducationRegularClass`에는 없다(admin-only
+ * 원본이 일반 조회 경로로 새지 않게). 폼이 열릴 때 이 값으로 `htmlIntent`의
+ * 기본 상태("keep")를 채워 넣는다.
+ */
+export type EducationRegularClassEdit = EducationRegularClass & {
+  detailHtmlRaw: string;
+  detailHtmlFileName: string;
 };
 
 /** 조직·기업 맞춤 교육 — 상품이 하나뿐이라 싱글턴이다. */
