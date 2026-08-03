@@ -211,6 +211,20 @@ function scopeSelector(selector: string): string {
   if (trimmed === ":root" || trimmed === "html" || trimmed === "body") {
     return ".course-html";
   }
+  // 이미 스코프된 셀렉터는 그대로 둔다 — **이 함수는 멱등이어야 한다.**
+  //
+  // 저장 시 한 번, 렌더 직전에 한 번(백로그 02 G2) 정제하므로 같은 CSS가 두 번
+  // 들어온다. 접두를 매번 덧붙이면 셀렉터가 패스마다 13바이트씩 길어지고,
+  // §3-6의 64KB 상한에 **두 번째 패스에서만** 걸린다. 그러면 어드민에서는
+  // 저장이 성공하고 값에도 <style>이 들어 있는데 공개 페이지에서만 스타일이
+  // 통째로 사라진다 — 경고도 없이. 실제로 셀렉터 1800개짜리 CSS가 그랬다.
+  //
+  // 접두를 건너뛰어도 스코프는 뚫리지 않는다. 이 조건에 걸리려면 셀렉터가
+  // 이미 `.course-html`로 시작해야 하고, 그건 곧 우리 컨테이너 안으로
+  // 한정돼 있다는 뜻이다.
+  if (trimmed === ".course-html" || trimmed.startsWith(".course-html ")) {
+    return selector;
+  }
   return `.course-html ${selector}`;
 }
 
@@ -279,6 +293,22 @@ function scopeCssUnsafe(css: string): string {
  * 정규 클래스 상세 HTML 업로드를 정제한다. 저장 시점과(백로그 02) 공개 페이지
  * 렌더 직전 양쪽에서 호출된다.
  */
+const SHELL_OPEN = '<div class="course-html-shell"><div class="course-html">';
+const SHELL_CLOSE = "</div></div>";
+
+/**
+ * 이미 우리 셸로 감싸인 결과가 다시 들어오면 껍데기를 벗긴다. 저장 시 한 번,
+ * 렌더 직전에 한 번(백로그 02 G2) 정제하므로 안 벗기면 패스마다 div가 두 겹씩
+ * 쌓인다. 벗겨도 안전하다 — 안쪽 내용은 어차피 아래에서 다시 전부 정제된다.
+ */
+function unwrapShell(html: string): string {
+  const trimmed = html.trim();
+  if (trimmed.startsWith(SHELL_OPEN) && trimmed.endsWith(SHELL_CLOSE)) {
+    return trimmed.slice(SHELL_OPEN.length, -SHELL_CLOSE.length);
+  }
+  return html;
+}
+
 export function sanitizeCourseHtml(raw: string): string {
   const document = parse(raw);
 
@@ -288,7 +318,7 @@ export function sanitizeCourseHtml(raw: string): string {
   const body = findBody(document);
   const bodyHtml = body ? serialize(body) : "";
 
-  const sanitizedBody = sanitizeHtml(bodyHtml, COURSE_HTML_OPTIONS);
+  const sanitizedBody = unwrapShell(sanitizeHtml(bodyHtml, COURSE_HTML_OPTIONS));
   if (sanitizedBody.trim() === "") {
     return ""; // 본문이 없으면 컨테이너 div도 만들지 않는다.
   }
