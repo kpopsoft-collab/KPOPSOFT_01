@@ -13,6 +13,7 @@
 | 1 | [01-regular-class-schedule-and-html](01-regular-class-schedule-and-html/00-START-HERE.md) | 정규 클래스 폼에 일정 유형(원데이/다회차)과 HTML 상세 업로드 추가 | 대기 |
 | 2 | [02-education-programs-public-pages](02-education-programs-public-pages/00-START-HERE.md) | `/education/programs` 목록·상세 페이지를 DB에 연결해 구현 | 대기 |
 | 3 | [03-regular-class-form-merge](03-regular-class-form-merge/00-START-HERE.md) | 정규 클래스 `new`와 `[id]` 페이지를 하나로 병합 | 대기 |
+| 4 | [04-club-cohort-publish-mismatch](04-club-cohort-publish-mismatch/00-START-HERE.md) | **버그** — 클럽 기수 저장이 없는 `is_published` 컬럼 때문에 실패 | 대기 |
 
 ## 셋의 관계
 
@@ -30,6 +31,8 @@
 - **1 → 2**: 2의 상세 페이지가 보여줄 일정·HTML 본문이 1에서 생긴다. 1 없이
   2를 먼저 하면 상세 페이지를 나중에 다시 열어야 한다.
 - 2의 **목록 페이지**만은 1과 독립이다. 급하면 목록부터 먼저 내보낼 수 있다.
+- **4는 위 셋과 다른 기능(클럽 기수)이지만 같은 파일**(`content-types.ts`,
+  `supabase-content.ts`)을 만진다. 1을 끝낸 뒤에 한다.
 
 ## 공통 배경 — 이 기능들이 닿는 지점
 
