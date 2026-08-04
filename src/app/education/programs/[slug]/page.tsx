@@ -83,30 +83,35 @@ export default async function ProgramDetailPage({
 
         <ProgramDetailImage item={item} />
 
-        <Section>
-          <div className="mx-auto max-w-3xl">
-            {item.detailHtml ? (
-              // D1 — detailHtml이 있으면 그 본문을 쓴다. 정제·컨테인먼트는
-              // CourseHtml 안에서 처리한다(release gate G2~G4).
+        {/*
+          본문은 셋 중 하나다 — 어드민이 "상세 본문" 방식을 택일로 고르므로
+          여기서도 겹치지 않는다(백로그 05). HTML과 번들이 동시에 채워지는 상태는
+          폼이 만들지 않지만, 만에 하나 그렇더라도 HTML이 이긴다.
+        */}
+        {item.detailHtml ? (
+          <Section>
+            <div className="mx-auto max-w-3xl">
+              {/* 정제·컨테인먼트는 CourseHtml 안에서 처리한다(release gate G2~G4). */}
               <CourseHtml html={item.detailHtml} />
-            ) : (
-              // detailHtml이 없으면 curriculum[] 기반 주차별 타임라인으로
-              // 대체한다(D1 기본안 — "둘 다").
-              <>
-                <Eyebrow dotClassName="bg-brand-blue">CURRICULUM</Eyebrow>
-                <h2 className="mt-4 text-2xl leading-snug font-extrabold tracking-tight text-ink md:text-3xl">
-                  무엇을 배우나요
-                </h2>
-                <div className="mt-10">
-                  <CurriculumTimeline items={item.curriculum} />
-                </div>
-              </>
-            )}
-          </div>
-        </Section>
-
-        {/* 상세 번들(zip) 링크 — 있을 때만 그려진다(백로그 05 §3). */}
-        {item.bundleUrl && <ProgramBundleLink url={item.bundleUrl} />}
+            </div>
+          </Section>
+        ) : item.bundleUrl ? (
+          // 번들은 우리 페이지에 심지 않고 새 탭으로 연다 — 그 origin에서
+          // 실행되게 두는 것이 iframe보다 안전하다(03-보안판단.md §1).
+          <ProgramBundleLink url={item.bundleUrl} />
+        ) : (
+          <Section>
+            <div className="mx-auto max-w-3xl">
+              <Eyebrow dotClassName="bg-brand-blue">CURRICULUM</Eyebrow>
+              <h2 className="mt-4 text-2xl leading-snug font-extrabold tracking-tight text-ink md:text-3xl">
+                무엇을 배우나요
+              </h2>
+              <div className="mt-10">
+                <CurriculumTimeline items={item.curriculum} />
+              </div>
+            </div>
+          </Section>
+        )}
 
         {/*
           신청/문의 CTA — 목록 페이지의 CTA를 그대로 재사용한다(계획 지시).

@@ -42,6 +42,15 @@ type Input = Omit<
   bundleIntent: BundleIntent;
 };
 
+/** 상세 본문의 출처 — 셋 중 하나다. 둘을 겹쳐 쓰지 않는다. */
+type DetailSource = "none" | "html" | "bundle";
+
+const DETAIL_SOURCE_OPTIONS: { value: DetailSource; label: string }[] = [
+  { value: "none", label: "없음 (커리큘럼 목록)" },
+  { value: "html", label: "HTML 파일 1개" },
+  { value: "bundle", label: "zip 번들 (여러 파일)" },
+];
+
 export function RegularClassForm({
   initial,
   onSave,
@@ -84,7 +93,36 @@ export function RegularClassForm({
   // 업로드가 끝나기 전에 저장하면 intent가 아직 "keep"이라 컬럼은 안 붙고,
   // 이미 올라간 파일 수십 개만 Storage에 고아로 남는다. 그동안 저장을 막는다.
   const [bundleUploading, setBundleUploading] = useState(false);
+  // 상세 본문은 HTML 한 장이거나 zip 번들이거나 둘 중 하나다. 둘 다 채워 두면
+  // 상세 페이지가 무엇을 그릴지 이 화면에서 알 수 없다. 지금 무엇이 들어 있는지로
+  // 초기값을 정한다 — detailHtmlRaw가 비어도(동반 테이블 없는 옛 데이터)
+  // 정제본이 있으면 HTML이다.
+  const [detailSource, setDetailSource] = useState<DetailSource>(
+    initial?.detailBundlePath
+      ? "bundle"
+      : initial?.detailHtmlRaw || initial?.detailHtml
+        ? "html"
+        : "none",
+  );
   const [pending, start] = useTransition();
+
+  /**
+   * 고르지 않은 쪽은 저장할 때 비운다. 라디오를 실제로 움직였을 때만 remove가
+   * 되므로, 이름만 고쳐 저장하는 경우에는 양쪽 다 "keep"으로 남는다.
+   */
+  const changeDetailSource = (next: DetailSource) => {
+    setDetailSource(next);
+    if (next !== "html") {
+      setHtmlRaw("");
+      setHtmlFileName("");
+      setHtmlIntent({ kind: "remove" });
+    }
+    if (next !== "bundle") {
+      setBundlePath("");
+      setBundleName("");
+      setBundleIntent({ kind: "remove" });
+    }
+  };
 
   // DB CHECK(education_regular_classes_schedule_ck)와 같은 규칙: 종료일이 있으면
   // 시작일도 있어야 하고(그래야 "종료일만 입력"이 막힌다), 있으면 순서도 맞아야
@@ -194,36 +232,53 @@ export function RegularClassForm({
 
       <StringListField label="주차별 커리큘럼" values={curriculum} onChange={setCurriculum} />
 
-      <HtmlUpload
-        value={htmlRaw}
-        fileName={htmlFileName}
-        onChange={(raw, fileName) => {
-          setHtmlRaw(raw);
-          setHtmlFileName(fileName);
-          setHtmlIntent({ kind: "replace", raw, fileName });
-        }}
-        onRemove={() => {
-          setHtmlRaw("");
-          setHtmlFileName("");
-          setHtmlIntent({ kind: "remove" });
-        }}
-      />
+      <fieldset className="flex flex-col gap-4 rounded-2xl border border-ink/15 p-4">
+        <legend className="px-1 text-sm font-semibold text-ink/70">상세 본문</legend>
+        <RadioField
+          label="본문 방식"
+          value={detailSource}
+          onChange={changeDetailSource}
+          options={DETAIL_SOURCE_OPTIONS}
+        />
+        <p className="text-xs font-medium text-ink/45">
+          방식을 바꾸고 저장하면 쓰지 않는 쪽은 지워집니다.
+        </p>
 
-      <BundleUpload
-        path={bundlePath}
-        fileName={bundleName}
-        onChange={(path, fileName) => {
-          setBundlePath(path);
-          setBundleName(fileName);
-          setBundleIntent({ kind: "replace", path, fileName });
-        }}
-        onRemove={() => {
-          setBundlePath("");
-          setBundleName("");
-          setBundleIntent({ kind: "remove" });
-        }}
-        onBusyChange={setBundleUploading}
-      />
+        {detailSource === "html" && (
+          <HtmlUpload
+            value={htmlRaw}
+            fileName={htmlFileName}
+            onChange={(raw, fileName) => {
+              setHtmlRaw(raw);
+              setHtmlFileName(fileName);
+              setHtmlIntent({ kind: "replace", raw, fileName });
+            }}
+            onRemove={() => {
+              setHtmlRaw("");
+              setHtmlFileName("");
+              setHtmlIntent({ kind: "remove" });
+            }}
+          />
+        )}
+
+        {detailSource === "bundle" && (
+          <BundleUpload
+            path={bundlePath}
+            fileName={bundleName}
+            onChange={(path, fileName) => {
+              setBundlePath(path);
+              setBundleName(fileName);
+              setBundleIntent({ kind: "replace", path, fileName });
+            }}
+            onRemove={() => {
+              setBundlePath("");
+              setBundleName("");
+              setBundleIntent({ kind: "remove" });
+            }}
+            onBusyChange={setBundleUploading}
+          />
+        )}
+      </fieldset>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <TextField label="슬러그" value={slug} onChange={setSlug} required placeholder="ai-tools" />
