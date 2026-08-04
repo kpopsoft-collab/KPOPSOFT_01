@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { BUNDLE_PATH_RE, walkBundle } from "./course-bundle";
 import type {
   ContentData,
   ContentRepo,
@@ -127,6 +128,8 @@ const FIELDS: Record<string, FieldMap> = {
     ["startDate", "start_date"],
     ["endDate", "end_date"],
     ["detailHtml", "detail_html"],
+    ["detailBundlePath", "detail_bundle_path"],
+    ["detailBundleName", "detail_bundle_name"],
   ],
   education_club_cohorts: [
     ...ORDER_ONLY,
@@ -369,6 +372,31 @@ class SupabaseRegularClassRepo
       .from("education_regular_class_html_sources")
       .delete()
       .eq("class_id", classId);
+    if (error) throw error;
+  }
+
+  /**
+   * 번들 폴더를 통째로 지운다. DB CHECK가 이미 경로 모양을 막지만 여기서 한 번
+   * 더 본다 — 이 값이 곧 Storage 삭제 prefix라, 뚫리면 남의 폴더가 날아간다.
+   * `list()`는 재귀가 아니고 하위 폴더는 `id`가 null로 오므로(Storage API 동작)
+   * `walkBundle`이 훑어 모은 객체 경로를 한 번에 넘긴다.
+   */
+  async removeBundleFolder(path: string): Promise<void> {
+    if (!BUNDLE_PATH_RE.test(path)) return;
+
+    const supabase = await createSupabaseServerClient();
+    const bucket = supabase.storage.from("class-bundles");
+
+    const paths = await walkBundle(path, async (prefix) => {
+      // limit을 반드시 준다 — 기본값이 100이라 한 폴더에 100개가 넘으면 나머지가
+      // 조용히 안 지워진다. 번들 전체 상한이 MAX_FILES(300)라 1000이면 넉넉하다.
+      const { data, error } = await bucket.list(prefix, { limit: 1000 });
+      if (error) throw error;
+      return (data ?? []).map((entry) => ({ name: entry.name, id: entry.id }));
+    });
+    if (paths.length === 0) return;
+
+    const { error } = await bucket.remove(paths);
     if (error) throw error;
   }
 }

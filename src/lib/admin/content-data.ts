@@ -83,6 +83,8 @@ export interface EducationRegularClassRepo extends ContentRepo<EducationRegularC
   upsertHtmlSource(classId: string, raw: string, fileName: string): Promise<void>;
   /** `HtmlIntent.remove` — 동반 테이블 행을 지운다. */
   deleteHtmlSource(classId: string): Promise<void>;
+  /** 저장 성공 뒤 옛 번들 폴더를 지운다 — 순서를 뒤집으면 안 된다(05 §5-2). */
+  removeBundleFolder(path: string): Promise<void>;
 }
 
 export interface EducationContentData {
@@ -202,6 +204,10 @@ class MockRegularClassRepo
 
   async deleteHtmlSource(): Promise<void> {
     // no-op — 동반 테이블이 목 모드에 없다.
+  }
+
+  async removeBundleFolder(): Promise<void> {
+    // no-op — 목 모드에는 Storage가 없다.
   }
 }
 

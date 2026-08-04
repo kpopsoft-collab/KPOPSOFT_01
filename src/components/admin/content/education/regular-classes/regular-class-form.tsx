@@ -8,6 +8,7 @@ import {
   EDUCATION_TRACKS,
   educationScheduleTypeLabel,
   educationTrackLabel,
+  type BundleIntent,
   type EducationRegularClass,
   type EducationRegularClassEdit,
   type EducationScheduleType,
@@ -23,6 +24,7 @@ import {
   TextAreaField,
   TextField,
 } from "@/components/admin/content/fields";
+import { BundleUpload } from "@/components/admin/content/bundle-upload";
 import { HtmlUpload } from "@/components/admin/content/html-upload";
 import { AccentPicker } from "@/components/admin/content/accent-picker";
 import { ImageUpload } from "@/components/admin/content/image-upload";
@@ -30,8 +32,14 @@ import { FormActions } from "@/components/admin/content/education/form-actions";
 
 // detailHtml은 서버 전용 정제 결과라 폼이 못 채운다 — 대신 htmlIntent로
 // "무엇을 할지"를 보낸다(actions.ts의 Input과 구조적으로 같아야 한다).
-type Input = Omit<EducationRegularClass, "id" | "sortOrder" | "detailHtml"> & {
+// 번들 두 필드도 마찬가지다: 값을 그대로 돌려보내면 "안 건드림"과 "비워라"가
+// 구분되지 않아 옛 폴더 삭제 판단을 서버가 못 한다.
+type Input = Omit<
+  EducationRegularClass,
+  "id" | "sortOrder" | "detailHtml" | "detailBundlePath" | "detailBundleName"
+> & {
   htmlIntent: HtmlIntent;
+  bundleIntent: BundleIntent;
 };
 
 export function RegularClassForm({
@@ -69,6 +77,13 @@ export function RegularClassForm({
   const [htmlRaw, setHtmlRaw] = useState(initial?.detailHtmlRaw ?? "");
   const [htmlFileName, setHtmlFileName] = useState(initial?.detailHtmlFileName ?? "");
   const [htmlIntent, setHtmlIntent] = useState<HtmlIntent>({ kind: "keep" });
+  // 번들도 같은 구조 — 위젯이 보여줄 경로·파일명과 저장 의도를 따로 들고 있는다.
+  const [bundlePath, setBundlePath] = useState(initial?.detailBundlePath ?? "");
+  const [bundleName, setBundleName] = useState(initial?.detailBundleName ?? "");
+  const [bundleIntent, setBundleIntent] = useState<BundleIntent>({ kind: "keep" });
+  // 업로드가 끝나기 전에 저장하면 intent가 아직 "keep"이라 컬럼은 안 붙고,
+  // 이미 올라간 파일 수십 개만 Storage에 고아로 남는다. 그동안 저장을 막는다.
+  const [bundleUploading, setBundleUploading] = useState(false);
   const [pending, start] = useTransition();
 
   // DB CHECK(education_regular_classes_schedule_ck)와 같은 규칙: 종료일이 있으면
@@ -77,7 +92,8 @@ export function RegularClassForm({
   const dateInvalid =
     scheduleType === "multi" && Boolean(endDate) && (!startDate || endDate < startDate);
 
-  const canSave = Boolean(name.trim() && slug.trim()) && !dateInvalid && !pending;
+  const canSave =
+    Boolean(name.trim() && slug.trim()) && !dateInvalid && !pending && !bundleUploading;
 
   return (
     <form
@@ -109,6 +125,7 @@ export function RegularClassForm({
             // 이미 감춰진 값을 실수로 들고 나가지 않도록 여기서도 비운다.
             endDate: scheduleType === "oneday" ? "" : endDate,
             htmlIntent,
+            bundleIntent,
           }),
         );
       }}
@@ -190,6 +207,22 @@ export function RegularClassForm({
           setHtmlFileName("");
           setHtmlIntent({ kind: "remove" });
         }}
+      />
+
+      <BundleUpload
+        path={bundlePath}
+        fileName={bundleName}
+        onChange={(path, fileName) => {
+          setBundlePath(path);
+          setBundleName(fileName);
+          setBundleIntent({ kind: "replace", path, fileName });
+        }}
+        onRemove={() => {
+          setBundlePath("");
+          setBundleName("");
+          setBundleIntent({ kind: "remove" });
+        }}
+        onBusyChange={setBundleUploading}
       />
 
       <div className="grid gap-6 sm:grid-cols-2">

@@ -233,6 +233,10 @@ export type EducationRegularClass = ContentBase & {
    * API로 원본이 새는 것을 막기 위해).
    */
   detailHtml: string;
+  /** 'class-bundles' 버킷 안의 폴더('<uuid>/'). 빈 문자열이면 번들 없음. */
+  detailBundlePath: string;
+  /** 올린 zip의 원래 파일명 — 어드민 화면 표시 전용. */
+  detailBundleName: string;
 };
 
 /**
@@ -246,6 +250,19 @@ export type EducationRegularClass = ContentBase & {
 export type HtmlIntent =
   | { kind: "keep" } // 기본값 — 동반 테이블·detail_html 둘 다 손대지 않는다
   | { kind: "replace"; raw: string; fileName: string }
+  | { kind: "remove" };
+
+/**
+ * 폼이 상세 번들을 어떻게 바꾸고 싶은지 나타내는 의도. `HtmlIntent`와 모양이
+ * 같은 데는 이유가 있다 — 번들 교체는 Storage 폴더를 실제로 지우는 파괴적
+ * 동작이라, 폼이 "지금 값"을 그대로 되돌려 보내는 방식이면 이름만 고쳐 저장한
+ * 요청과 "번들을 비워라"는 요청을 서버가 구분할 수 없다. 그래서 "새 값"이
+ * 아니라 "무엇을 할지"를 보낸다. 이것이 번들이 조용히 지워지는 것을 막는
+ * 유일한 장치다(백로그 05 §5-2).
+ */
+export type BundleIntent =
+  | { kind: "keep" } // 기본값 — detail_bundle_* 두 컬럼과 Storage 폴더를 손대지 않는다
+  | { kind: "replace"; path: string; fileName: string }
   | { kind: "remove" };
 
 /**
