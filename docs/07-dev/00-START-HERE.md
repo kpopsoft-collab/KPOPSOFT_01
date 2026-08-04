@@ -38,7 +38,8 @@ Supabase 프로젝트가 하나라 **DB를 고치면 그 즉시 www.kpopsoft.com
 |------|----------|------|
 | 홈 콘텐츠 (포트폴리오·통계·강사진·후기) | Supabase — `src/lib/public-content.ts` | `src/lib/site.ts` 시드 |
 | 문의 유형·세부 유형 | Supabase `inquiry_types` / `inquiry_subtypes` | `src/lib/site.ts` (**DB와 값이 다름**) |
-| 교육 콘텐츠 | 정적 `src/lib/education-content.ts` + 일부 DB | — |
+| 교육 콘텐츠 | Supabase `education_*` 8종 — `src/lib/public-content.ts` | `src/lib/education-content.ts` 시드 |
+| 과정 상세 본문 | `detail_html`(정제본) **또는** Storage `education` 버킷의 zip 번들 | 없으면 `curriculum` 배열 |
 
 **시드만 고치면 화면은 바뀌지 않는다.** 이유는
 [../01-ia/04-홈-contact-DB-마이그레이션.md](../01-ia/04-홈-contact-DB-마이그레이션.md).
@@ -66,6 +67,7 @@ Next.js 16 기본 Turbopack 빌드는 Codex 샌드박스의 내부 포트 바인
 
 - 프로젝트 규칙·컨벤션 — [../../CLAUDE.md](../../CLAUDE.md)
 - 어드민 구축 계획 — [../06-admin/05-구축-실행계획.md](../06-admin/05-구축-실행계획.md)
-- 미착수 기능 묶음 — [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
+- 상세 본문(HTML·zip) 운영 기준 — [../06-admin/07-과정-상세본문-HTML과-번들.md](../06-admin/07-과정-상세본문-HTML과-번들.md)
+- 기능 묶음별 조사·결정 기록(완료분 포함) — [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
 
 ← [문서 전체 시작점](../00-START-HERE.md)

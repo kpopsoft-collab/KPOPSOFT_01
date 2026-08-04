@@ -1,25 +1,33 @@
 # 백로그 — 시작점
 
-작업 대기 중인 기능 묶음이다. 기능 하나가 폴더 하나이고, 각 폴더의
-`00-START-HERE.md`가 그 기능의 시작점이다. **폴더 안 문서는 번호 순서대로 읽는다.**
+기능 묶음 하나가 폴더 하나이고, 각 폴더의 `00-START-HERE.md`가 그 기능의 시작점이다.
+**폴더 안 문서는 번호 순서대로 읽는다.**
+
+> ⚠️ **여기 있는 5건은 모두 끝났다(2026-08-05 기준).** 이 폴더는 이제 *"왜 그렇게
+> 정했나"*의 조사·결정 기록이고, **지금 무엇이 어떻게 동작하는가의 기준은 `docs/`로
+> 승격돼 있다.** 아래 표의 오른쪽 링크를 먼저 본다 — 계획 문서에는 착수 전에 쓴,
+> 구현과 다른 판단이 섞여 있다.
 
 작업 전 [CLAUDE.md](../CLAUDE.md)와 거기 연결된 `docs/` 기준 문서를 먼저 본다.
 백로그 문서와 `docs/`가 어긋나면 `docs/`가 우선이고, 백로그 쪽을 고친다.
 
 ## 목록
 
-| # | 폴더 | 한 줄 | 상태 |
+| # | 폴더 | 한 줄 | 상태 → 승격된 기준 문서 |
 |---|------|-------|------|
-| 1 | [01-regular-class-schedule-and-html](01-regular-class-schedule-and-html/00-START-HERE.md) | 정규 클래스 폼에 일정 유형(원데이/다회차)과 HTML 상세 업로드 추가 | **완료** (2026-08-03) |
-| 2 | [02-education-programs-public-pages](02-education-programs-public-pages/00-START-HERE.md) | `/education/programs` 목록·상세 페이지를 DB에 연결해 구현 | **완료** (2026-08-03) |
+| 1 | [01-regular-class-schedule-and-html](01-regular-class-schedule-and-html/00-START-HERE.md) | 정규 클래스 폼에 일정 유형(원데이/다회차)과 HTML 상세 업로드 추가 | **완료** (2026-08-03) → [docs/06-admin/07](../docs/06-admin/07-과정-상세본문-HTML과-번들.md) |
+| 2 | [02-education-programs-public-pages](02-education-programs-public-pages/00-START-HERE.md) | `/education/programs` 목록·상세 페이지를 DB에 연결해 구현 | **완료** (2026-08-03) → [docs/03-education/13](../docs/03-education/13-공개-과정-상세페이지.md) |
 | 3 | [03-regular-class-form-merge](03-regular-class-form-merge/00-START-HERE.md) | 정규 클래스 `new`와 `[id]` 페이지를 하나로 병합 | **완료** → [docs/06-admin/06](../docs/06-admin/06-콘텐츠-폼-공용셸.md) |
-| 4 | [04-club-cohort-publish-mismatch](04-club-cohort-publish-mismatch/00-START-HERE.md) | **버그** — 클럽 기수 저장이 없는 `is_published` 컬럼 때문에 실패 | **완료** (2026-08-03) |
-| 5 | [05-course-bundle-storage](05-course-bundle-storage/00-START-HERE.md) | 상세 자료를 zip으로 올려 Storage에 두고 새 탭으로 연다 | **코드 완료** (2026-08-04) · **DDL 대기** |
+| 4 | [04-club-cohort-publish-mismatch](04-club-cohort-publish-mismatch/00-START-HERE.md) | **버그** — 클럽 기수 저장이 없는 `is_published` 컬럼 때문에 실패 | **완료** (2026-08-03) → [docs/06-admin/02 §4.4](../docs/06-admin/02-데이터모델과-RLS.md) |
+| 5 | [05-course-bundle-storage](05-course-bundle-storage/00-START-HERE.md) | 상세 자료를 zip으로 올려 Storage에 두고 새 탭으로 연다 | **완료** (2026-08-04, **DDL 적용됨**) → [docs/06-admin/07](../docs/06-admin/07-과정-상세본문-HTML과-번들.md) |
 
-## 셋의 관계
+남은 것은 **CSP 검토(G6)**와 어드민 화면 사람 검증 몇 건이다 —
+[docs/07-dev/05-남은결정과-작업.md](../docs/07-dev/05-남은결정과-작업.md).
+
+## 셋의 관계 — 실행 순서를 어떻게 잡았나 (기록)
 
 1·2·3은 모두 **정규 클래스(`education_regular_classes`)** 하나를 건드린다.
-따로 하면 같은 파일을 세 번 고치게 되므로 순서를 정해 둔다.
+따로 하면 같은 파일을 세 번 고치게 되므로 순서를 정했다.
 
 ```
 1. 스키마 · 폼 확장  ──▶  3. 폼 화면 병합  ──▶  2. 공개 페이지

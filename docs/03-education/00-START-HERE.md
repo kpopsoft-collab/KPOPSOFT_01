@@ -8,6 +8,7 @@
 ```text
 01 ~ 05   교육 페이지 최종 수정 요청서   ← 최신
 06 ~ 12   ver3 기획서                    ← 그 앞 단계
+13        구현 기준 (요청서 아님)        ← 이미 만들어져 돌고 있는 것
 ```
 
 ## 읽는 순서
@@ -26,6 +27,7 @@
 | 10 | [10-ver3-지난프로그램-후기-FAQ.md](10-ver3-지난프로그램-후기-FAQ.md) | 지난 프로그램, 별점 후기, FAQ 4문항 |
 | 11 | [11-ver3-contact-footer.md](11-ver3-contact-footer.md) | CONTACT, Footer |
 | 12 | [12-ver3-상세페이지-ver2유지-admin.md](12-ver3-상세페이지-ver2유지-admin.md) | 2차 범위 상세 페이지, **유지되는 ver2 규정**, Admin |
+| 13 | [13-공개-과정-상세페이지.md](13-공개-과정-상세페이지.md) | **구현 기준.** `/education/programs` 목록·상세 — 라우트, 데이터 경로, 본문 3분기 |
 
 코드 주석의 `docs/03-education/ §N`은 **두 문서에 같은 번호가 있어 모호하다.**
 `§`가 `SECTION NN` 형태면 ver3(06~12번), 그냥 숫자면 최종 수정 요청서(01~05번)로 읽는다.
@@ -66,9 +68,10 @@
 | FAQ | [04](04-최종수정요청-사례-강사진-후기-FAQ.md), [10](10-ver3-지난프로그램-후기-FAQ.md) | `faq.tsx` |
 | 교육 문의 | [05](05-최종수정요청-문의-푸터-모션-반응형.md), [11](11-ver3-contact-footer.md) | `inquiry-form.tsx` |
 
-`src/app/education/cases/`와 `src/app/education/programs/`는 **본문이 비어 있는
-플레이스홀더 라우트**다(헤더·푸터만, `robots` 차단). 전체보기 CTA가 404가 되지
-않게 열어 둔 것이고, 내용은 아직 없다.
+`src/app/education/programs/`는 **2026-08-03에 실제 페이지가 됐다** — 목록과
+`[slug]` 상세를 DB에서 읽는다. 기준은 [13-공개-과정-상세페이지.md](13-공개-과정-상세페이지.md).
+`src/app/education/cases/`만 아직 **본문이 비어 있는 플레이스홀더 라우트**다
+(헤더·푸터만, `robots` 차단). 전체보기 CTA가 404가 되지 않게 열어 둔 것이다.
 
 > **강사진은 홈과 같은 데이터**를 쓴다(`getPublicExperts()`). 중복 등록 금지.
 > 다만 **컴포넌트는 별도**다 — 홈은 `sections/experts.tsx`, 교육은 `instructors.tsx`.
@@ -78,12 +81,12 @@
 
 ## 콘텐츠 위치
 
-교육 콘텐츠는 아직 DB 스키마가 부분적이라 `src/lib/education-content.ts`
-정적 데이터를 함께 쓴다. 정규 클래스는 `education_regular_classes` 테이블이 있다
-(어드민 등록 가능).
+교육 콘텐츠는 `education_*` 8종 테이블이 실제 출처이고,
+`src/lib/education-content.ts`는 **조회 실패 시의 폴백 시드**다.
+시드만 고치면 화면은 바뀌지 않는다.
 
-정규 클래스 폼·공개 상세 페이지는 미착수 백로그다 —
-[../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md).
+정규 클래스는 일정 유형(원데이/다회차)과 상세 본문(HTML 한 장 / zip 번들)까지
+어드민에서 등록한다 — [../06-admin/07-과정-상세본문-HTML과-번들.md](../06-admin/07-과정-상세본문-HTML과-번들.md).
 
 ## 함께 보기
 

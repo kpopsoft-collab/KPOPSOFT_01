@@ -55,6 +55,43 @@
 - 관리자 계정은 **수동 부트스트랩**: 첫 계정은 Supabase 콘솔/시드로 생성 후 `admin_users`에 등록. 이후 추가는 어드민 초대 UI(P3).
 - `auth.users`에는 관리자만 존재하므로, "일반 유저 vs 관리자" 분기 불필요 → RLS는 `is_admin()` 단일 게이트로 단순.
 
+### 4.4 교육 콘텐츠 테이블 (P3~P5) — 원본 계획에 없던 실제 스키마
+
+원본 문서(`docs/어드민기획.md`)는 P2까지만 적혀 있다. 아래는 그 뒤에 실제로 들어간
+것이라 **여기가 유일한 기준**이다.
+
+`20260802120000_p3_education_ver3.sql`이 8종을 만들었다 — `education_org_training`,
+**`education_regular_classes`**, `education_club_tiers`, `education_club_cohorts`,
+`education_past_programs`, `education_reviews`, `education_faqs`, `education_stats`.
+공통 컬럼은 §4.2와 같다.
+
+> ⚠️ **`education_club_cohorts`에는 `is_published`가 없다.** 실수가 아니라 의도다 —
+> 기수는 숨길 행이 없고, 감출 기수는 `status='ended'`로 표현한다. 어드민 타입도
+> 여기에 맞춰 `OrderedBase`(id+sortOrder)를 쓴다. 이 테이블에 `is_published`를
+> 얹으면 `PGRST204`로 거부된다(2026-08-03 실측).
+
+**`education_regular_classes` 확장 컬럼** (P4·P5, 둘 다 적용 완료)
+
+| 컬럼 | 마이그레이션 | 비고 |
+|---|---|---|
+| `schedule_type` | `20260803090000` | 도메인 `education_schedule_type` = `oneday`/`multi`, 기본 `multi` |
+| `start_date` · `end_date` | `20260803090000` | CHECK — `oneday`면 종료일 null, "종료일만 있는" 상태 금지 |
+| `detail_html` | `20260803090000` | **정제본만** 들어온다. 화면이 렌더하는 값 |
+| `detail_bundle_path` | `20260804090000` | `'<uuid>/'` 또는 `''`. CHECK로 모양 고정 |
+| `detail_bundle_name` | `20260804090000` | 표시 전용 |
+
+**`education_regular_class_html_sources`** — 업로드 **원본** 보관용 동반 테이블.
+PK는 `id`가 아니라 `class_id`(FK, `on delete cascade`). `raw`, `file_name`,
+`updated_at` + 크기 CHECK(5MB, `20260804120000`에서 512KB → 5MB).
+원본을 본 테이블 컬럼으로 두지 않는 이유는 §5에 있다.
+
+**Storage** — 번들은 새 버킷을 만들지 않고 기존 `education` 버킷을 쓴다.
+키가 겹치지 않는다(이미지는 루트 `<uuid>.<ext>`, 번들은 `<uuid>/` 폴더).
+`20260804090000`이 이 버킷의 `allowed_mime_types`를 이미지 4종 → **15종**으로
+넓혔다. `file_size_limit`은 5MB 그대로다.
+
+운영 규칙 전문은 [07-과정-상세본문-HTML과-번들.md](07-과정-상세본문-HTML과-번들.md).
+
 ---
 
 ## 5. 접근 제어 (RLS) — 핵심
@@ -70,6 +107,18 @@ DB는 항상 RLS ON. 클라이언트 anon 키가 노출되는 전제로 정책�
 - **`inquiry_types` / `inquiry_subtypes`**
   - SELECT: `is_active = true` anon 허용(공개 폼 렌더), 전체는 admin.
   - INSERT / UPDATE / DELETE: admin만.
+- **`education_regular_class_html_sources`** (업로드 원본)
+  - SELECT / INSERT / UPDATE / DELETE: `is_admin()` **단일 정책**. anon에게 열지 않는다.
+  - **왜 별도 테이블인가** — RLS는 행 단위다. 원본을 `education_regular_classes`
+    컬럼으로 두면 게시된 행의 그 컬럼까지 anon에게 열린다. 즉 **정제 전 스크립트가
+    공개 API에 그대로 놓인다.** 앱 쿼리에서 컬럼을 빼는 것은 성능 최적화이지
+    접근통제가 아니다. 2026-08-03에 카나리 행으로 실증했다(service_role은 보이고
+    anon은 0행 — 빈 테이블이라 0행인 것과 구분하려고 실제 행을 넣었다 지웠다).
+- **Storage `education` 버킷** — `public read` + 쓰기 3종은 `is_admin()`
+  (`20260802120000`). 번들이 같은 버킷을 쓰지만 정책을 새로 만들지 않았다 —
+  기존 정책이 `bucket_id = 'education'` 전체에 걸려 있다.
+  버킷이 공개인 것은 편의가 아니라 **요구사항**이다. 서명 URL이면 `index.html`
+  안의 상대경로가 토큰을 물고 가지 못해 서브 리소스가 전부 깨진다.
 - 관리자 화면의 쓰기 작업은 **Server Action / Route Handler**에서 처리하고, 필요 시 service-role 키는 **서버에서만** 사용(절대 클라이언트 번들에 넣지 않음).
 
 ---

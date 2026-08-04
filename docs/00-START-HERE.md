@@ -70,6 +70,7 @@
 | 색·폰트·간격 확인 | [04-design-system/02-컬러시스템.md](04-design-system/02-컬러시스템.md), [03-타이포그래피.md](04-design-system/03-타이포그래피.md) |
 | 새 이미지 생성 | [05-assets/01-원칙-규격-에셋목록.md](05-assets/01-원칙-규격-에셋목록.md) |
 | DB 스키마·RLS | [06-admin/02-데이터모델과-RLS.md](06-admin/02-데이터모델과-RLS.md) |
+| 과정 상세 본문(HTML·zip 업로드) | [06-admin/07-과정-상세본문-HTML과-번들.md](06-admin/07-과정-상세본문-HTML과-번들.md) |
 | **배포 전 확인** | [07-dev/05-남은결정과-작업.md](07-dev/05-남은결정과-작업.md) |
 | 어떤 스킬·에이전트·MCP가 붙어 있나 | [07-dev/09-클로드코드-스킬과-에이전트.md](07-dev/09-클로드코드-스킬과-에이전트.md) |
 | 왜 이렇게 만들었나 | [07-dev/03-작업로그-2026-07-31.md](07-dev/03-작업로그-2026-07-31.md) 이후 |
@@ -79,7 +80,7 @@
 | 위치 | 내용 |
 |------|------|
 | [../CLAUDE.md](../CLAUDE.md) | 프로젝트 규칙·컨벤션·디자인 토큰 요약. **작업 전 필독** |
-| [../backlogs/00-START-HERE.md](../backlogs/00-START-HERE.md) | 아직 착수하지 않은 기능 묶음 |
+| [../backlogs/00-START-HERE.md](../backlogs/00-START-HERE.md) | 기능 묶음별 조사·결정 기록. **완료분도 남아 있다** — 완료된 것의 기준은 `docs/`로 승격돼 있다 |
 | `../.claude/agents/` | 프로젝트 전용 서브에이전트 정의 |
 | `../src/lib/site.ts` | 홈 콘텐츠 **폴백 시드**. 실제 값은 Supabase에 있다 |
 | `../src/lib/education-content.ts` | 교육 콘텐츠 정적 데이터 |

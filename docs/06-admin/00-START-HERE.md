@@ -17,6 +17,7 @@
 | 4 | [04-결정사항과-착수순서.md](04-결정사항과-착수순서.md) | §9, §10 | 확정 결정·남은 이슈, P1 착수 순서 |
 | 5 | [05-구축-실행계획.md](05-구축-실행계획.md) | §11 | 병렬 Wave 배치, **§11.8 DB 제외 선행 구축 모드(현재 채택)** |
 | 6 | [06-콘텐츠-폼-공용셸.md](06-콘텐츠-폼-공용셸.md) | — | **콘텐츠 폼 25개가 쓰는 `ContentFormShell`** — 새 폼 화면을 만들 때의 기준 |
+| 7 | [07-과정-상세본문-HTML과-번들.md](07-과정-상세본문-HTML과-번들.md) | — | 정규 클래스 상세 본문(HTML 한 장 / zip 번들 **택일**) — 정제·상한·Storage 규칙 |
 
 ## 지금 어디까지 됐나
 
@@ -28,6 +29,8 @@
 | P1 — 로그인, 대시보드, 문의 목록·상세·상태/메모 | 완료 |
 | P2 — 콘텐츠 CRUD `work` · `experts` · `stats` · `inquiry-options` · `pillars` · `pillar-examples` | 완료 |
 | P3 — 교육 ver3 `education/{org-training, regular-classes, club-tiers, club-cohorts, past-programs, reviews, faqs, stats}` | 완료 (마이그레이션 `20260802120000_p3_education_ver3.sql`) |
+| P4 — 정규 클래스 **일정 유형 + HTML 상세 본문** | 완료 (`20260803090000`, DDL 적용됨) → [07](07-과정-상세본문-HTML과-번들.md) |
+| P5 — 정규 클래스 **zip 번들 업로드**(Storage) | 완료 (`20260804090000`·`20260804120000`, DDL 적용됨) → [07](07-과정-상세본문-HTML과-번들.md) |
 | 관리자 초대 UI | 미구현 |
 | Supabase Auth / DB / Storage | 연결됨 (`20260709131208_p2_storage_buckets.sql`) |
 | 이메일 발송 | 코드는 Resend로 구현됨(`src/lib/email.ts`). 실제 발송은 `RESEND_API_KEY` 유무에 달림 |
@@ -67,6 +70,6 @@ www.kpopsoft.com에 반영된다.** 반면 이미지·코드는 배포되어야 
 - 교육 Admin 상세 — [../03-education/12-ver3-상세페이지-ver2유지-admin.md](../03-education/12-ver3-상세페이지-ver2유지-admin.md), [../99-archive/education-ver2/21-admin-구성.md](../99-archive/education-ver2/21-admin-구성.md)
 - 홈 Admin 연동 원칙(ver2) — [../99-archive/home-ver2/10-제거콘텐츠와-admin연동.md](../99-archive/home-ver2/10-제거콘텐츠와-admin연동.md)
 - 문의 유형 DB 현황 — [../01-ia/04-홈-contact-DB-마이그레이션.md](../01-ia/04-홈-contact-DB-마이그레이션.md)
-- 미착수 백로그 — [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
+- 백로그(착수 전 조사·결정 기록. 완료분 포함) — [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
 
 ← [문서 전체 시작점](../00-START-HERE.md)
