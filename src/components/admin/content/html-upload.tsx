@@ -105,6 +105,10 @@ export function HtmlUpload({
         </p>
       )}
 
+      <p className="text-xs font-medium text-ink/45">
+        파일이 여러 개면 아래 상세 번들(zip)을 쓰세요.
+      </p>
+
       <input
         ref={inputRef}
         type="file"
