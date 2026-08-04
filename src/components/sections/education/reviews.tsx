@@ -35,14 +35,24 @@ import { cn } from "@/lib/utils";
  */
 const SPEED_PX_PER_SEC = 40;
 
+/** 카드 사이 간격(`gap-6` = 1.5rem). 이동 거리 계산에 그대로 쓰인다. */
+const GAP_PX = 24;
+
 export function Reviews({ reviews }: { reviews: EduReview[] }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const setRef = useRef<HTMLUListElement>(null);
 
-  /** 한 바퀴 시간(초). 카드 한 벌의 실제 폭에서 계산한다. */
+  /** 한 바퀴(= 한 벌 폭 + 간격)에 걸리는 시간(초). */
   const [duration, setDuration] = useState(0);
-  /** 한 벌이 화면보다 좁으면 돌리지 않는다 — 아래 주석 참고. */
-  const [enoughToLoop, setEnoughToLoop] = useState(false);
+  /** 한 바퀴에 밀어낼 거리(px). 한 벌 폭 + 간격. */
+  const [shift, setShift] = useState(0);
+  /**
+   * 이어 붙일 벌 수. 화면을 덮고도 한 벌이 더 남아야 이음매에 빈 구간이
+   * 생기지 않는다. 예전에는 한 벌이 화면보다 좁으면 아예 멈춰 세웠는데,
+   * 후기가 적거나 화면이 넓으면 그대로 정지해 보였다 — 벌 수를 늘려
+   * **항상 돈다**.
+   */
+  const [copies, setCopies] = useState(2);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -53,11 +63,10 @@ export function Reviews({ reviews }: { reviews: EduReview[] }) {
       const setWidth = set.scrollWidth;
       if (setWidth === 0) return;
 
-      setDuration(setWidth / SPEED_PX_PER_SEC);
-      // 한 벌이 화면 폭보다 좁으면 두 벌을 이어 붙여도 빈 구간이 생겨
-      // 카드가 끊겼다 나타난다. 후기가 한두 건뿐일 때가 그렇다 — 그때는
-      // 애니메이션을 켜지 않고 그냥 나란히 둔다.
-      setEnoughToLoop(setWidth >= viewport.clientWidth);
+      const distance = setWidth + GAP_PX;
+      setShift(distance);
+      setDuration(distance / SPEED_PX_PER_SEC);
+      setCopies(Math.max(2, Math.ceil(viewport.clientWidth / distance) + 1));
     };
 
     measure();
@@ -91,12 +100,14 @@ export function Reviews({ reviews }: { reviews: EduReview[] }) {
       {/*
         마키 트랙 — 모든 화면에서 끊김 없이 돈다.
 
-        같은 목록을 두 벌 이어 붙이고 트랙 전체를 "한 벌 + 간격"만큼 민다.
-        첫 벌이 완전히 빠져나가는 순간 둘째 벌이 정확히 그 자리에 와 있어
-        이음매가 보이지 않는다(`kps-marquee` 키프레임의 `-50% - gap/2`가
-        그 계산이다).
+        같은 목록을 화면을 덮고도 한 벌이 더 남을 만큼 이어 붙이고, 트랙을
+        "한 벌 폭 + 간격"만큼 민 뒤 처음으로 돌아간다. 첫 벌이 빠져나가는
+        순간 다음 벌이 정확히 그 자리에 있어 이음매가 보이지 않는다.
 
-        둘째 벌은 `aria-hidden`이라 스크린리더는 후기를 한 번만 읽는다.
+        이동 거리를 퍼센트가 아니라 실제 px로 주는 이유 — 벌 수가 화면 폭에
+        따라 달라지므로 `-50%` 같은 고정 비율로는 이음매가 어긋난다.
+
+        첫 벌을 뺀 나머지는 `aria-hidden`이라 스크린리더는 후기를 한 번만 읽는다.
       */}
       <div
         ref={viewportRef}
@@ -104,45 +115,37 @@ export function Reviews({ reviews }: { reviews: EduReview[] }) {
       >
         <div
           style={{
-            ["--marquee-gap" as string]: "1.5rem",
+            ["--marquee-shift" as string]: `${shift}px`,
             animationDuration: `${duration}s`,
           }}
           className={cn(
-            // 좌우 여백을 두지 않는다 — 키프레임이 트랙 폭의 50%를 기준으로
-            // 미는데 패딩이 붙으면 그 50%가 한 벌 폭과 어긋나 이음매가 튄다.
-            // 마키는 원래 화면 양끝으로 흘러 나가는 편이 자연스럽다.
+            // 좌우 여백을 두지 않는다 — 마키는 화면 양끝으로 흘러 나가는 편이
+            // 자연스럽고, 패딩이 붙으면 이음매 계산도 어긋난다.
             "flex w-max gap-6",
-            enoughToLoop && duration > 0
-              ? "animate-[kps-marquee_linear_infinite]"
-              : null,
+            duration > 0 ? "animate-[kps-marquee-shift_linear_infinite]" : null,
             // Hover·Focus에서 정지(§11). focus-within이 있어야 키보드로 카드
             // 안 버튼(더보기)에 닿았을 때 카드가 도망가지 않는다.
             "group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused]",
             "motion-reduce:animate-none",
           )}
         >
-          <ul ref={setRef} className="flex w-max shrink-0 gap-6">
-            {reviews.map((review) => (
-              <li key={review.id} className="w-[78vw] shrink-0 sm:w-[26rem]">
-                <ReviewCard review={review} />
-              </li>
-            ))}
-          </ul>
-
-          {/* 이음매용 둘째 벌. 돌지 않을 때는 같은 카드가 두 번 보이므로
-              렌더하지 않는다. */}
-          {enoughToLoop ? (
-            <ul aria-hidden className="flex w-max shrink-0 gap-6">
+          {Array.from({ length: copies }, (_, copy) => (
+            <ul
+              key={copy}
+              ref={copy === 0 ? setRef : undefined}
+              aria-hidden={copy > 0 || undefined}
+              className="flex w-max shrink-0 gap-6"
+            >
               {reviews.map((review) => (
                 <li
-                  key={`${review.id}-loop`}
+                  key={`${review.id}-${copy}`}
                   className="w-[78vw] shrink-0 sm:w-[26rem]"
                 >
                   <ReviewCard review={review} />
                 </li>
               ))}
             </ul>
-          ) : null}
+          ))}
         </div>
       </div>
     </Section>
