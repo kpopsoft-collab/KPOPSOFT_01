@@ -94,12 +94,15 @@ export function BundleUpload({
 
       let done = 0;
       let failedAt: string | null = null;
+      // Storage가 준 이유를 그대로 보여 준다. "잠시 후 다시 시도"로 뭉개면
+      // 정책(RLS)·MIME 거부처럼 다시 시도해도 절대 안 되는 실패를 구분할 수 없다.
+      let failedWhy = "";
       let cursor = 0;
 
       const uploadOne = async (f: BundleFile) => {
         // fflate가 돌려주는 Uint8Array는 버퍼 타입이 ArrayBufferLike(SharedArrayBuffer
         // 포함)로 넓어 BlobPart에 바로 안 맞는다 — 새 Uint8Array로 복사해 좁힌다.
-        // 파일 하나 최대 10MB(MAX_FILE_BYTES)라 복사 비용은 무시할 만하다.
+        // 파일 하나 최대 5MB(MAX_FILE_BYTES)라 복사 비용은 무시할 만하다.
         const bytes = new Uint8Array(unzipped[f.from]);
         const blob = new Blob([bytes], { type: f.mime });
         // 던지는 예외도 여기서 삼켜 failedAt으로 바꾼다 — 밖으로 새면 Promise.all이
@@ -113,8 +116,12 @@ export function BundleUpload({
               // 번들 폴더는 업로드마다 새 UUID라 내용이 절대 바뀌지 않는다 — 길게 캐시해도 안전하다.
               cacheControl: "31536000",
             });
-          if (uploadError) failedAt = f.to;
-        } catch {
+          if (uploadError) {
+            failedWhy = uploadError.message;
+            failedAt = f.to;
+          }
+        } catch (e) {
+          failedWhy = e instanceof Error ? e.message : String(e);
           failedAt = f.to;
         }
       };
@@ -136,7 +143,10 @@ export function BundleUpload({
       );
 
       if (failedAt) {
-        setError(`업로드에 실패했습니다. (${failedAt}) 잠시 후 다시 시도해 주세요.`);
+        setError(
+          `업로드 실패 — ${failedAt}: ${failedWhy || "알 수 없는 오류"}` +
+            " · 버킷 정책(관리자 로그인)과 허용 형식을 먼저 확인해 주세요.",
+        );
         return;
       }
 
