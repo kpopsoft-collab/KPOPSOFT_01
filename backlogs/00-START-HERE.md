@@ -14,10 +14,11 @@
 | 2 | [02-education-programs-public-pages](02-education-programs-public-pages/00-START-HERE.md) | `/education/programs` 목록·상세 페이지를 DB에 연결해 구현 | **완료** (2026-08-03) |
 | 3 | [03-regular-class-form-merge](03-regular-class-form-merge/00-START-HERE.md) | 정규 클래스 `new`와 `[id]` 페이지를 하나로 병합 | 대기 |
 | 4 | [04-club-cohort-publish-mismatch](04-club-cohort-publish-mismatch/00-START-HERE.md) | **버그** — 클럽 기수 저장이 없는 `is_published` 컬럼 때문에 실패 | **완료** (2026-08-03) |
+| 5 | [05-course-bundle-storage](05-course-bundle-storage/00-START-HERE.md) | 상세 자료를 zip으로 올려 Storage에 두고 새 탭으로 연다 | **코드 완료** (2026-08-04) · **DDL 대기** |
 
 ## 셋의 관계
 
-세 건은 모두 **정규 클래스(`education_regular_classes`)** 하나를 건드린다.
+1·2·3은 모두 **정규 클래스(`education_regular_classes`)** 하나를 건드린다.
 따로 하면 같은 파일을 세 번 고치게 되므로 순서를 정해 둔다.
 
 ```
@@ -33,6 +34,9 @@
 - 2의 **목록 페이지**만은 1과 독립이다. 급하면 목록부터 먼저 내보낼 수 있다.
 - **4는 위 셋과 다른 기능(클럽 기수)이지만 같은 파일**(`content-types.ts`,
   `supabase-content.ts`)을 만진다. 1을 끝낸 뒤에 한다.
+- **5는 1이 만든 `detail_html` 경로를 대체하지 않고 옆에 붙는다**(그 폴더 D6).
+  1·2가 끝나 있어야 한다 — 어드민 폼과 상세 페이지 양쪽에 붙기 때문이다.
+  3과는 같은 라우트 폴더를 쓰지만 폼 본체가 이미 공용 컴포넌트라 순서 제약이 없다.
 
 ## 공통 배경 — 이 기능들이 닿는 지점
 

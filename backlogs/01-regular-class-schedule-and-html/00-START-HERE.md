@@ -7,6 +7,11 @@
 
 정규 클래스 등록/수정 폼에 **강의 일정**과 **HTML 상세 본문**을 추가한다.
 
+> **여기서 받는 HTML은 `.html` 파일 한 개뿐이다.** 이미지·서브 페이지가 딸린
+> 여러 파일 묶음은 텍스트 컬럼 하나로 담을 수 없어서
+> [05-course-bundle-storage](../05-course-bundle-storage/00-START-HERE.md)가
+> 따로 맡는다. 이 폴더의 결과물을 **대체하지 않고 옆에 붙는다**(05의 D6).
+
 대상 화면
 - `src/app/admin/(shell)/content/education/regular-classes/[id]/page.tsx` (수정)
 - `src/app/admin/(shell)/content/education/regular-classes/new/page.tsx` (추가)
