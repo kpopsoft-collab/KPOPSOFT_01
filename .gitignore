@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 예시 파일은 값이 없으므로 커밋한다 — 무엇을 채워야 하는지 알 방법이 없으면
+# 새로 받은 사람이 앱을 못 띄운다.
+!.env.example
 
 # vercel
 .vercel

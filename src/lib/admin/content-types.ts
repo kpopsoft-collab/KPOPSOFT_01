@@ -3,18 +3,30 @@
  *
  * Shapes mirror the real content in src/lib/site.ts so the mock store seeds
  * losslessly and the future Supabase adapter maps 1:1. Every collection shares
- * `id` / `sortOrder` / `isPublished`. Images are plain string URLs: in mock mode
- * that's a data: URL from the upload widget; on wiring day it becomes a Supabase
- * Storage path — the field name and screens don't change.
+ * `id` / `sortOrder`(`OrderedBase`), and most also share `isPublished`
+ * (`ContentBase`) — the exception is `EducationClubCohort`, whose table has no
+ * `is_published` column (백로그 04, `status`가 숨김 축). Images are plain
+ * string URLs: in mock mode that's a data: URL from the upload widget; on
+ * wiring day it becomes a Supabase Storage path — the field name and screens
+ * don't change.
  */
 
 import type { Accent } from "@/lib/site";
+import { eduTrackLabel } from "@/lib/education-content";
 
-/** Fields every CMS row carries. */
-export type ContentBase = {
+/**
+ * 정렬만 갖는 콘텐츠 베이스. 공개/비공개 축이 없는 타입(클럽 기수)이 쓴다 —
+ * DB에 `is_published` 컬럼이 없다(백로그 04). `ContentRepo`/`SupabaseRepo` 등
+ * 제네릭이 실제로 요구하는 값은 `id`·`sortOrder`뿐이라 이 정도로 충분하다.
+ */
+export type OrderedBase = {
   id: string;
   /** Ascending display order on the public site. */
   sortOrder: number;
+};
+
+/** Fields every CMS row carries — 공개/비공개 축이 있는 콘텐츠. */
+export type ContentBase = OrderedBase & {
   /** Hidden from the public site when false. */
   isPublished: boolean;
 };
@@ -126,10 +138,11 @@ export const EDUCATION_TRACKS: readonly EducationTrack[] = [
   "practical",
 ] as const;
 
-export const educationTrackLabel: Record<EducationTrack, string> = {
-  beginner: "AI 입문",
-  practical: "실무 활용",
-};
+/**
+ * 어드민 표기는 공개 표기를 **그대로 가져다 쓴다**. 두 곳에 같은 문자열을
+ * 적어 두면 한쪽만 고쳤을 때 어드민에서 고른 트랙과 사이트 표기가 갈라진다.
+ */
+export const educationTrackLabel: Record<EducationTrack, string> = eduTrackLabel;
 
 /** 교육 3분류 — 지난 프로그램이 어디에 속하는지 표시할 때 쓴다. */
 export type EducationCategoryId = "org" | "regular" | "club";
@@ -167,6 +180,23 @@ export const clubCohortStatusLabel: Record<ClubCohortStatus, string> = {
   ended: "운영 종료",
 };
 
+/**
+ * 정규 클래스 일정 유형 — 원데이는 하루짜리라 종료일 개념이 없고, 다회차는
+ * 시작·종료 구간을 가진다. DB의 `education_schedule_type` 도메인과 값이
+ * 같아야 한다(10-마이그레이션-DDL.md).
+ */
+export type EducationScheduleType = "oneday" | "multi";
+
+export const EDUCATION_SCHEDULE_TYPES: readonly EducationScheduleType[] = [
+  "oneday",
+  "multi",
+] as const;
+
+export const educationScheduleTypeLabel: Record<EducationScheduleType, string> = {
+  oneday: "원데이 클래스",
+  multi: "다회차 클래스",
+};
+
 export type EducationRegularClass = ContentBase & {
   slug: string;
   /** "01" — 화면에 그대로 찍는 표기. */
@@ -186,6 +216,64 @@ export type EducationRegularClass = ContentBase & {
   detailHref: string;
   seoTitle: string;
   seoDescription: string;
+  /** 원데이/다회차 — 종료일 입력 UI와 DB CHECK 분기 기준이 이 값 하나다. */
+  scheduleType: EducationScheduleType;
+  /**
+   * 강의 시작일(ISO "YYYY-MM-DD"). null 대신 빈 문자열을 쓴다 — 폼 상태·
+   * `<input type="date">`가 전부 문자열이라, null을 섞으면 화면마다
+   * `?? ""`가 따라붙는다. 비워도 되는 값이라 필수 항목이 아니다.
+   */
+  startDate: string;
+  /** 강의 종료일. scheduleType이 "oneday"면 서버가 항상 빈 문자열로 되돌린다. */
+  endDate: string;
+  /**
+   * 정제(sanitize) 완료된 상세 페이지 HTML — 공개 화면이 실제로 렌더하는
+   * 유일한 값이다. 업로드 원본(raw)은 이 필드에 없다 — admin-only 동반
+   * 테이블(`education_regular_class_html_sources`)에 따로 있다(D6, 공개
+   * API로 원본이 새는 것을 막기 위해).
+   */
+  detailHtml: string;
+  /** 'education' 버킷 안의 폴더('<uuid>/'). 빈 문자열이면 번들 없음. */
+  detailBundlePath: string;
+  /** 올린 zip의 원래 파일명 — 어드민 화면 표시 전용. */
+  detailBundleName: string;
+};
+
+/**
+ * 폼이 상세 HTML을 어떻게 바꾸고 싶은지 나타내는 의도.
+ * `detailHtml`은 서버 전용 정제 결과라 폼이 값을 직접 채워 보낼 수 없고,
+ * 원본은 동반 테이블에 있어 목록/수정 진입 시 `detailHtml`만으로는 원본이
+ * 무엇이었는지 알 수 없다. 그래서 "새 값"이 아니라 "무엇을 할지"를 보낸다 —
+ * 그래야 이름만 고쳐 저장해도 기존 HTML이 조용히 지워지지 않는다
+ * (백로그 01 §3 5-1).
+ */
+export type HtmlIntent =
+  | { kind: "keep" } // 기본값 — 동반 테이블·detail_html 둘 다 손대지 않는다
+  | { kind: "replace"; raw: string; fileName: string }
+  | { kind: "remove" };
+
+/**
+ * 폼이 상세 번들을 어떻게 바꾸고 싶은지 나타내는 의도. `HtmlIntent`와 모양이
+ * 같은 데는 이유가 있다 — 번들 교체는 Storage 폴더를 실제로 지우는 파괴적
+ * 동작이라, 폼이 "지금 값"을 그대로 되돌려 보내는 방식이면 이름만 고쳐 저장한
+ * 요청과 "번들을 비워라"는 요청을 서버가 구분할 수 없다. 그래서 "새 값"이
+ * 아니라 "무엇을 할지"를 보낸다. 이것이 번들이 조용히 지워지는 것을 막는
+ * 유일한 장치다(백로그 05 §5-2).
+ */
+export type BundleIntent =
+  | { kind: "keep" } // 기본값 — detail_bundle_* 두 컬럼과 Storage 폴더를 손대지 않는다
+  | { kind: "replace"; path: string; fileName: string }
+  | { kind: "remove" };
+
+/**
+ * 정규 클래스 편집 화면 전용 조회 결과 — 동반 테이블의 업로드 원본·파일명을
+ * 얹는다. list()/get()이 반환하는 `EducationRegularClass`에는 없다(admin-only
+ * 원본이 일반 조회 경로로 새지 않게). 폼이 열릴 때 이 값으로 `htmlIntent`의
+ * 기본 상태("keep")를 채워 넣는다.
+ */
+export type EducationRegularClassEdit = EducationRegularClass & {
+  detailHtmlRaw: string;
+  detailHtmlFileName: string;
 };
 
 /** 조직·기업 맞춤 교육 — 상품이 하나뿐이라 싱글턴이다. */
@@ -199,7 +287,12 @@ export type EducationOrgTraining = {
   ctaLabel: string;
 };
 
-export type EducationClubCohort = ContentBase & {
+/**
+ * 클럽 기수 — ContentBase가 아니라 OrderedBase다. `is_published` 컬럼이 DB에
+ * 없다(의도적, 백로그 04 참고). 숨기는 축은 `status`(예: "ended") 하나다 —
+ * 여기에 `isPublished`를 다시 추가하지 말 것.
+ */
+export type EducationClubCohort = OrderedBase & {
   /** "1기" */
   label: string;
   status: ClubCohortStatus;

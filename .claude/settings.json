@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "deny": ["mcp__supabase__apply_migration"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__supabase__execute_sql|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-ddl.mjs\"",
+            "timeout": 10,
+            "statusMessage": "DDL 차단 검사"
+          }
+        ]
+      }
+    ]
+  }
+}

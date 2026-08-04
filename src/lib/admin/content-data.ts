@@ -25,7 +25,6 @@ import {
   mockWork,
 } from "./mock-content";
 import type {
-  ContentBase,
   EducationClubCohort,
   EducationClubTier,
   EducationFaq,
@@ -34,16 +33,18 @@ import type {
   EducationPastProgramImage,
   EducationPastProgramImageInput,
   EducationRegularClass,
+  EducationRegularClassEdit,
   EducationReview,
   EducationStat,
   Expert,
   HomePillar,
   HomePillarExample,
+  OrderedBase,
   Stat,
   WorkItem,
 } from "./content-types";
 
-export interface ContentRepo<T extends ContentBase> {
+export interface ContentRepo<T extends OrderedBase> {
   /** All rows, ascending by sortOrder. */
   list(): Promise<T[]>;
   get(id: string): Promise<T | null>;
@@ -70,8 +71,24 @@ export interface EducationOrgTrainingRepo {
   update(patch: Partial<EducationOrgTraining>): Promise<EducationOrgTraining>;
 }
 
+/**
+ * 정규 클래스 리포 — 동반 테이블(업로드 원본) 때문에 일반 `ContentRepo`로는
+ * 부족하다(07 §3 5-1). `list()`/`get()`은 여전히 정제본(`detailHtml`)만
+ * 다루고, 아래 세 메서드만 원본을 만진다.
+ */
+export interface EducationRegularClassRepo extends ContentRepo<EducationRegularClass> {
+  /** 편집 화면 전용 조회 — 동반 테이블의 원본·파일명을 함께 읽는다. */
+  getForEdit(id: string): Promise<EducationRegularClassEdit | null>;
+  /** `HtmlIntent.replace` — 동반 테이블에 원본·파일명을 upsert한다. */
+  upsertHtmlSource(classId: string, raw: string, fileName: string): Promise<void>;
+  /** `HtmlIntent.remove` — 동반 테이블 행을 지운다. */
+  deleteHtmlSource(classId: string): Promise<void>;
+  /** 저장 성공 뒤 옛 번들 폴더를 지운다 — 순서를 뒤집으면 안 된다(05 §5-2). */
+  removeBundleFolder(path: string): Promise<void>;
+}
+
 export interface EducationContentData {
-  regularClasses: ContentRepo<EducationRegularClass>;
+  regularClasses: EducationRegularClassRepo;
   orgTraining: EducationOrgTrainingRepo;
   clubCohorts: ContentRepo<EducationClubCohort>;
   clubTiers: ContentRepo<EducationClubTier>;
@@ -95,7 +112,7 @@ export interface ContentData {
 }
 
 /** Generic mock repo over a module-level array. */
-class MockRepo<T extends ContentBase> implements ContentRepo<T> {
+class MockRepo<T extends OrderedBase> implements ContentRepo<T> {
   constructor(
     private rows: T[],
     private prefix: string,
@@ -162,6 +179,38 @@ class MockPastProgramImagesRepo implements EducationPastProgramImagesRepo {
   }
 }
 
+/**
+ * 동반 테이블(업로드 원본)을 목데이터에서는 모델링하지 않는다 — 목 시드가
+ * 항상 빈 배열이라 (06 §1-1) 실제로 값을 들고 있을 일이 없다. `getForEdit`은
+ * 그래서 원본을 정제본으로만 채워 반환하고, upsert/delete는 no-op이다.
+ */
+class MockRegularClassRepo
+  extends MockRepo<EducationRegularClass>
+  implements EducationRegularClassRepo
+{
+  constructor(rows: EducationRegularClass[]) {
+    super(rows, "edu_class");
+  }
+
+  async getForEdit(id: string): Promise<EducationRegularClassEdit | null> {
+    const item = await this.get(id);
+    if (!item) return null;
+    return { ...item, detailHtmlRaw: item.detailHtml, detailHtmlFileName: "" };
+  }
+
+  async upsertHtmlSource(): Promise<void> {
+    // no-op — 동반 테이블이 목 모드에 없다.
+  }
+
+  async deleteHtmlSource(): Promise<void> {
+    // no-op — 동반 테이블이 목 모드에 없다.
+  }
+
+  async removeBundleFolder(): Promise<void> {
+    // no-op — 목 모드에는 Storage가 없다.
+  }
+}
+
 class MockOrgTrainingRepo implements EducationOrgTrainingRepo {
   async get(): Promise<EducationOrgTraining> {
     return { ...mockOrgTraining };
@@ -180,7 +229,7 @@ const data: ContentData = {
   experts: new MockRepo(mockExperts, "expert"),
   stats: new MockRepo(mockStats, "stat"),
   education: {
-    regularClasses: new MockRepo(mockEducationRegularClasses, "edu_class"),
+    regularClasses: new MockRegularClassRepo(mockEducationRegularClasses),
     orgTraining: new MockOrgTrainingRepo(),
     clubCohorts: new MockRepo(mockEducationClubCohorts, "edu_cohort"),
     clubTiers: new MockRepo(mockEducationClubTiers, "edu_tier"),

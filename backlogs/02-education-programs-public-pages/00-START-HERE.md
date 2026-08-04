@@ -17,15 +17,35 @@
 4. [04-구현계획.md](04-구현계획.md) — 단계별 작업
 5. [05-검증체크리스트.md](05-검증체크리스트.md)
 
-## 선행 조건
+## 선행 조건 — **1번은 2026-08-03에 끝났다**
 
 [01-regular-class-schedule-and-html](../01-regular-class-schedule-and-html/00-START-HERE.md)이
-`schedule_type` / `start_date` / `end_date` / `detail_html`을 만든다.
-**상세 페이지는 이 필드들을 쓴다.**
+`schedule_type` / `start_date` / `end_date` / `detail_html`을 만들었다.
+`formatClassSchedule()`(`src/lib/education-content.ts`)과
+`sanitizeCourseHtml()`(`src/lib/admin/sanitize-html.ts`)도 준비돼 있다.
 
-- 1번이 먼저면 → 상세 페이지를 한 번에 완성한다 (권장)
-- 2번을 먼저 해야 하면 → **목록 페이지만** 먼저 내고, 상세는 1번 이후로 미룬다.
-  목록은 기존 필드만으로 충분하다
+## release gate — **2026-08-03 전부 닫힘**
+
+| # | 할 일 | 어디서 |
+|---|-------|--------|
+| G1 | 상세 본문은 slug 단건 조회로 읽는다 | `public-content.ts` `getPublicRegularClassBySlug()` |
+| G2 | 렌더 직전 재정제 | `course-html.tsx` — DB에 직접 심은 XSS를 실제로 막는 것을 확인 |
+| G3 | `dangerouslySetInnerHTML`에는 정제 통과분만 + 근거 주석 | `course-html.tsx` |
+| G4 | `.course-html-shell` 셸을 그대로 렌더 | `course-html.tsx` (셸 CSS 미수정) |
+| G5 | 일정 표기는 `formatClassSchedule()` | `program-card.tsx`, `program-detail-hero.tsx` |
+| G6 | CSP 검토 | **미이행** — 인라인 `<style>`을 허용해야 해서 정책과 충돌 여지가 있다. 별도로 판단한다 |
+
+## 실제 DB로 확인한 것 (2026-08-03)
+
+- 4개 slug 상세 전부 200, 없는 slug 404, 목록 200
+- `<title>`이 `seo_title`을 따르고 canonical·og:url이 정식 도메인
+- **비공개로 바꾸면 상세 404 + 목록에서 빠진다.** 나머지 과정은 그대로다
+  (정적 4행으로 튀지 않는다)
+- **정제 안 된 XSS를 DB `detail_html`에 직접 심어도** 렌더 직전 정제가
+  `<script>`·`on*`·`<iframe>`·`javascript:`·`@import`·`position:fixed`를
+  전부 막고 본문만 남긴다 (G2 실증)
+
+**남은 것**: 어드민 화면에서 사람이 직접 HTML을 올려 상세에 나오는지 보는 것.
 
 ## 결정이 필요한 것
 

@@ -25,13 +25,17 @@ export default async function RegularClassFormPage({
   const { id } = await params;
   const isNew = id === "new";
 
+  // get()이 아니라 getForEdit()이다 — 동반 테이블(업로드 원본)까지 함께 읽어야
+  // 폼이 원본을 들고 열린다. get()만 쓰면 원본이 빈 문자열이라 이름만 고쳐
+  // 저장해도 HTML이 지워진다(백로그 01의 07 §3 5-1).
+  //
   // `?? undefined` — 리포지터리는 미스를 `null`로 주는데 폼의 `initial`은
-  // `EducationRegularClass | undefined`다. `!item` 검사가 `isNew`와 묶여 있어
+  // `EducationRegularClassEdit | undefined`다. `!item` 검사가 `isNew`와 묶여 있어
   // 타입이 좁혀지지 않으므로 여기서 맞춰 준다.
   const item =
     (isNew
       ? undefined
-      : await getContentData().education.regularClasses.get(id)) ?? undefined;
+      : await getContentData().education.regularClasses.getForEdit(id)) ?? undefined;
   if (!isNew && !item) notFound();
 
   return (
