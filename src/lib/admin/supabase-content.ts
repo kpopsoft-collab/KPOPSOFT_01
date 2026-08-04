@@ -246,7 +246,7 @@ class SupabaseRepo<T extends OrderedBase> implements ContentRepo<T> {
     protected table: string,
     /**
      * list()가 읽는 컬럼. 기본은 전체(`*`) — 정규 클래스만 `detail_html`을
-     * 뺀 좁은 목록을 넘긴다(목록 화면까지 512KB짜리 HTML을 나를 이유가
+     * 뺀 좁은 목록을 넘긴다(목록 화면까지 최대 5MB짜리 HTML을 나를 이유가
      * 없다). 다른 테이블은 이 값을 안 넘겨 지금까지의 동작과 같다.
      */
     protected listColumns: string = "*",

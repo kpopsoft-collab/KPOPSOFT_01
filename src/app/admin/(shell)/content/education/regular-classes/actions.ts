@@ -12,9 +12,11 @@ import type {
   HtmlIntent,
 } from "@/lib/admin/content-types";
 
-/** 512KB. 동반 테이블 CHECK(`education_regular_class_html_raw_size_ck`)와 같은 값 —
- *  클라이언트(html-upload.tsx)를 믿지 않는 지점은 여기 하나다. */
-const MAX_RAW_BYTES = 512 * 1024;
+/** 5MB. 동반 테이블 CHECK(`education_regular_class_html_raw_size_ck`)와 같은 값 —
+ *  클라이언트(html-upload.tsx)를 믿지 않는 지점은 여기 하나다.
+ *  next.config.ts의 `serverActions.bodySizeLimit`이 이 값보다 커야 한다.
+ *  원본이 액션 인자로 실려 오므로, 작으면 여기 오기도 전에 요청이 잘린다. */
+const MAX_RAW_BYTES = 5 * 1024 * 1024;
 
 // detailHtml은 폼이 직접 못 채운다(정제는 서버 전용) — 대신 htmlIntent로
 // "무엇을 할지"를 받는다. 번들 두 컬럼도 같은 이유로 intent를 받는다: 폴더
@@ -59,7 +61,7 @@ function resolveDetailHtml(intent: HtmlIntent): string | undefined {
     throw new Error("HTML 원본이 올바르지 않습니다.");
   }
   if (Buffer.byteLength(intent.raw, "utf8") > MAX_RAW_BYTES) {
-    throw new Error("HTML 파일은 512KB 이하여야 합니다.");
+    throw new Error("HTML 파일은 5MB 이하여야 합니다.");
   }
   return sanitizeCourseHtml(intent.raw);
 }

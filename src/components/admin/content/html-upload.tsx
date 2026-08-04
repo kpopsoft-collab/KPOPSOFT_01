@@ -11,7 +11,9 @@ import { FileText, X } from "lucide-react";
  * 한다 — 여기서는 크기·확장자·인코딩만 걸러 명백히 잘못된 파일을 막는다.
  * 미리보기는 만들지 않는다(D9 — sandbox iframe이 실제 결과와 달라질 수 있어 v1 생략).
  */
-const MAX_BYTES = 512 * 1024;
+/** 5MB. 서버 액션 검사(actions.ts)·동반 테이블 CHECK와 **같은 값**이어야 한다.
+ *  하나만 올리면 통과한 파일이 다음 층에서 거부돼 원인을 알기 어렵다. */
+const MAX_BYTES = 5 * 1024 * 1024;
 
 export function HtmlUpload({
   value,
@@ -45,7 +47,7 @@ export function HtmlUpload({
       return;
     }
     if (file.size > MAX_BYTES) {
-      setError("HTML 파일은 512KB 이하여야 해요.");
+      setError("HTML 파일은 5MB 이하여야 해요.");
       if (inputRef.current) inputRef.current.value = "";
       return;
     }
