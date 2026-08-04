@@ -7,6 +7,11 @@
 
 정규 클래스 등록/수정 폼에 **강의 일정**과 **HTML 상세 본문**을 추가한다.
 
+> **2026-08-04: 업로드 상한이 512KB → 5MB로 올라갔다.** 이 폴더 문서에 적힌
+> 512KB는 전부 옛 값이다. 같은 값이 4곳(`html-upload.tsx` · `actions.ts` ·
+> `next.config.ts`의 `bodySizeLimit` · 동반 테이블 CHECK)에 있고,
+> 마이그레이션은 `20260804120000_html_raw_size_limit.sql`이다.
+
 > **여기서 받는 HTML은 `.html` 파일 한 개뿐이다.** 이미지·서브 페이지가 딸린
 > 여러 파일 묶음은 텍스트 컬럼 하나로 담을 수 없어서
 > [05-course-bundle-storage](../05-course-bundle-storage/00-START-HERE.md)가
