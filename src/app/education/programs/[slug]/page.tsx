@@ -9,6 +9,7 @@ import { ProgramDetailHero } from "@/components/sections/education/programs/prog
 import { ProgramDetailImage } from "@/components/sections/education/programs/program-detail-image";
 import { CurriculumTimeline } from "@/components/sections/education/programs/curriculum-timeline";
 import { CourseHtml } from "@/components/sections/education/programs/course-html";
+import { ProgramBundleLink } from "@/components/sections/education/programs/program-bundle-link";
 import { ProgramInquiryCta } from "@/components/sections/education/programs/program-inquiry-cta";
 import { route } from "@/lib/site";
 import { getPublicRegularClassBySlug } from "@/lib/public-content";
@@ -103,6 +104,9 @@ export default async function ProgramDetailPage({
             )}
           </div>
         </Section>
+
+        {/* 상세 번들(zip) 링크 — 있을 때만 그려진다(백로그 05 §3). */}
+        {item.bundleUrl && <ProgramBundleLink url={item.bundleUrl} />}
 
         {/*
           신청/문의 CTA — 목록 페이지의 CTA를 그대로 재사용한다(계획 지시).

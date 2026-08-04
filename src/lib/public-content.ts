@@ -399,9 +399,11 @@ export async function getPublicRegularClassBySlug(
     const db = createSupabasePublicClient();
     const { data, error } = await db
       .from("education_regular_classes")
-      // 목록과 같은 컬럼 목록에 detail_html만 더한다. 상수를 재사용해 조합해야
-      // 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
-      .select(`${REGULAR_CLASS_PUBLIC_COLUMNS},detail_html`)
+      // 목록과 같은 컬럼 목록에 상세 전용 두 개만 더한다. 상수를 재사용해
+      // 조합해야 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
+      // 번들 경로를 공통 상수에 넣지 않는 이유는 detail_html과 같다 — 목록이
+      // 쓰지도 않는 컬럼 때문에 /education까지 같이 깨질 이유가 없다.
+      .select(`${REGULAR_CLASS_PUBLIC_COLUMNS},detail_html,detail_bundle_path`)
       .eq("slug", slug)
       .maybeSingle();
     // 조회는 됐는데 행이 없다 = 관리자가 지웠거나 비공개다(RLS). 이건 진짜 404다.
@@ -413,6 +415,14 @@ export async function getPublicRegularClassBySlug(
     // 포기하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
     // getPublicRegularClasses()와 같은 방식으로 unknown을 거쳐 좁힌다.
     const r = data as unknown as Row;
+    // 번들 폴더 경로만 저장돼 있고 공개 URL은 여기서, 서버에서 조립한다 —
+    // 클라이언트가 조립하면 프로젝트 ref가 화면 코드에 흩어진다(백로그 05 §6).
+    const bundleUrl = opt(r.detail_bundle_path)
+      ? db.storage
+          .from("class-bundles")
+          .getPublicUrl(`${opt(r.detail_bundle_path)}index.html`).data
+          .publicUrl
+      : undefined;
     return {
       slug: str(r.slug),
       index: str(r.index_label),
@@ -434,6 +444,7 @@ export async function getPublicRegularClassBySlug(
       detailHref: str(r.detail_href),
       seo: { title: str(r.seo_title), description: str(r.seo_description) },
       ...(opt(r.detail_html) ? { detailHtml: opt(r.detail_html) } : {}),
+      ...(bundleUrl ? { bundleUrl } : {}),
     };
   } catch {
     // createSupabasePublicClient()가 env 없이 던지는 경우 등 — 장애로 본다.
@@ -446,7 +457,8 @@ export async function getPublicRegularClassBySlug(
  * 그러면 관리자가 지운 과정의 상세 페이지가 계속 살아 있게 된다.
  *
  * 폴백에는 `detailHtml`이 없다. 정적 데이터에 본문이 없기도 하고, 장애 중에
- * 오래된 본문을 보여주느니 커리큘럼 기반 기본 레이아웃이 낫다.
+ * 오래된 본문을 보여주느니 커리큘럼 기반 기본 레이아웃이 낫다. `bundleUrl`도
+ * 같은 이유로 없다 — 장애 중에 정적 데이터로 없는 링크를 지어낼 수 없다.
  */
 function fallbackRegularClassBySlug(slug: string): RegularClassDetail | null {
   return regularClasses.find((c) => c.slug === slug) ?? null;

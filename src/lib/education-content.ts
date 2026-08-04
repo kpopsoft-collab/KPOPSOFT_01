@@ -369,6 +369,8 @@ export type RegularClass = {
 export type RegularClassDetail = RegularClass & {
   /** 정제 완료된 상세 본문. 비어 있으면 상세 페이지가 커리큘럼 기반 레이아웃을 그린다. */
   detailHtml?: string;
+  /** 상세 자료 번들(zip)의 공개 index.html 주소. 없으면 링크 블록 자체가 안 보인다(백로그 05). */
+  bundleUrl?: string;
 };
 
 export const regularClasses: RegularClass[] = [
