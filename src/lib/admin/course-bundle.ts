@@ -45,12 +45,24 @@ export const EXT_MIME: Record<string, string> = {
   otf: "font/otf",
 };
 
+/**
+ * 번들을 올리는 버킷 — 과정 이미지와 **같은 버킷**이다. 새로 파지 않은 이유는
+ * public 여부와 정책 4건이 이미 필요한 모양 그대로여서다. 키가 겹치지 않는다:
+ * 이미지는 `<uuid>.<ext>`(루트), 번들은 `<uuid>/…`(폴더).
+ * 이름이 여러 층에 흩어지지 않도록 여기 한 곳에만 둔다.
+ */
+export const BUNDLE_BUCKET = "education";
+
 /** 번들 하나의 파일 개수 상한. */
 export const MAX_FILES = 300;
 /** 압축을 푼 총 용량 상한 — zip bomb 방어(03 §3). */
 export const MAX_TOTAL_BYTES = 20 * 1024 * 1024;
-/** 파일 하나의 상한. 버킷 `file_size_limit`(10485760)과 같은 값이어야 한다. */
-export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+/**
+ * 파일 하나의 상한. 버킷 `file_size_limit`(5242880)과 **같은 값이어야 한다.**
+ * 버킷을 이미지와 공유하므로 번들 때문에 그쪽 제약을 풀지 않고 이쪽을 맞췄다 —
+ * 총량 상한이 20MB라 실질적인 제약은 아니다.
+ */
+export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 /**
  * 번들 폴더 경로 모양 — `<uuid>/` 한 세그먼트.

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { BUNDLE_PATH_RE, walkBundle } from "./course-bundle";
+import { BUNDLE_BUCKET, BUNDLE_PATH_RE, walkBundle } from "./course-bundle";
 import type {
   ContentData,
   ContentRepo,
@@ -377,7 +377,8 @@ class SupabaseRegularClassRepo
 
   /**
    * 번들 폴더를 통째로 지운다. DB CHECK가 이미 경로 모양을 막지만 여기서 한 번
-   * 더 본다 — 이 값이 곧 Storage 삭제 prefix라, 뚫리면 남의 폴더가 날아간다.
+   * 더 본다 — 이 값이 곧 Storage 삭제 prefix이고, 버킷을 과정 이미지와
+   * 공유하므로 prefix가 어긋나면 이미지까지 사정권에 들어온다.
    * `list()`는 재귀가 아니고 하위 폴더는 `id`가 null로 오므로(Storage API 동작)
    * `walkBundle`이 훑어 모은 객체 경로를 한 번에 넘긴다.
    */
@@ -385,7 +386,7 @@ class SupabaseRegularClassRepo
     if (!BUNDLE_PATH_RE.test(path)) return;
 
     const supabase = await createSupabaseServerClient();
-    const bucket = supabase.storage.from("class-bundles");
+    const bucket = supabase.storage.from(BUNDLE_BUCKET);
 
     const paths = await walkBundle(path, async (prefix) => {
       // limit을 반드시 준다 — 기본값이 100이라 한 폴더에 100개가 넘으면 나머지가

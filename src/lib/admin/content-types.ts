@@ -233,7 +233,7 @@ export type EducationRegularClass = ContentBase & {
    * API로 원본이 새는 것을 막기 위해).
    */
   detailHtml: string;
-  /** 'class-bundles' 버킷 안의 폴더('<uuid>/'). 빈 문자열이면 번들 없음. */
+  /** 'education' 버킷 안의 폴더('<uuid>/'). 빈 문자열이면 번들 없음. */
   detailBundlePath: string;
   /** 올린 zip의 원래 파일명 — 어드민 화면 표시 전용. */
   detailBundleName: string;

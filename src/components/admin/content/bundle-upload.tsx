@@ -5,13 +5,14 @@ import { AlertTriangle, FileArchive, X } from "lucide-react";
 import { unzipSync } from "fflate";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { planBundle, type BundleFile } from "@/lib/admin/course-bundle";
+import { BUNDLE_BUCKET, planBundle, type BundleFile } from "@/lib/admin/course-bundle";
 
 /**
  * 과정 상세 번들(zip) 업로드 위젯 (백로그 05 §1 4단계).
  *
  * 흐름: zip 선택 → 브라우저 메모리에서 해제(fflate) → `planBundle()`로 정규화·검증
- * → 통과하면 파일별로 Supabase Storage(`class-bundles/<uuid>/…`)에 올린다.
+ * → 통과하면 파일별로 Supabase Storage(`education/<uuid>/…`)에 올린다.
+ * 과정 이미지와 같은 버킷이지만 이미지는 루트에 `<uuid>.<ext>`로 있어 겹치지 않는다.
  * 서버 왕복 없이 클라이언트에서 완결되므로, 저장(다른 필드와 함께 서버 액션)은
  * 별도로 눌러야 한다 — 이 위젯은 "올리기"만 하고 "반영"은 하지 않는다.
  *
@@ -105,7 +106,7 @@ export function BundleUpload({
         // 즉시 reject되고 남은 워커들이 뒤에서 계속 돌며 진행 표시를 되살린다.
         try {
           const { error: uploadError } = await supabase.storage
-            .from("class-bundles")
+            .from(BUNDLE_BUCKET)
             .upload(`${bundlePath}${f.to}`, blob, {
               contentType: f.mime,
               upsert: false,

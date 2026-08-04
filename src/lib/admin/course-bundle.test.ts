@@ -217,19 +217,17 @@ test(`파일 ${MAX_FILES}개 초과는 거부한다`, () => {
 });
 
 test("압축 해제 총합 20MB 초과는 거부한다(zip bomb 방어)", () => {
-  const eightMb = 8 * 1024 * 1024;
-  const entries = [
-    f("index.html", eightMb),
-    f("a.png", eightMb),
-    f("b.png", eightMb), // 합 24MB, 개별은 전부 10MB 미만
-  ];
+  const fourMb = 4 * 1024 * 1024;
+  // 합 24MB. 개별은 전부 MAX_FILE_BYTES(5MB) 미만이라 개별 한도가 먼저 걸리지 않는다.
+  const entries = [f("index.html", fourMb), ...Array.from({ length: 5 }, (_, i) => f(`a${i}.png`, fourMb))];
   assert.ok(entries.every((e) => e.size <= MAX_FILE_BYTES), "개별 한도에 먼저 걸리면 안 된다");
   assert.match(planError(entries), /총 용량/);
 });
 
-test("단일 파일 10MB 초과는 거부한다(버킷 file_size_limit과 같은 값)", () => {
-  assert.equal(MAX_FILE_BYTES, 10485760, "04 §2의 버킷 file_size_limit과 같아야 한다");
-  planOk([f("index.html"), f("big.png", MAX_FILE_BYTES)]); // 딱 10MB는 통과
+test("단일 파일 5MB 초과는 거부한다(버킷 file_size_limit과 같은 값)", () => {
+  // education 버킷을 이미지와 공유하므로 그쪽 file_size_limit(5242880)에 맞췄다.
+  assert.equal(MAX_FILE_BYTES, 5242880, "education 버킷의 file_size_limit과 같아야 한다");
+  planOk([f("index.html"), f("big.png", MAX_FILE_BYTES)]); // 딱 5MB는 통과
   assert.match(planError([f("index.html"), f("big.png", MAX_FILE_BYTES + 1)]), /big\.png/);
 });
 

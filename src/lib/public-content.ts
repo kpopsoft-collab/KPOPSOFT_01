@@ -1,4 +1,8 @@
 import { createSupabasePublicClient } from "@/lib/supabase/public";
+// 버킷 이름 하나를 위해 admin 모듈을 참조한다. course-bundle.ts는 import가
+// 하나도 없는 순수 상수·함수 모듈이라 딸려 오는 것이 없고, 이름을 여기에
+// 다시 적으면 어드민이 버킷을 옮겼을 때 이쪽만 조용히 틀린 URL을 만든다.
+import { BUNDLE_BUCKET } from "@/lib/admin/course-bundle";
 import {
   type Accent,
   type Expert,
@@ -419,7 +423,7 @@ export async function getPublicRegularClassBySlug(
     // 클라이언트가 조립하면 프로젝트 ref가 화면 코드에 흩어진다(백로그 05 §6).
     const bundleUrl = opt(r.detail_bundle_path)
       ? db.storage
-          .from("class-bundles")
+          .from(BUNDLE_BUCKET)
           .getPublicUrl(`${opt(r.detail_bundle_path)}index.html`).data
           .publicUrl
       : undefined;
