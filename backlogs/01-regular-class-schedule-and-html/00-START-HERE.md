@@ -3,13 +3,14 @@
 정규 클래스 등록/수정 폼에 **강의 일정**과 **HTML 상세 본문**을 추가한다.
 
 대상 화면
-- `src/app/admin/(shell)/content/education/regular-classes/[id]/page.tsx` (수정)
-- `src/app/admin/(shell)/content/education/regular-classes/new/page.tsx` (추가)
+- `src/app/admin/(shell)/content/education/regular-classes/[id]/page.tsx` — 추가·수정 **둘 다**
 - 실제 폼 본체: `src/components/admin/content/education/regular-classes/regular-class-form.tsx`
 
-> 위 두 페이지는 얇은 껍데기이고 폼은 한 컴포넌트를 공유한다. 그래서 이 작업의
-> 코드 변경은 사실상 `regular-class-form.tsx` 한 파일 + 데이터 층에서 끝난다.
-> 껍데기 두 개를 하나로 합치는 일은 [03-regular-class-form-merge](../03-regular-class-form-merge/00-START-HERE.md)에서 다룬다.
+> **`new/page.tsx`는 없어졌다** (2026-08-04, [03](../03-regular-class-form-merge/00-START-HERE.md) 완료).
+> `/new`는 `[id]`에 `id === "new"`로 들어오고, 껍데기는
+> [`ContentFormShell`](../../docs/06-admin/06-콘텐츠-폼-공용셸.md)이 담당한다.
+> 페이지는 얇은 껍데기이므로 이 작업의 코드 변경은 사실상
+> `regular-class-form.tsx` 한 파일 + 데이터 층에서 끝난다. **페이지는 건드릴 일이 없다.**
 
 ## 읽는 순서
 
