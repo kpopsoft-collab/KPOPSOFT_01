@@ -1,6 +1,6 @@
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
+import { NewTabLink } from "@/components/ui/new-tab-link";
 import { educationSectionId, route } from "@/lib/site";
 
 /**
@@ -24,16 +24,15 @@ export function ProgramMobileCta({ bundleUrl }: { bundleUrl?: string }) {
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/10 bg-ivory lg:hidden">
       <div className="flex items-center gap-3 px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {bundleUrl ? (
-          <a
+          <NewTabLink
             href={bundleUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border-[1.25px] border-ink/70 px-4 text-sm font-semibold text-ink transition-colors outline-none hover:bg-ink hover:text-ivory focus-visible:ring-3 focus-visible:ring-brand-blue/40"
+            variant="secondary"
+            size="compact"
+            srSuffix=" 보기 (새 창에서 열림)"
+            className="shrink-0 gap-1.5"
           >
             상세 자료
-            <span className="sr-only"> 보기 (새 창에서 열림)</span>
-            <ArrowUpRight className="size-4" aria-hidden />
-          </a>
+          </NewTabLink>
         ) : null}
 
         <Link

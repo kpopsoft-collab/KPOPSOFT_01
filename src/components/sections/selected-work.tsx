@@ -23,6 +23,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { CoverVisual } from "@/components/ui/cover-visual";
+import { NewTabLink } from "@/components/ui/new-tab-link";
 import { accentBg, educationSectionId, route, sectionId } from "@/lib/site";
 import type { PublicWork } from "@/lib/public-content";
 import type { PublicInquiryOption } from "@/lib/public-content";
@@ -592,19 +593,13 @@ function WorkDetail({
         {/* 실제 서비스가 공개돼 있으면 새 탭으로 열고 외부 링크 아이콘을
             붙인다(요청서 §9). 새 창으로 열린다는 사실은 sr-only로도 알린다. */}
         {item.externalUrl && (
-          <a
+          <NewTabLink
             href={item.externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex h-13 items-center justify-center gap-2 rounded-full border-[1.25px] border-ink/70 px-7 text-[0.95rem] font-semibold whitespace-nowrap text-ink transition-colors outline-none hover:bg-ink hover:text-ivory focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            variant="secondary"
+            icon={ExternalLink}
           >
             사이트 방문하기
-            <span className="sr-only"> (새 창에서 열림)</span>
-            <ExternalLink
-              className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              aria-hidden
-            />
-          </a>
+          </NewTabLink>
         )}
         <SheetClose
           nativeButton={false}
