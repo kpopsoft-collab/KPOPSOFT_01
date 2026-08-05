@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 통계바 (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 04).
+ * 통계바 (docs/02-home/ §SECTION 04).
  *
  * ver2에서는 About Summary 안에 붙어 있었지만 ver3에서 **독립 블록**으로
  * 분리됐다. 배경색을 깔아 위아래 섹션과 시각적으로 끊는다.
@@ -14,7 +14,7 @@
  * 짧은 리드로 압축해 남기고, 헤더 네비의 `ABOUT` 앵커(`#about`)도 이 섹션이
  * 이어받는다. 앵커를 지우면 헤더 링크가 갈 곳을 잃는다.
  *
- * 숫자는 스크롤 진입 시 카운트업하지만(docs/디자인.md §10), 최종값을 먼저
+ * 숫자는 스크롤 진입 시 카운트업하지만(docs/04-design-system/ §10), 최종값을 먼저
  * 렌더한 뒤 애니메이션한다 — observer가 안 돌거나 JS가 없어도 값은 정확하다.
  * `prefers-reduced-motion`이면 카운트업을 건너뛴다.
  */

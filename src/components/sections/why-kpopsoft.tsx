@@ -8,7 +8,7 @@ import { sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * WHY KPOPSOFT — 차별점 카드 + 인터랙티브 역량 레이더 (docs/신규수정사항).
+ * WHY KPOPSOFT — 차별점 카드 + 인터랙티브 역량 레이더 (docs/02-home/01-why-kpopsoft-수정요청.md).
  *
  * 섹션의 자리는 **핵심 비즈니스와 포트폴리오 사이**다(§1). "무엇을 제공하는가"
  * 다음에 "왜 우리인가"를 말하고, 바로 이어지는 포트폴리오가 그것을 증명하는
@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
  * 않다.
  *
  * 색은 기존 브랜드 팔레트 안에서만 고른다. Yellow는 아이보리 배경에서 글자로
- * 읽히지 않아 라벨에만 어두운 짝(`brand-yellow-ink`)을 쓴다(docs/디자인.md §2).
+ * 읽히지 않아 라벨에만 어두운 짝(`brand-yellow-ink`)을 쓴다(docs/04-design-system/ §2).
  *
  * 접근성 — 그래픽(SVG)은 `aria-hidden`이고, 실제 조작 인터페이스는 오른쪽
  * (모바일에서는 아래) 차별점 카드의 버튼들이다. 그래야 키보드로 셋을 모두
@@ -36,7 +36,7 @@ type Axis = {
   color: string;
   /**
    * 라벨 글자 색. 밝은 accent(Yellow)는 아이보리 배경에서 글자로 쓰면 읽히지
-   * 않아, 같은 계열의 어두운 짝(`brand-yellow-ink`)을 쓴다(docs/디자인.md §2).
+   * 않아, 같은 계열의 어두운 짝(`brand-yellow-ink`)을 쓴다(docs/04-design-system/ §2).
    * 생략하면 `color`를 그대로 쓴다.
    */
   labelColor?: string;
@@ -403,7 +403,7 @@ export function WhyKpopsoft() {
             {/* 4) 내부 면 — 외곽선이 그려진 뒤 채워진다.
                    요청서는 Blue·Red·Green 계열로 채우라고 했지만, 프로젝트
                    디자인 시스템이 그라데이션을 금지하고 있어(CLAUDE.md /
-                   docs/디자인.md) 면은 flat Blue 저투명도로 두고 세 계열의
+                   docs/04-design-system/) 면은 flat Blue 저투명도로 두고 세 계열의
                    색은 각 축의 스포크·포인트·라벨이 담당하게 했다. */}
             <polygon
               ref={fillRef}

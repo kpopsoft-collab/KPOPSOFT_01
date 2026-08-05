@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
  */
 const FILTER_MIN_ITEMS = 6;
 
-/** 필터 칩. 탭 타겟 44px 이상 (docs/디자인.md 접근성). */
+/** 필터 칩. 탭 타겟 44px 이상 (docs/04-design-system/ 접근성). */
 function FilterChip({
   label,
   selected,

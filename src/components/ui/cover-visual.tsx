@@ -17,7 +17,7 @@ const RATIO = {
 export type CoverRatio = keyof typeof RATIO;
 
 /**
- * Cover image slot for Work / Insights / Education (docs/어드민기획.md §4.2).
+ * Cover image slot for Work / Insights / Education (docs/06-admin/ §4.2).
  * Renders the uploaded Storage image when present, else falls back to the
  * brand-shape `AccentVisual` — matching the "없으면 도형 폴백" rule so the
  * design never shows a gray placeholder.

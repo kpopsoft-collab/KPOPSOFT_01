@@ -36,7 +36,7 @@ function ProcessNode({
  * SECTION 09 — 교육 진행 프로세스 (docs §14).
  *
  * Reuses the same zigzag-diagram / vertical-timeline pattern as the home
- * page's Process component (docs/디자인.md §6 Process Diagram) — same visual
+ * page's Process component (docs/04-design-system/ §6 Process Diagram) — same visual
  * language, education-specific steps (Discover → Design → Practice → Build →
  * Apply) and its own section id, so it doesn't collide with home's Process.
  */

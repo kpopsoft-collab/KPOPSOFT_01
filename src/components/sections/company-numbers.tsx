@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Company Numbers (docs/기획서.md §13, docs/디자인.md §10 MOTION: "number
+ * Company Numbers (docs/99-archive/01-초기-16섹션-기획서.md §13, docs/04-design-system/ §10 MOTION: "number
  * counting" is an explicitly encouraged effect).
  *
  * Four stats laid out as a flat, editorial data row — large numerals carry

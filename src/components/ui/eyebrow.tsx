@@ -1,5 +1,5 @@
 /**
- * Eyebrow label (docs/디자인.md §3) — small uppercase section marker,
+ * Eyebrow label (docs/04-design-system/ §3) — small uppercase section marker,
  * optionally paired with a small brand-colored shape dot.
  */
 import { cn } from "@/lib/utils";

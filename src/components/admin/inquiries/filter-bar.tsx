@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Filter bar for the inquiry list (docs/어드민기획.md §6 — 상태/유형/검색).
+ * Filter bar for the inquiry list (docs/06-admin/ §6 — 상태/유형/검색).
  * Uncontrolled GET form so filters live entirely in the URL (no client state,
  * shareable/bookmarkable, server does the filtering). Status/type auto-submit
  * on change; the search field submits on Enter or via the button.

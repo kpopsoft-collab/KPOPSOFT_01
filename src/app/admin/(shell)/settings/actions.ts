@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * Admin account settings actions (docs/어드민기획.md §6). Password change:
+ * Admin account settings actions (docs/06-admin/ §6). Password change:
  * re-authenticates with the current password, then updates it via Supabase Auth.
  */
 

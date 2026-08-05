@@ -1,6 +1,6 @@
 /**
  * Central static content + config for the KPOPSOFT site.
- * Sourced from docs/기획서.md and docs/디자인.md. No DB yet — all copy lives here
+ * Sourced from docs/99-archive/01-초기-16섹션-기획서.md and docs/04-design-system/. No DB yet — all copy lives here
  * so sections stay presentational and content is edited in one place.
  * Numbers/names/quotes marked "더미" are placeholders to replace with real data.
  */
@@ -22,18 +22,29 @@ export const route = {
   home: "/",
   education: "/education",
   /**
-   * 정규 교육 과정 상세. `/education` 프로그램 카드의 CTA가 여기로 온다.
-   * **아직 빈 페이지다** — 내용은 다른 작업자가 채운다. 라우트를 먼저 열어
-   * 두는 이유는 CTA가 404로 떨어지지 않게 하기 위해서다.
+   * 정규 교육 과정 목록. `/education` 프로그램 카드의 CTA가 여기로 온다.
+   * DB의 공개 정규 클래스를 트랙 필터와 함께 보여주고, 카드를 누르면
+   * `/education/programs/[slug]` 상세로 간다(백로그 02).
    */
   educationPrograms: "/education/programs",
   /**
    * 교육 사례 전체 목록. `/education` 교육 사례 섹션의 `전체보기`가 여기로 온다.
-   * `educationPrograms`와 마찬가지로 **아직 빈 페이지**다.
+   * **아직 빈 페이지다** — 라우트를 먼저 열어 둔 이유는 CTA가 404로 떨어지지
+   * 않게 하기 위해서다.
    */
   educationCases: "/education/cases",
   /** 전체 프로젝트 목록. 홈 PROJECTS 섹션 하단 CTA가 여기로 온다. */
   work: "/work",
+  /**
+   * 과정 상세 자료(번들·HTML 한 장)를 **새 탭에서 원본 그대로** 여는 경로.
+   * `<uuid>/index.html` 형태가 뒤에 붙는다.
+   *
+   * Supabase Storage 공개 URL을 직접 쓰지 못하는 이유 — Storage가 HTML을
+   * 의도적으로 `text/plain`으로 내려서 브라우저가 소스 코드를 그대로
+   * 보여준다(백로그 06 03-화면구조-결정.md D2-정정). 이 라우트가 올바른
+   * Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다.
+   */
+  courseAssets: "/course-assets",
 } as const;
 
 /** Section anchor ids — shared by nav links and section elements. */
@@ -65,7 +76,7 @@ export const sectionId = {
   whatWeDo: "what-we-do",
 } as const;
 
-/** Education 페이지 전용 앵커 (docs/KPOPSOFT_Education_Page_ver2.md §5). */
+/** Education 페이지 전용 앵커 (docs/99-archive/education-ver2/ §5). */
 export const educationSectionId = {
   hero: "top",
   programs: "programs",
@@ -74,7 +85,7 @@ export const educationSectionId = {
 } as const;
 
 /**
- * Header navigation (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 01).
+ * Header navigation (docs/99-archive/home-ver2/ §SECTION 01).
  *
  * 홈 앵커는 반드시 루트 기준 절대경로(`/#work`)로 둔다 — `/education` 같은
  * 다른 라우트에서 눌러도 홈으로 이동한 뒤 스크롤되어야 하기 때문이다.
@@ -151,7 +162,7 @@ export const consultCta = {
 } as const;
 
 /**
- * 문의 폼 유형 + 세부 유형 (docs/기획서.md §15, docs/어드민기획.md §문의 폼 옵션 관리).
+ * 문의 폼 유형 + 세부 유형 (docs/99-archive/01-초기-16섹션-기획서.md §15, docs/06-admin/02-데이터모델과-RLS.md §4.2).
  *
  * 어드민 CMS 이관 대상 — 지금은 정적 시드이자 단일 소스. 폼(final-cta)은 이 배열만 읽는다.
  * 세부 유형 값이 교육 프로그램/AI 주요 분야와 겹치더라도, "문의 라우팅용 선택지"로서
@@ -215,7 +226,7 @@ export const inquiryOptions = [
   {
     /**
      * ver3에서 교육 세부 유형이 9개 → **3분류 3개**로 압축됐다
-     * (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 06).
+     * (docs/02-home/ §SECTION 06).
      * 라벨은 `eduCategories`(education-content.ts)의 `name`과 반드시 일치시킨다 —
      * 홈에서 고른 값이 `/education`의 같은 이름 블록으로 이어져야 하기 때문이다.
      */
@@ -251,14 +262,14 @@ export const inquiryOptions = [
 
 export type InquiryType = (typeof inquiryOptions)[number]["type"];
 
-/** Business overview (docs/기획서.md §6). */
+/** Business overview (docs/99-archive/01-초기-16섹션-기획서.md §6). */
 export const businesses = [
   {
     index: "01",
     title: "SOFTWARE",
     accent: "blue",
     summary: "웹·앱과 내부 운영 도구가 필요하다면.",
-    /** docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 05 "Software" 목록 그대로. */
+    /** docs/99-archive/home-ver2/ §SECTION 05 "Software" 목록 그대로. */
     items: [
       "웹 서비스",
       "모바일 앱",
@@ -289,7 +300,7 @@ export const businesses = [
     title: "EDUCATION",
     accent: "mint",
     summary: "팀이 직접 구축하고 활용해야 한다면.",
-    /** ver3 교육 3분류 그대로 (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 03). */
+    /** ver3 교육 3분류 그대로 (docs/02-home/ §SECTION 03). */
     items: [
       "조직·기업 맞춤 교육",
       "정규 클래스",
@@ -299,7 +310,7 @@ export const businesses = [
 ] as const;
 
 /**
- * What We Do 사례 (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 05).
+ * What We Do 사례 (docs/99-archive/home-ver2/ §SECTION 05).
  *
  * Software / AI Solutions 카드가 "결과물 타입" 탭으로 큰 대표 화면 1개를
  * 노출하고, 클릭하면 Sheet 모달에서 사례 스토리를 보여주기 위한 소스다.
@@ -427,7 +438,7 @@ export const businessCases: Record<"software" | "ai", BusinessCase[]> = {
 };
 
 /**
- * Education programs (docs/디자인.md §Program Cards).
+ * Education programs (docs/04-design-system/ §Program Cards).
  *
  * summary/audience/curriculum/outcome 는 프로그램 상세 모달용 콘텐츠 —
  * 실제 커리큘럼 확정 시 교체할 초안이다. 목록(education) 카드는 name/desc/tags만,
@@ -604,7 +615,7 @@ export const programs = [
   },
 ] as const;
 
-/** Software work categories (docs/디자인.md §Software Development). */
+/** Software work categories (docs/04-design-system/ §Software Development). */
 /**
  * 각 카테고리는 문의 폼(프로젝트 문의)의 세부 유형으로 딥링크된다. `inquiry`의
  * type/subtype 값은 inquiryOptions와 정확히 일치해야 한다(단일 소스).
@@ -637,10 +648,10 @@ export const softwareCategories = [
   },
 ] as const;
 
-/** AI Prototype Lab process (docs/디자인.md §AI PROTOTYPE LAB). */
+/** AI Prototype Lab process (docs/04-design-system/ §AI PROTOTYPE LAB). */
 export const labSteps = ["Idea", "Prototype", "Test", "Build"] as const;
 
-/** KPOPSOFT process (docs/디자인.md §Process Diagram). */
+/** KPOPSOFT process (docs/04-design-system/ §Process Diagram). */
 /**
  * 우리의 프로세스 5단계 (IA 개정안 — 홈 포트폴리오와 Contact 사이).
  *
@@ -678,7 +689,7 @@ export const processSteps = [
   },
 ] as const;
 
-/** Experts & instructors (docs/디자인.md §EXPERT NETWORK) — 더미 데이터. */
+/** Experts & instructors (docs/04-design-system/ §EXPERT NETWORK) — 더미 데이터. */
 export type Expert = {
   name: string;
   role: string;
@@ -841,7 +852,7 @@ export const stats = [
 /** 수치 하단 각주 (수정 요청서 §5). */
 export const statsFootnote = "2026년 7월 기준 누적 실적";
 
-/** Testimonials (docs/디자인.md §Testimonial) — 더미 데이터. */
+/** Testimonials (docs/04-design-system/ §Testimonial) — 더미 데이터. */
 export const testimonials = [
   {
     quote: "AI 도입을 막연하게만 생각했는데, 실제 업무에 바로 적용됐습니다.",
@@ -863,7 +874,7 @@ export const testimonials = [
   },
 ] as const;
 
-/** Trusted-by logo strip (docs/디자인.md §TRUST / PARTNERS) — 더미. */
+/** Trusted-by logo strip (docs/04-design-system/ §TRUST / PARTNERS) — 더미. */
 export const partners = [
   "COMMERCE",
   "EDULAB",

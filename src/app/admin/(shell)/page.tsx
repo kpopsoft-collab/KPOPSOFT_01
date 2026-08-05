@@ -6,7 +6,7 @@ import { inquiryStatusLabel } from "@/lib/admin/types";
 import { StatCard } from "@/components/admin/stat-card";
 
 /**
- * Admin dashboard (docs/어드민기획.md §6 "대시보드"). Server Component —
+ * Admin dashboard (docs/06-admin/ §6 "대시보드"). Server Component —
  * reads the inquiry summary via the data seam (`getAdminData()`), which
  * today returns the in-memory mock and later swaps to Supabase without this
  * screen changing. Recent-inquiry list / charts are P3 (out of scope here).

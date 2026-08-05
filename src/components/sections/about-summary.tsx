@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * About Summary + Numbers (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 03).
+ * About Summary + Numbers (docs/99-archive/home-ver2/ §SECTION 03).
  *
  * ver2 explicitly asks for a short trust block compressed into ~50–70vh, not
  * two stacked sections — so copy and the four stats share one `Section` and
  * sit side-by-side on desktop (text left, numbers right) instead of the
  * previous full-height CompanyIntroduction → CompanyNumbers sequence. Numbers
- * still count up on scroll-into-view (docs/디자인.md §10 encourages "number
+ * still count up on scroll-into-view (docs/04-design-system/ §10 encourages "number
  * counting"), but the section renders final values immediately so it's
  * correct before the observer fires or with JS disabled.
  */

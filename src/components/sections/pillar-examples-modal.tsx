@@ -240,7 +240,7 @@ export function PillarExamplesModal({
   );
 }
 
-/** 이전/다음 버튼. 탭 타겟 44px 이상(docs/디자인.md 접근성). */
+/** 이전/다음 버튼. 탭 타겟 44px 이상(docs/04-design-system/ 접근성). */
 function NavButton({
   direction,
   disabled,

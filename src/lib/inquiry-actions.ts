@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * Public contact-form Server Action (docs/어드민기획.md §7, §11.8).
+ * Public contact-form Server Action (docs/06-admin/ §7, §11.8).
  *
  * Replaces the old `mailto:` submission: validates the payload, persists it
  * through the admin data seam (`getAdminData().createInquiry`), then fires an
@@ -68,7 +68,7 @@ function isBlank(value: string | undefined | null): boolean {
 /**
  * Loose contact check: an email needs an "@", a phone number needs enough
  * digits. Not a hard gate — just catches empty-ish junk, per the "느슨히"
- * requirement in docs/어드민기획.md §7.
+ * requirement in docs/06-admin/ §7.
  */
 function isPlausibleContact(value: string): boolean {
   const trimmed = value.trim();

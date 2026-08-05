@@ -2,7 +2,7 @@
 
 소프트웨어 개발 · AI 솔루션 · 실무 교육을 제공하는 기술 기업 **KPOPSOFT**의 공식 랜딩페이지.
 
-/ [기획서](docs/기획서.md) · [디자인](docs/디자인.md) · [스펙](docs/스펙.md) · [개발상태](docs/개발상태.md)
+/ **[문서 시작점](docs/00-START-HERE.md)** · [디자인 시스템](docs/04-design-system/00-START-HERE.md) · [기술 스펙](docs/07-dev/01-기술스펙.md) · [개발 상태](docs/07-dev/02-개발상태.md)
 
 ## 기술 스택
 

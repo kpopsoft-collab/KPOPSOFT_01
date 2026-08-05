@@ -1,6 +1,6 @@
 /**
  * In-memory CMS seed — mirrors src/lib/site.ts so the admin edits real-looking
- * content until Supabase is wired (docs/어드민기획.md §11.8). Module-level arrays
+ * content until Supabase is wired (docs/06-admin/ §11.8). Module-level arrays
  * persist across requests within a running dev server, so edits stick per session.
  */
 
@@ -68,7 +68,7 @@ export const mockStats: Stat[] = siteStats.map((s, i) => ({
 }));
 
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/KPOPSOFT_Education_Page_ver3.md — 3분류 체계)
+// Education (docs/03-education/ — 3분류 체계)
 //
 // 목 모드는 DB 없이 앱을 띄우기 위한 것이라 전부 빈 배열에서 시작한다. 실제
 // 콘텐츠는 Supabase에 있고(`scripts/seed-education-ver3.cjs`로 시딩), 공개

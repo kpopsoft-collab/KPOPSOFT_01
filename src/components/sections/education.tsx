@@ -22,7 +22,7 @@ import { accentBg, programs, sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * Education / Programs (docs/기획서.md §6, docs/디자인.md §6 Program Cards,
+ * Education / Programs (docs/99-archive/01-초기-16섹션-기획서.md §6, docs/04-design-system/ §6 Program Cards,
  * §8 PROGRAMS).
  *
  * Editorial list layout: eight programs stacked as full-width rows separated by

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 /**
  * Server (RSC / Server Action / Route Handler) Supabase client — anon key,
  * reads/writes the auth session from Next's cookie store. RLS + is_admin()
- * gate access (docs/어드민기획.md §5).
+ * gate access (docs/06-admin/ §5).
  *
  * The `setAll` try/catch is required: writing cookies from a Server Component
  * throws, and that's fine because `proxy.ts` refreshes the session on every

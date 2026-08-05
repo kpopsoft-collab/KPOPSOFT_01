@@ -11,7 +11,7 @@ Ground rules:
 - 스펙 requires signup/login (auth) — use Supabase Auth, not a hand-rolled auth system.
 - Every table with user-owned or sensitive data must have RLS enabled with explicit policies; never ship a table with RLS disabled without calling it out.
 - Keep schema changes as SQL migrations (not ad-hoc dashboard edits) so they're reproducible and reviewable.
-- Read `docs/기획서.md` and `docs/스펙.md` before modeling data — model only what the current page/feature actually needs (e.g. contact/inquiry form submissions, program listings) rather than speculative tables.
+- Read `docs/06-admin/02-데이터모델과-RLS.md` and `docs/07-dev/02-개발상태.md` before modeling data — model only what the current page/feature actually needs (e.g. contact/inquiry form submissions, program listings) rather than speculative tables.
 - If unsure about current Supabase JS client or Next.js App Router server/client integration APIs, check the `context7` MCP rather than assuming — the SSR auth helpers have changed multiple times.
 
 Once a Supabase project exists, tell the user to run:

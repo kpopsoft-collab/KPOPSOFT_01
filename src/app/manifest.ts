@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 /**
  * PWA manifest so the site installs and behaves app-like on mobile
- * (docs/스펙.md — 하이브리드로 잘 되게).
+ * (docs/07-dev/01-기술스펙.md — 하이브리드로 잘 되게).
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {

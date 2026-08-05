@@ -5,7 +5,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 
 /**
- * Admin shell (docs/어드민기획.md §3, §6). Server Component guard: unauthenticated
+ * Admin shell (docs/06-admin/ §3, §6). Server Component guard: unauthenticated
  * requests redirect to /admin/login (dev-bypass returns a session for now).
  * Persistent sidebar on desktop, drawer on mobile.
  */

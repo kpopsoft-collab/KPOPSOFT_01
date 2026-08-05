@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 예시 파일은 값이 없으므로 커밋한다 — 무엇을 채워야 하는지 알 방법이 없으면
+# 새로 받은 사람이 앱을 못 띄운다.
+!.env.example
 
 # vercel
 .vercel
@@ -60,3 +63,5 @@ next-env.d.ts
 
 # 포트폴리오 콘텐츠 반영 스크립트가 남기는 DB 백업 (운영 데이터라 커밋 금지)
 scripts/.work-content-backup.json
+# 1회성 백필의 되돌리기 백업 — 정제본 HTML이 통째로 들어 있다. 커밋하지 않는다.
+scripts/.detail-html-backfill-backup.json

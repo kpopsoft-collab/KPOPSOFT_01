@@ -1,5 +1,5 @@
 /**
- * Admin auth seam (docs/어드민기획.md §4.3, §11.8).
+ * Admin auth seam (docs/06-admin/ §4.3, §11.8).
  *
  * Until Supabase Auth is wired, this runs in DEV-BYPASS: a fake admin session
  * so screens are buildable/testable. On wiring day, replace the body of

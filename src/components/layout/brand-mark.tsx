@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * KPOPSOFT brandmark — the circle · star · wave trio lockup drawn from the
- * shape system (docs/디자인.md §5), sized to sit inline beside the wordmark in
+ * shape system (docs/04-design-system/ §5), sized to sit inline beside the wordmark in
  * the site header and admin chrome. Purely decorative: the adjacent wordmark
  * carries the accessible name, so this is aria-hidden.
  */

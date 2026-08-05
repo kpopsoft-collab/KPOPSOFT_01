@@ -1,5 +1,6 @@
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import {
+  route,
   type Accent,
   type Expert,
   experts as seedExperts,
@@ -24,6 +25,7 @@ import {
   type OrgTraining,
   type PastProgram,
   type RegularClass,
+  type RegularClassDetail,
   clubCohorts,
   clubTiers,
   eduFaqs,
@@ -35,7 +37,7 @@ import {
 } from "@/lib/education-content";
 
 /**
- * Public-site content readers (docs/어드민기획.md §11.8). Each reads published /
+ * Public-site content readers (docs/06-admin/ §11.8). Each reads published /
  * active rows through the anon public client and maps them back to the exact
  * src/lib/site.ts shape the sections already consume. On empty result or any
  * error they fall back to the site.ts seed, so the landing page never breaks —
@@ -61,7 +63,7 @@ export type PublicWork = {
   showOnHome: boolean;
   /**
    * 갤러리 이미지. 여러 장이면 카드에 도트 페이지네이션이 붙는다
-   * (docs/KPOPSOFT_Home_Landing_ver3.md §SECTION 05).
+   * (docs/02-home/ §SECTION 05).
    * 비어 있으면 `imageUrl` 한 장만 쓴다.
    */
   imageUrls?: string[];
@@ -226,7 +228,7 @@ export async function getPublicInquiryOptions(): Promise<PublicInquiryOption[]> 
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/KPOPSOFT_Education_Page_ver3.md) — public readers.
+// Education (docs/03-education/) — public readers.
 //
 // 위 섹션들이 site.ts 시드로 폴백하듯, 교육은 `education-content.ts`의 정적
 // 데이터로 폴백한다. DB가 비었거나(마이그레이션 직후) 조회가 실패해도
@@ -303,30 +305,191 @@ export async function getPublicOrgTraining(): Promise<OrgTraining> {
   }
 }
 
-/** 02. 정규 클래스 4과정. */
+/**
+ * 02. 정규 클래스 4과정.
+ *
+ * 공통 헬퍼 `read()`를 쓰지 않는다 — `read()`는 "빈 결과 = 정적 폴백"으로
+ * 동작하는데(다른 리더들이 이 동작에 기대고 있어 거기는 그대로 둔다),
+ * 정규 클래스에 그대로 적용하면 관리자가 전 과정을 비공개로 돌린 **정상
+ * 상태**(빈 배열)에서 정적 4행이 되살아난다(백로그 01 §3 6단계 / 06 §P1-5).
+ * 여기서는 **조회 자체가 실패했을 때만** 폴백하고, 정상적인 0행은 빈 배열을
+ * 그대로 돌려준다.
+ *
+ * `detailHtml`은 여기서 매핑하지 않는다 — 본문은 백로그 02의 slug 단건
+ * 조회에서 읽는다. 목록 응답에 수백 KB짜리 HTML을 함께 실어 보내지 않기
+ * 위해서다.
+ */
+const REGULAR_CLASS_PUBLIC_COLUMNS = [
+  "slug",
+  "index_label",
+  "name",
+  "subtitle",
+  "description",
+  "duration",
+  "level",
+  "schedule_type",
+  "start_date",
+  "end_date",
+  "tracks",
+  "accent",
+  "image_url",
+  "image_alt",
+  "image_caption",
+  "curriculum",
+  "detail_href",
+  "seo_title",
+  "seo_description",
+  "sort_order",
+].join(",");
+
 export async function getPublicRegularClasses(): Promise<RegularClass[]> {
-  return read(
-    "education_regular_classes",
-    (rows) =>
-      rows.map((r) => ({
-        slug: str(r.slug),
-        index: str(r.index_label),
-        name: str(r.name),
-        subtitle: str(r.subtitle),
-        description: str(r.description),
-        duration: str(r.duration),
-        level: str(r.level),
-        tracks: strArray(r.tracks) as RegularClass["tracks"],
-        accent: str(r.accent) as Accent,
-        ...(toImage(r.image_url, r.image_alt, r.image_caption)
-          ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
-          : {}),
-        curriculum: strArray(r.curriculum),
-        detailHref: str(r.detail_href),
-        seo: { title: str(r.seo_title), description: str(r.seo_description) },
-      })),
-    regularClasses,
-  );
+  try {
+    const db = createSupabasePublicClient();
+    const { data, error } = await db
+      .from("education_regular_classes")
+      // 컬럼을 명시하는 이유 — `*`로 읽으면 상세 본문(detail_html)까지 행마다
+      // 딸려 온다. 이 목록은 /education이 매 요청 렌더할 때 읽히는데 본문은
+      // 거기서 쓰지도 않는다. 본문은 백로그 02의 slug 단건 조회에서만 읽는다.
+      .select(REGULAR_CLASS_PUBLIC_COLUMNS)
+      .order("sort_order", { ascending: true });
+    if (error || !data) return regularClasses;
+    // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입을 추론하지
+    // 못하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
+    // unknown을 한 번 거쳐 좁힌다(supabase-content.ts의 list()와 같은 사정).
+    return (data as unknown as Row[]).map((r) => ({
+      slug: str(r.slug),
+      index: str(r.index_label),
+      name: str(r.name),
+      subtitle: str(r.subtitle),
+      description: str(r.description),
+      duration: str(r.duration),
+      level: str(r.level),
+      // 컬럼이 비어 있으면(마이그레이션 직후 등) "multi"를 기본값으로 삼는다
+      // — 기존 4과정도 D4에 따라 multi로 시작한다.
+      scheduleType: (str(r.schedule_type) ||
+        "multi") as RegularClass["scheduleType"],
+      ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
+      ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
+      tracks: strArray(r.tracks) as RegularClass["tracks"],
+      accent: str(r.accent) as Accent,
+      ...(toImage(r.image_url, r.image_alt, r.image_caption)
+        ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
+        : {}),
+      curriculum: strArray(r.curriculum),
+      detailHref: str(r.detail_href),
+      seo: { title: str(r.seo_title), description: str(r.seo_description) },
+    }));
+  } catch {
+    return regularClasses;
+  }
+}
+
+/**
+ * 정규 클래스 상세 — slug 단건 조회 (백로그 02 release gate G1).
+ *
+ * 목록(`getPublicRegularClasses`)은 `detail_html`을 일부러 뺀다 — 행마다
+ * 수백 KB일 수 있는데 목록에서는 쓰지 않기 때문이다. 상세 페이지는 slug 하나만
+ * 알면 되므로 목록을 통째로 읽어 find 하지 않고 여기서 단건으로 읽는다.
+ *
+ * 없거나 비공개면 null — 호출부가 notFound()를 부른다.
+ */
+export async function getPublicRegularClassBySlug(
+  slug: string,
+): Promise<RegularClassDetail | null> {
+  try {
+    const db = createSupabasePublicClient();
+    const { data, error } = await db
+      .from("education_regular_classes")
+      // 목록과 같은 컬럼 목록에 상세 전용 두 개만 더한다. 상수를 재사용해
+      // 조합해야 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
+      // 번들 경로를 공통 상수에 넣지 않는 이유는 detail_html과 같다 — 목록이
+      // 쓰지도 않는 컬럼 때문에 /education까지 같이 깨질 이유가 없다.
+      .select(`${REGULAR_CLASS_PUBLIC_COLUMNS},detail_html,detail_bundle_path`)
+      .eq("slug", slug)
+      .maybeSingle();
+    // 조회는 됐는데 행이 없다 = 관리자가 지웠거나 비공개다(RLS). 이건 진짜 404다.
+    if (!error && !data) return null;
+    // 조회 자체가 실패했다 = 장애다. 목록은 이때 정적 4행으로 폴백하므로
+    // 여기서 404를 내면 목록에는 있는 카드가 전부 깨진 링크가 된다(03-데이터흐름 §3).
+    if (error) return fallbackRegularClassBySlug(slug);
+    // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입 추론을
+    // 포기하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
+    // getPublicRegularClasses()와 같은 방식으로 unknown을 거쳐 좁힌다.
+    const r = data as unknown as Row;
+    /*
+     * 번들 폴더 경로만 저장돼 있고 URL은 여기서 조립한다.
+     *
+     * **Storage 공개 URL이 아니라 우리 라우트(`/course-assets/...`)를 가리킨다.**
+     * Supabase Storage가 HTML을 의도적으로 `text/plain`으로 내려서, 공개 URL을
+     * 그대로 열면 페이지가 아니라 소스 코드가 보이기 때문이다. 그 라우트가
+     * 올바른 Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다 —
+     * 판단 근거는 `src/app/course-assets/[...path]/route.ts` 머리 주석과
+     * 백로그 06 03-화면구조-결정.md D2-정정.
+     */
+    const bundleUrl = opt(r.detail_bundle_path)
+      ? `${route.courseAssets}/${opt(r.detail_bundle_path)}index.html`
+      : undefined;
+    return {
+      slug: str(r.slug),
+      index: str(r.index_label),
+      name: str(r.name),
+      subtitle: str(r.subtitle),
+      description: str(r.description),
+      duration: str(r.duration),
+      level: str(r.level),
+      scheduleType: (str(r.schedule_type) ||
+        "multi") as RegularClass["scheduleType"],
+      ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
+      ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
+      tracks: strArray(r.tracks) as RegularClass["tracks"],
+      accent: str(r.accent) as Accent,
+      ...(toImage(r.image_url, r.image_alt, r.image_caption)
+        ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
+        : {}),
+      curriculum: strArray(r.curriculum),
+      detailHref: str(r.detail_href),
+      seo: { title: str(r.seo_title), description: str(r.seo_description) },
+      ...(opt(r.detail_html) ? { detailHtml: opt(r.detail_html) } : {}),
+      ...(bundleUrl ? { bundleUrl } : {}),
+    };
+  } catch {
+    // createSupabasePublicClient()가 env 없이 던지는 경우 등 — 장애로 본다.
+    return fallbackRegularClassBySlug(slug);
+  }
+}
+
+/**
+ * 장애 시에만 쓰는 정적 폴백. **행이 없어서 404인 경우에는 절대 부르지 않는다** —
+ * 그러면 관리자가 지운 과정의 상세 페이지가 계속 살아 있게 된다.
+ *
+ * 폴백에는 `detailHtml`이 없다. 정적 데이터에 본문이 없기도 하고, 장애 중에
+ * 오래된 본문을 보여주느니 커리큘럼 기반 기본 레이아웃이 낫다. `bundleUrl`도
+ * 같은 이유로 없다 — 장애 중에 정적 데이터로 없는 링크를 지어낼 수 없다.
+ */
+function fallbackRegularClassBySlug(slug: string): RegularClassDetail | null {
+  return regularClasses.find((c) => c.slug === slug) ?? null;
+}
+
+/**
+ * 상세 페이지 하단 "다른 과정" 블록이 쓰는 형제 과정 목록
+ * (백로그 06 [03-화면구조-결정.md](../../backlogs/06-course-detail-page-redesign/03-화면구조-결정.md) D6).
+ *
+ * 목록 리더를 그대로 재사용한다 — 상세 전용 쿼리를 또 만들면 공개 컬럼이
+ * 늘어날 때 여기만 빠뜨린다. 목록 리더가 이미 장애 시 정적 폴백으로
+ * 떨어지므로, 이 함수는 **결과가 비어도 그냥 빈 배열을 돌려준다.**
+ * 다른 과정 블록이 없다고 상세 페이지가 깨질 이유는 없다 — 그래서 여기서는
+ * 404도 폴백도 판단하지 않는다.
+ */
+export async function getPublicRegularClassSiblings(
+  slug: string,
+  limit = 3,
+): Promise<RegularClass[]> {
+  try {
+    const all = await getPublicRegularClasses();
+    return all.filter((c) => c.slug !== slug).slice(0, limit);
+  } catch {
+    return [];
+  }
 }
 
 /** 03. 커뮤니티 클럽 — 기수. */

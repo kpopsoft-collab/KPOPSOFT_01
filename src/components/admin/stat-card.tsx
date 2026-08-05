@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Dashboard stat card (docs/어드민기획.md §6 "대시보드").
+ * Dashboard stat card (docs/06-admin/ §6 "대시보드").
  * Reused by `/admin` for the inquiry summary. Accent is a subtle background
  * tint + border, matching the status colors used elsewhere in admin
  * (new=blue, in_progress=yellow, done=mint — see lib/admin/types.ts

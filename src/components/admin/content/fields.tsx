@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { X, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -284,5 +285,53 @@ export function SelectField<T extends string>({
       </select>
       {hint && <span className="text-xs font-medium text-ink/45">{hint}</span>}
     </label>
+  );
+}
+
+/**
+ * 고정된 선택지 하나를 라디오 그룹으로 고르는 필드 — 값이 소수(2~3개)라
+ * `select`보다 한눈에 비교되어야 할 때 쓴다 (예: 강의 일정 유형).
+ */
+export function RadioField<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; label: string; hint?: string }[];
+  onChange: (v: T) => void;
+}) {
+  // 같은 화면에 두 개가 놓여도 name이 겹쳐 서로의 선택을 지우지 않도록 매번 새로 만든다.
+  const name = useId();
+
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="text-sm font-semibold text-ink/70">{label}</legend>
+      <div className="flex flex-col gap-2 rounded-2xl border border-ink/15 bg-ivory/60 p-3">
+        {options.map((o) => (
+          <label
+            key={o.value}
+            className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium text-ink/80"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              checked={value === o.value}
+              onChange={() => onChange(o.value)}
+              className="size-4 shrink-0 accent-brand-blue"
+            />
+            <span className="flex flex-col">
+              {o.label}
+              {o.hint && (
+                <span className="text-xs font-medium text-ink/45">{o.hint}</span>
+              )}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

@@ -24,7 +24,7 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
- * Home. 최종 순서는 `KPOPSOFT_homepage_revision_request.md` §2를 따른다:
+ * Home. 최종 순서는 `docs/02-home/03-최종수정요청-섹션순서와-히어로.md` §2를 따른다:
  * Header → Hero → 주요 성과 수치 → **OUR IDENTITY** → 핵심 사업 영역 →
  * 주요 프로젝트 → **WHY KPOPSOFT** → 프로젝트 진행 방식 → 문의 → Footer.
  *
@@ -32,7 +32,7 @@ export const dynamic = "force-dynamic";
  *  - OUR IDENTITY — 이름에 담긴 의미를 밝혀 K-POP 콘텐츠 제작사로 오해되는
  *    것을 막는다. 헤더 `ABOUT` 앵커가 이 섹션으로 옮겨왔다.
  *  - WHY KPOPSOFT — 차별점 카드 3장과 5축 역량 레이더.
- *    **핵심 비즈니스와 포트폴리오 사이**에 둔다(docs/신규수정사항 §1).
+ *    **핵심 비즈니스와 포트폴리오 사이**에 둔다(docs/02-home/01-why-kpopsoft-수정요청.md §1).
  *    "무엇을 제공하는가" → "왜 우리인가" → "실제로 어떤 결과를 만들었는가"
  *    순서다. 처음에는 포트폴리오 뒤에 뒀었는데, 증명을 먼저 보여준 뒤에
  *    이유를 설명하는 거꾸로 된 흐름이었다.
@@ -43,7 +43,7 @@ export const dynamic = "force-dynamic";
  *  2. **통계바 분리** — About Summary에 붙어 있던 Numbers가 독립 섹션이 됐고,
  *     About 카피는 그 위 짧은 리드로 압축됐다(`stats-bar.tsx`).
  *
- * 아래 둘은 레포의 IA 원본(docs/KPOPSOFT HOMEPAGE IA .png)보다 나중에 나온
+ * 아래 둘은 레포의 IA 원본(docs/01-ia/KPOPSOFT-HOMEPAGE-IA.png)보다 나중에 나온
  * 개정안을 따른 것이라 ver3 문서와 어긋난다. 원본 IA/요약 문서가 갱신되면
  * 그때 맞춘다.
  *  3. **통계바가 핵심 비즈니스 위로** 올라갔다.

@@ -12,7 +12,7 @@ import { accentText, route, sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * What We Do 세 기둥 (docs/KPOPSOFT_Home_Landing_ver2.md §SECTION 05).
+ * What We Do 세 기둥 (docs/99-archive/home-ver2/ §SECTION 05).
  *
  * 사이트 태그라인 `SOFTWARE · AI SOLUTIONS · EDUCATION`을 그대로, 세 사업을
  * **동일 비중** 카드로 병렬 노출한다. 이전 버전은 Software/AI만 큰 탭·이미지·
