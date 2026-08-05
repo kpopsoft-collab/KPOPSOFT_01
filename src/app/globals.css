@@ -266,28 +266,25 @@
 /*
  * 가로 마키 (교육 페이지 수정 요청서 §9·§11).
  *
- * 트랙에 같은 목록을 두 벌 넣고 정확히 절반만큼 밀면 이음매 없이 이어진다.
- * 두 번째 벌은 `aria-hidden`이라 스크린리더는 목록을 한 번만 읽는다.
+ * 트랙에 같은 목록을 여러 벌 이어 붙이고 한 벌 폭만큼 밀면 이음매 없이 이어진다.
+ * 두 번째 벌부터는 `aria-hidden`이라 스크린리더는 목록을 한 번만 읽는다.
  *
- * `-50%`가 아니라 `calc(-50% - <gap>/2)`인 이유 — 트랙의 gap이 두 벌 사이에도
- * 하나 들어가므로, 정확히 절반을 밀면 그 gap만큼 어긋나 이음매에서 카드가
- * 튄다.
+ * 예전에는 두 벌 고정 + `calc(-50% - <gap>/2)` 방식이었다(`kps-marquee`,
+ * `kps-marquee-reverse`). **되살리지 않는다** — 벌 수가 화면 폭에 따라 달라지면
+ * `-50%`가 한 벌 폭과 어긋나 이음매에서 카드가 튄다. 2026-08-02에 아래 픽셀
+ * 기준으로 교체됐고, 2026-08-05 병합에서 옛 keyframe 두 개가 아무 데서도
+ * 쓰이지 않는 것을 확인하고 지웠다.
+ *
+ * 픽셀 기준 마키. 이어 붙인 벌 수가 화면 폭에 따라 달라지는 곳에서 쓴다 —
+ * 벌 수가 둘이 아니면 `-50%`가 한 벌 폭과 어긋나 이음매가 튄다. 이동 거리
+ * (한 벌 폭 + 간격)는 컴포넌트가 재서 `--marquee-shift`로 넘긴다.
  */
-@keyframes kps-marquee {
+@keyframes kps-marquee-shift {
   from {
     transform: translateX(0);
   }
   to {
-    transform: translateX(calc(-50% - var(--marquee-gap, 1.5rem) / 2));
-  }
-}
-
-@keyframes kps-marquee-reverse {
-  from {
-    transform: translateX(calc(-50% - var(--marquee-gap, 1.5rem) / 2));
-  }
-  to {
-    transform: translateX(0);
+    transform: translateX(calc(-1 * var(--marquee-shift, 0px)));
   }
 }
 
