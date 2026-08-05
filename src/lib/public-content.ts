@@ -1,9 +1,6 @@
 import { createSupabasePublicClient } from "@/lib/supabase/public";
-// 버킷 이름 하나를 위해 admin 모듈을 참조한다. course-bundle.ts는 import가
-// 하나도 없는 순수 상수·함수 모듈이라 딸려 오는 것이 없고, 이름을 여기에
-// 다시 적으면 어드민이 버킷을 옮겼을 때 이쪽만 조용히 틀린 URL을 만든다.
-import { BUNDLE_BUCKET } from "@/lib/admin/course-bundle";
 import {
+  route,
   type Accent,
   type Expert,
   experts as seedExperts,
@@ -419,13 +416,18 @@ export async function getPublicRegularClassBySlug(
     // 포기하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
     // getPublicRegularClasses()와 같은 방식으로 unknown을 거쳐 좁힌다.
     const r = data as unknown as Row;
-    // 번들 폴더 경로만 저장돼 있고 공개 URL은 여기서, 서버에서 조립한다 —
-    // 클라이언트가 조립하면 프로젝트 ref가 화면 코드에 흩어진다(백로그 05 §6).
+    /*
+     * 번들 폴더 경로만 저장돼 있고 URL은 여기서 조립한다.
+     *
+     * **Storage 공개 URL이 아니라 우리 라우트(`/course-assets/...`)를 가리킨다.**
+     * Supabase Storage가 HTML을 의도적으로 `text/plain`으로 내려서, 공개 URL을
+     * 그대로 열면 페이지가 아니라 소스 코드가 보이기 때문이다. 그 라우트가
+     * 올바른 Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다 —
+     * 판단 근거는 `src/app/course-assets/[...path]/route.ts` 머리 주석과
+     * 백로그 06 03-화면구조-결정.md D2-정정.
+     */
     const bundleUrl = opt(r.detail_bundle_path)
-      ? db.storage
-          .from(BUNDLE_BUCKET)
-          .getPublicUrl(`${opt(r.detail_bundle_path)}index.html`).data
-          .publicUrl
+      ? `${route.courseAssets}/${opt(r.detail_bundle_path)}index.html`
       : undefined;
     return {
       slug: str(r.slug),
@@ -466,6 +468,28 @@ export async function getPublicRegularClassBySlug(
  */
 function fallbackRegularClassBySlug(slug: string): RegularClassDetail | null {
   return regularClasses.find((c) => c.slug === slug) ?? null;
+}
+
+/**
+ * 상세 페이지 하단 "다른 과정" 블록이 쓰는 형제 과정 목록
+ * (백로그 06 [03-화면구조-결정.md](../../backlogs/06-course-detail-page-redesign/03-화면구조-결정.md) D6).
+ *
+ * 목록 리더를 그대로 재사용한다 — 상세 전용 쿼리를 또 만들면 공개 컬럼이
+ * 늘어날 때 여기만 빠뜨린다. 목록 리더가 이미 장애 시 정적 폴백으로
+ * 떨어지므로, 이 함수는 **결과가 비어도 그냥 빈 배열을 돌려준다.**
+ * 다른 과정 블록이 없다고 상세 페이지가 깨질 이유는 없다 — 그래서 여기서는
+ * 404도 폴백도 판단하지 않는다.
+ */
+export async function getPublicRegularClassSiblings(
+  slug: string,
+  limit = 3,
+): Promise<RegularClass[]> {
+  try {
+    const all = await getPublicRegularClasses();
+    return all.filter((c) => c.slug !== slug).slice(0, limit);
+  } catch {
+    return [];
+  }
 }
 
 /** 03. 커뮤니티 클럽 — 기수. */
