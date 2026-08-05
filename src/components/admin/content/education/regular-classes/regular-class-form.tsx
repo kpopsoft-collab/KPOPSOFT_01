@@ -25,7 +25,6 @@ import {
   TextField,
 } from "@/components/admin/content/fields";
 import { BundleUpload } from "@/components/admin/content/bundle-upload";
-import { HtmlUpload } from "@/components/admin/content/html-upload";
 import { AccentPicker } from "@/components/admin/content/accent-picker";
 import { ImageUpload } from "@/components/admin/content/image-upload";
 import { FormActions } from "@/components/admin/content/education/form-actions";
@@ -42,13 +41,20 @@ type Input = Omit<
   bundleIntent: BundleIntent;
 };
 
-/** 상세 본문의 출처 — 셋 중 하나다. 둘을 겹쳐 쓰지 않는다. */
-type DetailSource = "none" | "html" | "bundle";
+/**
+ * 상세 자료의 출처 — 둘 중 하나다.
+ *
+ * 예전에는 `"html"`이 따로 있었다(HTML 한 장을 정제해 `detail_html` 컬럼에
+ * 넣고 공개 페이지에 인라인으로 그리는 경로). **폐지했다** — 정제가
+ * `<script>`와 `@keyframes`를 지워서 완성된 문서 한 장이 빈 화면으로 나왔다
+ * (백로그 06 01-현황분석 §2·§3). 지금은 `.html` 한 장도 zip과 같은 위젯으로
+ * Storage에 올라가 `"bundle"` 하나로 합쳐졌다(백로그 06 D2).
+ */
+type DetailSource = "none" | "bundle";
 
 const DETAIL_SOURCE_OPTIONS: { value: DetailSource; label: string }[] = [
-  { value: "none", label: "없음 (커리큘럼 목록)" },
-  { value: "html", label: "HTML 파일 1개" },
-  { value: "bundle", label: "zip 번들 (여러 파일)" },
+  { value: "none", label: "없음 (커리큘럼 목록만)" },
+  { value: "bundle", label: "상세 자료 (zip 또는 HTML 한 장)" },
 ];
 
 export function RegularClassForm({
@@ -80,12 +86,13 @@ export function RegularClassForm({
   );
   const [startDate, setStartDate] = useState(initial?.startDate ?? "");
   const [endDate, setEndDate] = useState(initial?.endDate ?? "");
-  // 업로드 위젯이 보여줄 값 — 저장 의도(htmlIntent)와 분리해서 들고 있는다.
-  // initial이 이미 정제본이 아니라 "동반 테이블의 원본"을 주므로 다시
-  // 여는 화면에서도 원본 그대로 보인다.
-  const [htmlRaw, setHtmlRaw] = useState(initial?.detailHtmlRaw ?? "");
-  const [htmlFileName, setHtmlFileName] = useState(initial?.detailHtmlFileName ?? "");
-  const [htmlIntent, setHtmlIntent] = useState<HtmlIntent>({ kind: "keep" });
+  /**
+   * `detail_html`은 이 폼이 더 이상 쓰지 않는다. 그래도 **항상 "keep"으로**
+   * 보낸다 — 컬럼과 동반 테이블(원본)을 아직 지우지 않기로 했기 때문이다
+   * (백로그 06 D8). 백필이 운영에서 확인되면 컬럼과 함께 이 줄도 사라진다.
+   * 절대 "remove"로 바꾸지 않는다: 지금 지우면 되돌릴 원본이 없어진다.
+   */
+  const htmlIntent: HtmlIntent = { kind: "keep" };
   // 번들도 같은 구조 — 위젯이 보여줄 경로·파일명과 저장 의도를 따로 들고 있는다.
   const [bundlePath, setBundlePath] = useState(initial?.detailBundlePath ?? "");
   const [bundleName, setBundleName] = useState(initial?.detailBundleName ?? "");
@@ -93,17 +100,16 @@ export function RegularClassForm({
   // 업로드가 끝나기 전에 저장하면 intent가 아직 "keep"이라 컬럼은 안 붙고,
   // 이미 올라간 파일 수십 개만 Storage에 고아로 남는다. 그동안 저장을 막는다.
   const [bundleUploading, setBundleUploading] = useState(false);
-  // 상세 본문은 HTML 한 장이거나 zip 번들이거나 둘 중 하나다. 둘 다 채워 두면
-  // 상세 페이지가 무엇을 그릴지 이 화면에서 알 수 없다. 지금 무엇이 들어 있는지로
-  // 초기값을 정한다 — detailHtmlRaw가 비어도(동반 테이블 없는 옛 데이터)
-  // 정제본이 있으면 HTML이다.
+  // 지금 무엇이 들어 있는지로 초기값을 정한다. `detail_html`만 있는 옛 행은
+  // **"없음"으로 보인다** — 공개 페이지가 그 값을 더 이상 읽지 않으므로
+  // 실제로 상세 자료가 없는 상태가 맞다. 아래 안내 문구가 그 사실을 알린다.
   const [detailSource, setDetailSource] = useState<DetailSource>(
-    initial?.detailBundlePath
-      ? "bundle"
-      : initial?.detailHtmlRaw || initial?.detailHtml
-        ? "html"
-        : "none",
+    initial?.detailBundlePath ? "bundle" : "none",
   );
+  // 백필 전 옛 데이터인가 — 안내 문구를 띄울지 판단한다.
+  const hasLegacyHtml =
+    !initial?.detailBundlePath &&
+    Boolean(initial?.detailHtmlRaw || initial?.detailHtml);
   const [pending, start] = useTransition();
 
   /**
@@ -112,11 +118,6 @@ export function RegularClassForm({
    */
   const changeDetailSource = (next: DetailSource) => {
     setDetailSource(next);
-    if (next !== "html") {
-      setHtmlRaw("");
-      setHtmlFileName("");
-      setHtmlIntent({ kind: "remove" });
-    }
     if (next !== "bundle") {
       setBundlePath("");
       setBundleName("");
@@ -233,32 +234,24 @@ export function RegularClassForm({
       <StringListField label="주차별 커리큘럼" values={curriculum} onChange={setCurriculum} />
 
       <fieldset className="flex flex-col gap-4 rounded-2xl border border-ink/15 p-4">
-        <legend className="px-1 text-sm font-semibold text-ink/70">상세 본문</legend>
+        <legend className="px-1 text-sm font-semibold text-ink/70">상세 자료</legend>
         <RadioField
-          label="본문 방식"
+          label="자료 방식"
           value={detailSource}
           onChange={changeDetailSource}
           options={DETAIL_SOURCE_OPTIONS}
         />
         <p className="text-xs font-medium text-ink/45">
-          방식을 바꾸고 저장하면 쓰지 않는 쪽은 지워집니다.
+          자료는 새 탭에서 원본 그대로 열립니다. 이미지·CSS가 딸린 자료는 zip으로,
+          한 파일로 완결된 자료는 .html 한 장으로 올리면 됩니다.
         </p>
 
-        {detailSource === "html" && (
-          <HtmlUpload
-            value={htmlRaw}
-            fileName={htmlFileName}
-            onChange={(raw, fileName) => {
-              setHtmlRaw(raw);
-              setHtmlFileName(fileName);
-              setHtmlIntent({ kind: "replace", raw, fileName });
-            }}
-            onRemove={() => {
-              setHtmlRaw("");
-              setHtmlFileName("");
-              setHtmlIntent({ kind: "remove" });
-            }}
-          />
+        {hasLegacyHtml && (
+          <p role="alert" className="text-sm font-medium text-brand-yellow-ink">
+            이 과정에는 옛 방식(페이지 안에 그리던 HTML)으로 올린 자료가 남아
+            있습니다. 상세 페이지에는 더 이상 나오지 않습니다 — 같은 파일을
+            위에서 다시 올려 주세요.
+          </p>
         )}
 
         {detailSource === "bundle" && (
