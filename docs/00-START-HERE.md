@@ -82,6 +82,7 @@
 |------|------|
 | [../CLAUDE.md](../CLAUDE.md) | 프로젝트 규칙·컨벤션·디자인 토큰 요약. **작업 전 필독** |
 | [08-decisions/00-START-HERE.md](08-decisions/00-START-HERE.md) | 기능별 조사·결정 원자료. **"지금 어떻게 동작하나"는 01~07이 답한다** — 어긋나면 01~07이 우선 |
+| [../backlogs/README.md](../backlogs/README.md) | **진행 중인** 작업의 조사·계획. 끝나면 08-decisions로 옮긴다 |
 | `../.claude/agents/` | 프로젝트 전용 서브에이전트 정의 |
 | `../src/lib/site.ts` | 홈 콘텐츠 **폴백 시드**. 실제 값은 Supabase에 있다 |
 | `../src/lib/education-content.ts` | 교육 콘텐츠 정적 데이터 |
