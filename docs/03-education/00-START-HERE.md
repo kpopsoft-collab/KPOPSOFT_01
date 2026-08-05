@@ -27,7 +27,7 @@
 | 10 | [10-ver3-지난프로그램-후기-FAQ.md](10-ver3-지난프로그램-후기-FAQ.md) | 지난 프로그램, 별점 후기, FAQ 4문항 |
 | 11 | [11-ver3-contact-footer.md](11-ver3-contact-footer.md) | CONTACT, Footer |
 | 12 | [12-ver3-상세페이지-ver2유지-admin.md](12-ver3-상세페이지-ver2유지-admin.md) | 2차 범위 상세 페이지, **유지되는 ver2 규정**, Admin |
-| 13 | [13-공개-과정-상세페이지.md](13-공개-과정-상세페이지.md) | **구현 기준.** `/education/programs` 목록·상세 — 라우트, 데이터 경로, 본문 3분기 |
+| 13 | [13-공개-과정-상세페이지.md](13-공개-과정-상세페이지.md) | **구현 기준.** `/education/programs` 목록·상세 — 라우트, 데이터 경로, 화면 구성(2026-08-05 재구성) |
 
 코드 주석의 `docs/03-education/ §N`은 **두 문서에 같은 번호가 있어 모호하다.**
 `§`가 `SECTION NN` 형태면 ver3(06~12번), 그냥 숫자면 최종 수정 요청서(01~05번)로 읽는다.
@@ -85,8 +85,12 @@
 `src/lib/education-content.ts`는 **조회 실패 시의 폴백 시드**다.
 시드만 고치면 화면은 바뀌지 않는다.
 
-정규 클래스는 일정 유형(원데이/다회차)과 상세 본문(HTML 한 장 / zip 번들)까지
+정규 클래스는 일정 유형(원데이/다회차)과 상세 자료(zip 또는 `.html` 한 장)까지
 어드민에서 등록한다 — [../06-admin/07-과정-상세본문-HTML과-번들.md](../06-admin/07-과정-상세본문-HTML과-번들.md).
+
+> **2026-08-05** — 업로드 HTML을 상세 페이지 안에 그리던 경로는 폐지됐다.
+> 자료는 zip이든 `.html` 한 장이든 **새 탭**으로만 열리고, 커리큘럼은 항상 보인다.
+> 전말은 [../../backlogs/06-course-detail-page-redesign/00-START-HERE.md](../../backlogs/06-course-detail-page-redesign/00-START-HERE.md).
 
 ## 함께 보기
 

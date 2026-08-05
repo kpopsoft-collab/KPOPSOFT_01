@@ -17,7 +17,7 @@
 | 4 | [04-결정사항과-착수순서.md](04-결정사항과-착수순서.md) | §9, §10 | 확정 결정·남은 이슈, P1 착수 순서 |
 | 5 | [05-구축-실행계획.md](05-구축-실행계획.md) | §11 | 병렬 Wave 배치, **§11.8 DB 제외 선행 구축 모드(현재 채택)** |
 | 6 | [06-콘텐츠-폼-공용셸.md](06-콘텐츠-폼-공용셸.md) | — | **콘텐츠 폼 25개가 쓰는 `ContentFormShell`** — 새 폼 화면을 만들 때의 기준 |
-| 7 | [07-과정-상세본문-HTML과-번들.md](07-과정-상세본문-HTML과-번들.md) | — | 정규 클래스 상세 본문(HTML 한 장 / zip 번들 **택일**) — 정제·상한·Storage 규칙 |
+| 7 | [07-과정-상세본문-HTML과-번들.md](07-과정-상세본문-HTML과-번들.md) | — | 정규 클래스 상세 자료(zip 또는 `.html` 한 장, **둘 다 새 탭**) — Storage·`CSP: sandbox` 규칙 |
 
 ## 지금 어디까지 됐나
 
@@ -31,6 +31,7 @@
 | P3 — 교육 ver3 `education/{org-training, regular-classes, club-tiers, club-cohorts, past-programs, reviews, faqs, stats}` | 완료 (마이그레이션 `20260802120000_p3_education_ver3.sql`) |
 | P4 — 정규 클래스 **일정 유형 + HTML 상세 본문** | 완료 (`20260803090000`, DDL 적용됨) → [07](07-과정-상세본문-HTML과-번들.md) |
 | P5 — 정규 클래스 **zip 번들 업로드**(Storage) | 완료 (`20260804090000`·`20260804120000`, DDL 적용됨) → [07](07-과정-상세본문-HTML과-번들.md) |
+| P6 — **상세 자료를 하나로 통합 + 새 탭 렌더** | 완료 (2026-08-05, **DDL 없음**) → [07 §1](07-과정-상세본문-HTML과-번들.md) · [백로그 06](../../backlogs/06-course-detail-page-redesign/06-구현결과.md) |
 | 관리자 초대 UI | 미구현 |
 | Supabase Auth / DB / Storage | 연결됨 (`20260709131208_p2_storage_buckets.sql`) |
 | 이메일 발송 | 코드는 Resend로 구현됨(`src/lib/email.ts`). 실제 발송은 `RESEND_API_KEY` 유무에 달림 |

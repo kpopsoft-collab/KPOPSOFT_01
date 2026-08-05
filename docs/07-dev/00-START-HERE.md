@@ -18,6 +18,7 @@
 | 9 | [09-클로드코드-스킬과-에이전트.md](09-클로드코드-스킬과-에이전트.md) | 이 프로젝트에 적용된 스킬·커맨드·서브에이전트·MCP 카탈로그 |
 | 10 | [10-작업로그-2026-08-03.md](10-작업로그-2026-08-03.md) | 정규 클래스 강의 일정·HTML 상세 업로드 (정제·CSS 스코프 판단 근거) |
 | 11 | [11-작업로그-2026-08-04.md](11-작업로그-2026-08-04.md) | 과정 상세 번들(zip) Storage 업로드 + 새 탭 열람 (origin·프록시 금지 판단) |
+| 12 | [12-작업로그-2026-08-05.md](12-작업로그-2026-08-05.md) | 상세 페이지 재구성 · **Storage가 HTML을 `text/plain`으로 내려 11의 번들이 깨져 있던 것 발견** · 프록시 금지 결정 번복 |
 
 ## ⚠️ 먼저 알아야 할 것 — 로컬과 배포가 DB를 공유한다
 
@@ -39,7 +40,7 @@ Supabase 프로젝트가 하나라 **DB를 고치면 그 즉시 www.kpopsoft.com
 | 홈 콘텐츠 (포트폴리오·통계·강사진·후기) | Supabase — `src/lib/public-content.ts` | `src/lib/site.ts` 시드 |
 | 문의 유형·세부 유형 | Supabase `inquiry_types` / `inquiry_subtypes` | `src/lib/site.ts` (**DB와 값이 다름**) |
 | 교육 콘텐츠 | Supabase `education_*` 8종 — `src/lib/public-content.ts` | `src/lib/education-content.ts` 시드 |
-| 과정 상세 본문 | `detail_html`(정제본) **또는** Storage `education` 버킷의 zip 번들 | 없으면 `curriculum` 배열 |
+| 과정 상세 자료 | Storage `education` 버킷 `<uuid>/` (zip 또는 `.html` 한 장). 화면은 `/course-assets/…` 새 탭 | — (커리큘럼은 **항상** 따로 보인다) |
 
 **시드만 고치면 화면은 바뀌지 않는다.** 이유는
 [../01-ia/04-홈-contact-DB-마이그레이션.md](../01-ia/04-홈-contact-DB-마이그레이션.md).
@@ -67,7 +68,7 @@ Next.js 16 기본 Turbopack 빌드는 Codex 샌드박스의 내부 포트 바인
 
 - 프로젝트 규칙·컨벤션 — [../../CLAUDE.md](../../CLAUDE.md)
 - 어드민 구축 계획 — [../06-admin/05-구축-실행계획.md](../06-admin/05-구축-실행계획.md)
-- 상세 본문(HTML·zip) 운영 기준 — [../06-admin/07-과정-상세본문-HTML과-번들.md](../06-admin/07-과정-상세본문-HTML과-번들.md)
+- 상세 자료(zip·`.html`) 운영 기준 — [../06-admin/07-과정-상세본문-HTML과-번들.md](../06-admin/07-과정-상세본문-HTML과-번들.md)
 - 기능 묶음별 조사·결정 기록(완료분 포함) — [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
 
 ← [문서 전체 시작점](../00-START-HERE.md)

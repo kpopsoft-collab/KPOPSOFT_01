@@ -9,24 +9,55 @@
 
 ---
 
-`/education/programs/[slug]` 상세 페이지의 **본문을 어드민이 무엇으로 채우는가**에
+`/education/programs/[slug]` 상세 페이지의 **상세 자료를 어드민이 무엇으로 채우는가**에
 대한 기준이다. 정규 클래스(`education_regular_classes`)에만 있는 기능이고,
-2026-08-03(HTML)과 2026-08-04(번들) 두 번에 걸쳐 들어왔다. **DDL·코드 모두 적용됨.**
+2026-08-03(HTML)·2026-08-04(번들)·**2026-08-05(둘을 하나로 합침)** 세 번에 걸쳐
+바뀌었다. **DDL·코드 모두 적용됨.**
 
-## 1. 본문은 셋 중 **하나**다
+## 1. 자료는 둘 중 **하나**다 — 그리고 둘 다 **새 탭**이다
 
-어드민 폼의 "상세 본문" 라디오가 진실이다. 두 위젯을 나란히 놓으면 어느 쪽이
-화면에 나오는지 어드민이 알 수 없어서, 처음부터 택일로 만들었다.
+어드민 폼의 "상세 자료" 라디오가 진실이다.
 
 | 방식 | 저장 위치 | 화면 |
 |------|----------|------|
-| **없음** | — | `curriculum` 배열 기반 고정 레이아웃(`CurriculumTimeline`) |
-| **HTML 파일 1개** | `detail_html`(정제본) + 동반 테이블(원본) | 본문에 그대로 렌더 |
-| **zip 번들** | `education` 버킷 `<uuid>/` 폴더 + `detail_bundle_path` | **새 탭 링크** 블록 |
+| **없음** | — | `curriculum` 배열 레이아웃만 |
+| **상세 자료** (`.zip` 또는 `.html` 한 장) | `education` 버킷 `<uuid>/` 폴더 + `detail_bundle_path` | 커리큘럼 **아래**에 새 탭 링크 |
 
-방식을 바꿔 저장하면 안 고른 쪽은 비워진다. HTML은 `.html` **한 장**만 받으므로
-이미지·CSS·서브 페이지가 딸린 자료는 zip을 쓴다 — 텍스트 컬럼 하나로는
-`<img src="images/a.png">`가 가리킬 대상 자체가 없다.
+> ### ⚠️ 2026-08-05에 크게 바뀌었다
+>
+> 예전에는 **"HTML 파일 1개"** 가 별도 방식이었다 — 정제해서 `detail_html`
+> 컬럼에 넣고 **상세 페이지 안에 인라인으로 그렸다.** 폐지했다.
+>
+> 정제기가 `<script>`·`@keyframes`·`position`을 지우므로, 완성된 문서 한 장을
+> 인라인으로 그리면 **빈 화면**이 된다. 실제로 그랬다 — 슬라이드 25장짜리 덱이
+> 29,435px짜리 빈 기둥으로 나왔고 24장이 `visibility:hidden`이었다.
+>
+> 지금은 `.html` 한 장도 **같은 위젯으로 Storage에 올라가** zip과 똑같이
+> `<uuid>/index.html`이 된다. 커리큘럼은 자료 유무와 무관하게 **항상** 보인다.
+>
+> 전말 — [백로그 06](../../backlogs/06-course-detail-page-redesign/00-START-HERE.md).
+
+**이미지·CSS·서브 페이지가 딸린 자료는 반드시 zip이다.** `.html` 한 장으로
+올리면 그 파일들이 Storage에 없어서 `<img src="assets/a.png">`가 404가 된다
+(실제로 `ai-tools`가 이 상태다). 파일 하나로 완결되는 자료만 `.html`로 올린다.
+
+## 1-1. 자료를 여는 주소는 **우리 라우트**다 — Storage 공개 URL이 아니다
+
+```text
+/course-assets/<uuid>/index.html   ← src/app/course-assets/[...path]/route.ts
+```
+
+**Supabase Storage는 HTML을 의도적으로 `text/plain`으로 내려준다.** 저장된
+메타데이터가 `text/html`이어도 그렇다. 공개 URL을 그대로 열면 페이지가 아니라
+**소스 코드**가 보인다. 버킷 설정으로 못 바꾼다.
+
+2026-08-04에 올린 zip 번들도 **이 때문에 계속 깨져 있었다.** 그때 "Storage가
+공개 `.html`을 그려 주는가"를 해소된 리스크로 적었지만, 확인된 것은 파일이
+올라갔다는 것까지였다.
+
+라우트는 Storage에서 가져와 **Content-Type만 다시 붙이고**,
+`Content-Security-Policy: sandbox`로 문서를 **불투명 origin**에 둔다.
+자세한 것은 [../03-education/13](../03-education/13-공개-과정-상세페이지.md) §4.
 
 ## 2. 데이터가 어디에 있나
 
@@ -34,8 +65,8 @@
 |------|------|------|
 | 일정 유형 | `schedule_type` (`oneday`/`multi` 도메인) | 기본 `multi` |
 | 일정 날짜 | `start_date` · `end_date` | CHECK — `oneday`면 종료일 null, 종료일만 있는 상태 금지 |
-| 본문 HTML(**정제본**) | `detail_html` text | **렌더되는 값은 이것뿐이다** |
-| 본문 HTML(**원본**) | `education_regular_class_html_sources` (PK `class_id`) | 관리자 전용 별도 테이블 |
+| ~~본문 HTML(정제본)~~ | `detail_html` text | **더 이상 렌더되지 않는다.** 컬럼은 아직 남아 있다 |
+| 본문 HTML(**원본**) | `education_regular_class_html_sources` (PK `class_id`) | 관리자 전용. **백필을 되돌릴 근거라 지우지 않는다** |
 | 번들 폴더 | `detail_bundle_path` — `'<uuid>/'` 또는 `''` | CHECK로 모양 고정 |
 | 번들 원래 파일명 | `detail_bundle_name` | 표시 전용, 제약 없음 |
 | 번들 파일 실체 | Storage `education` 버킷 `<uuid>/…` | 과정 이미지와 **같은 버킷** |
@@ -52,7 +83,12 @@ RLS는 **행 단위**다. 원본을 `education_regular_classes` 컬럼으로 두
 앱 쿼리에서 빼는 것은 성능 최적화이지 접근통제가 아니다.
 동반 테이블은 `is_admin()` 단일 정책이고, 2026-08-03에 카나리 행으로 실증했다.
 
-### 3-2. 정제는 저장 때 한 번, 렌더 직전에 한 번 더
+### 3-2. ~~정제는 저장 때 한 번, 렌더 직전에 한 번 더~~ — **2026-08-05 폐기**
+
+> 공개 화면이 `detail_html`을 더 이상 읽지 않으므로 렌더 직전 정제도 없다.
+> 아래 문단은 컬럼과 정제기를 실제로 지울 때까지의 기록으로 남긴다.
+> **`sanitizeCourseHtml()`을 다시 쓰는 코드를 만들지 않는다.**
+
 
 관리자는 RLS상 테이블을 직접 고칠 수 있어 서버 액션을 우회해 `detail_html`에
 값을 넣는 경로가 남는다. 그래서 공개 화면이 `sanitizeCourseHtml()`을 **다시**
@@ -82,15 +118,23 @@ RLS는 **행 단위**다. 원본을 `education_regular_classes` 컬럼으로 두
 폴더 키는 클래스 id가 아니라 **업로드마다 새 UUID**다. 새로 만드는 화면에는
 id가 아직 없고, 교체하면 새 폴더라 CDN 캐시 문제도 같이 사라진다.
 
-### 3-5. 번들 URL을 우리 도메인으로 프록시하지 않는다
+### 3-5. 자료는 우리 도메인에서 나가되 **`CSP: sandbox` 없이는 안 된다**
 
-번들은 `*.supabase.co` **새 탭**으로 연다. 그 origin에는 훔칠 것이 없다 —
-supabase-js는 세션을 앱 origin의 localStorage에 두고, Supabase는 쿠키가 아니라
-Bearer 토큰을 쓴다. `kpopsoft.com/...`으로 감싸는 순간 이 판단이 통째로 뒤집힌다.
-**링크 URL이 `*.supabase.co`인지가 이 결정의 검증 항목이다.**
+> **2026-08-05에 뒤집혔다.** 예전 규칙은 "`*.supabase.co` 새 탭으로만 열고
+> 우리 도메인으로 프록시하지 않는다"였다. 그 전제(Storage가 격리된 origin으로
+> **동작한다**)가 §1-1에서 무너졌다 — Storage는 HTML을 렌더해 주지 않는다.
 
-서명 URL도 안 된다 — `index.html` 안의 상대경로가 서명 토큰을 물고 가지 못해
-서브 리소스가 전부 깨진다.
+지금은 `/course-assets/…`가 우리 도메인에서 자료를 내보낸다. 옛 규칙이 지키려던
+것(업로드된 JS가 앱 origin의 localStorage 세션에 닿지 못하게)은
+**`Content-Security-Policy: sandbox`** 가 지킨다 — `allow-same-origin`을 주지
+않으면 문서가 불투명 origin(`null`)이 되어 same-origin 검사에 항상 실패한다.
+
+**이 헤더가 이 결정의 검증 항목이다.** 라우트에서 빼는 순간 업로드된 스크립트가
+`kpopsoft.com`의 세션을 읽는다. 실측으로 `window.origin === "null"`과
+`localStorage`·`document.cookie` 차단을 확인했다.
+
+서명 URL은 여전히 안 된다 — `index.html` 안의 상대경로가 서명 토큰을 물고 가지
+못해 서브 리소스가 전부 깨진다.
 
 ### 3-6. 경로 CHECK는 이미지까지 지키는 제약이다
 
@@ -103,7 +147,8 @@ Bearer 토큰을 쓴다. `kpopsoft.com/...`으로 감싸는 순간 이 판단이
 
 | 값 | 어디 |
 |---|---|
-| HTML 상한 **5MB** | `html-upload.tsx` `MAX_BYTES` · `actions.ts` `MAX_RAW_BYTES` · 동반 테이블 CHECK(`20260804120000`) · `next.config.ts` `bodySizeLimit: "8mb"` |
+| ~~HTML 상한 5MB~~ | 폼이 `.html`을 서버 액션으로 보내지 않으므로 **이 사슬은 끊겼다.** 지금은 번들 규칙(파일당 5MB)만 적용된다 |
+| 확장자 → MIME 표 | `course-bundle.ts` `EXT_MIME` — **업로드 검증과 `/course-assets` 응답 Content-Type이 같은 표를 쓴다** |
 | 번들 파일당 **5MB** | `course-bundle.ts` `MAX_FILE_BYTES` = `education` 버킷 `file_size_limit` |
 | 허용 MIME **15종** | `course-bundle.ts` `EXT_MIME` = 버킷 `allowed_mime_types` |
 | 버킷 이름 | `course-bundle.ts` `BUNDLE_BUCKET`(위젯·리포·공개 리더가 공유) |
