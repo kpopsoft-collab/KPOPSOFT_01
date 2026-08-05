@@ -24,10 +24,10 @@
 | 4 | [04-club-cohort-publish-mismatch](04-club-cohort-publish-mismatch/00-START-HERE.md) | **버그** — 클럽 기수 저장이 없는 `is_published` 컬럼 때문에 실패 | **완료** (2026-08-03) → [docs/06-admin/02 §4.4](../docs/06-admin/02-데이터모델과-RLS.md) |
 | 5 | [05-course-bundle-storage](05-course-bundle-storage/00-START-HERE.md) | 상세 자료를 zip으로 올려 Storage에 두고 새 탭으로 연다 | **완료** (2026-08-04, **DDL 적용됨**) → [docs/06-admin/07](../docs/06-admin/07-과정-상세본문-HTML과-번들.md) |
 | 6 | [06-course-detail-page-redesign](06-course-detail-page-redesign/00-START-HERE.md) | 상세 페이지 화면 재구성 + 업로드 HTML 인라인 폐지(새 탭으로 통일) | **완료** (2026-08-05) → [06-구현결과](06-course-detail-page-redesign/06-구현결과.md) · [docs/03-education/13](../docs/03-education/13-공개-과정-상세페이지.md) |
+| 7 | [07-content-security-policy](07-content-security-policy/00-START-HERE.md) | CSP 도입(G6) — nonce 기반, Report-Only로 적용 | **완료** (2026-08-05, **강제 전환은 남음**) → [docs/07-dev/14](../docs/07-dev/14-CSP-정책과-적용.md) |
 
-남은 것은 **CSP 검토(G6)**와 어드민 화면 사람 검증 몇 건이다 —
+남은 것은 **CSP 강제 전환**과 어드민 화면 사람 검증 몇 건이다 —
 [docs/07-dev/05-남은결정과-작업.md](../docs/07-dev/05-남은결정과-작업.md).
-G6는 6이 인라인 렌더링을 없애면 훨씬 좁아진다 — **6 뒤에 본다.**
 
 ## 셋의 관계 — 실행 순서를 어떻게 잡았나 (기록)
 
