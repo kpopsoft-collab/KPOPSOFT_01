@@ -1,4 +1,6 @@
-import { ArrowUpRight, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
+
+import { NewTabLink } from "@/components/ui/new-tab-link";
 
 /**
  * 과정 상세 자료 링크 블록 (백로그 05 §3, 백로그 06 03-화면구조-결정.md D1·D2).
@@ -14,10 +16,10 @@ import { ArrowUpRight, FileText } from "lucide-react";
  * 폐지됐다 — 정제가 `<script>`와 `@keyframes`를 지워 업로드물이 빈 화면으로
  * 나왔기 때문이다(백로그 06 01-현황분석 §2·§3).
  *
- * `<a>`를 직접 쓴다 — `CtaButton`은 외부 링크에 `rel="noreferrer"`만 붙이는데
- * 여기는 `noopener`도 필요하다(백로그 05 요구사항 §3). `selected-work.tsx`의
- * "사이트 방문하기" 링크와 같은 패턴 — 아이콘(시각) + `sr-only` 문구
- * (스크린리더) 양쪽으로 새 창에서 열린다는 것을 알린다.
+ * `CtaButton` 대신 `NewTabLink`를 쓴다 — `CtaButton`은 외부 링크에
+ * `rel="noreferrer"`만 붙이는데 여기는 `noopener`도 필요하다(백로그 05
+ * 요구사항 §3). 아이콘(시각)과 `sr-only` 문구(스크린리더) 양쪽으로 새 창에서
+ * 열린다는 것을 알리는 처리도 그 컴포넌트가 갖고 있다.
  *
  * ⚠️ `Section` 래퍼를 갖지 않는다. 본문 컬럼 안에 들어가므로 세로 리듬은
  * 부모가 준다(백로그 06 03 §2 ⑦).
@@ -41,19 +43,7 @@ export function ProgramBundleLink({ url }: { url: string }) {
             만든 그대로 열립니다.
           </p>
           <div className="mt-6">
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex h-13 items-center justify-center gap-2 rounded-full bg-brand-blue px-7 text-[0.95rem] font-semibold whitespace-nowrap text-white transition-colors outline-none hover:bg-brand-navy focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
-            >
-              상세 자료 보기
-              <span className="sr-only"> (새 창에서 열림)</span>
-              <ArrowUpRight
-                className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                aria-hidden
-              />
-            </a>
+            <NewTabLink href={url}>상세 자료 보기</NewTabLink>
           </div>
         </div>
       </div>

@@ -1,6 +1,5 @@
-import { ArrowUpRight } from "lucide-react";
-
 import { CtaButton } from "@/components/ui/cta-button";
+import { NewTabLink } from "@/components/ui/new-tab-link";
 import { Tag } from "@/components/ui/tag";
 import {
   eduTrackLabel,
@@ -63,25 +62,12 @@ export function ProgramSummaryCard({ item }: { item: RegularClassDetail }) {
           교육 문의하기
         </CtaButton>
 
-        {/*
-          상세 자료는 새 탭이다(백로그 05 D2). `CtaButton`은 외부 링크에
-          `rel="noreferrer"`만 붙이는데 여기는 `noopener`도 필요해서
-          `program-bundle-link.tsx`와 같은 이유로 `<a>`를 직접 쓴다.
-        */}
+        {/* 상세 자료는 새 탭이다(백로그 05 D2). `noopener`·sr-only 안내는
+            `NewTabLink`가 갖고 있다. */}
         {item.bundleUrl ? (
-          <a
-            href={item.bundleUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex h-13 w-full items-center justify-center gap-2 rounded-full border-[1.25px] border-ink/70 px-7 text-[0.95rem] font-semibold whitespace-nowrap text-ink transition-colors outline-none hover:bg-ink hover:text-ivory focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
-          >
+          <NewTabLink href={item.bundleUrl} variant="secondary" className="w-full">
             상세 자료 보기
-            <span className="sr-only"> (새 창에서 열림)</span>
-            <ArrowUpRight
-              className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              aria-hidden
-            />
-          </a>
+          </NewTabLink>
         ) : null}
       </div>
     </aside>
