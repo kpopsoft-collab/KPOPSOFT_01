@@ -35,6 +35,16 @@ export const route = {
   educationCases: "/education/cases",
   /** 전체 프로젝트 목록. 홈 PROJECTS 섹션 하단 CTA가 여기로 온다. */
   work: "/work",
+  /**
+   * 과정 상세 자료(번들·HTML 한 장)를 **새 탭에서 원본 그대로** 여는 경로.
+   * `<uuid>/index.html` 형태가 뒤에 붙는다.
+   *
+   * Supabase Storage 공개 URL을 직접 쓰지 못하는 이유 — Storage가 HTML을
+   * 의도적으로 `text/plain`으로 내려서 브라우저가 소스 코드를 그대로
+   * 보여준다(백로그 06 03-화면구조-결정.md D2-정정). 이 라우트가 올바른
+   * Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다.
+   */
+  courseAssets: "/course-assets",
 } as const;
 
 /** Section anchor ids — shared by nav links and section elements. */

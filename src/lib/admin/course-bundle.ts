@@ -80,8 +80,15 @@ function basenameOf(name: string): string {
   return i === -1 ? name : name.slice(i + 1);
 }
 
-/** 확장자를 소문자로. 없으면 빈 문자열. */
-function extensionOf(name: string): string {
+/**
+ * 확장자를 소문자로. 없으면 빈 문자열.
+ *
+ * export하는 이유 — 자료를 되돌려 주는 라우트(`/course-assets`)가 응답의
+ * Content-Type을 여기 `EXT_MIME`으로 정한다. 업로드 때 허용한 확장자 목록과
+ * 내보낼 때 붙이는 MIME이 **같은 함수·같은 표**에서 나와야 한쪽만 늘어나
+ * 어긋나는 일이 없다.
+ */
+export function extensionOf(name: string): string {
   const base = basenameOf(name);
   const i = base.lastIndexOf(".");
   if (i <= 0) return ""; // 확장자 없음. `.DS_Store`처럼 점으로 시작만 하는 것도 없음 취급
