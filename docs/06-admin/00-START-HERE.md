@@ -32,7 +32,7 @@
 | P3 — 교육 ver3 `education/{org-training, regular-classes, club-tiers, club-cohorts, past-programs, reviews, faqs, stats}` | 완료 (마이그레이션 `20260802120000_p3_education_ver3.sql`) |
 | P4 — 정규 클래스 **일정 유형 + HTML 상세 본문** | 완료 (`20260803090000`, DDL 적용됨) → [07](07-과정-상세본문-HTML과-번들.md) |
 | P5 — 정규 클래스 **zip 번들 업로드**(Storage) | 완료 (`20260804090000`·`20260804120000`, DDL 적용됨) → [07](07-과정-상세본문-HTML과-번들.md) |
-| P6 — **상세 자료를 하나로 통합 + 새 탭 렌더** | 완료 (2026-08-05, **DDL 없음**) → [07 §1](07-과정-상세본문-HTML과-번들.md) · [백로그 06](../../backlogs/06-course-detail-page-redesign/06-구현결과.md) |
+| P6 — **상세 자료를 하나로 통합 + 새 탭 렌더** | 완료 (2026-08-05, **DDL 없음**) → [07 §1](07-과정-상세본문-HTML과-번들.md) · [결정기록 06](../08-decisions/06-course-detail-page-redesign/06-구현결과.md) |
 | 관리자 초대 UI | 미구현 |
 | Supabase Auth / DB / Storage | 연결됨 (`20260709131208_p2_storage_buckets.sql`) |
 | 이메일 발송 | 코드는 Resend로 구현됨(`src/lib/email.ts`). 실제 발송은 `RESEND_API_KEY` 유무에 달림 |
@@ -72,6 +72,6 @@ www.kpopsoft.com에 반영된다.** 반면 이미지·코드는 배포되어야 
 - 교육 Admin 상세 — [../03-education/12-ver3-상세페이지-ver2유지-admin.md](../03-education/12-ver3-상세페이지-ver2유지-admin.md), [../99-archive/education-ver2/21-admin-구성.md](../99-archive/education-ver2/21-admin-구성.md)
 - 홈 Admin 연동 원칙(ver2) — [../99-archive/home-ver2/10-제거콘텐츠와-admin연동.md](../99-archive/home-ver2/10-제거콘텐츠와-admin연동.md)
 - 문의 유형 DB 현황 — [../01-ia/04-홈-contact-DB-마이그레이션.md](../01-ia/04-홈-contact-DB-마이그레이션.md)
-- 백로그(착수 전 조사·결정 기록. 완료분 포함) — [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
+- 결정기록(착수 전 조사·결정 기록. 완료분 포함) — [../08-decisions/00-START-HERE.md](../08-decisions/00-START-HERE.md)
 
 ← [문서 전체 시작점](../00-START-HERE.md)
