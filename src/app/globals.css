@@ -282,6 +282,20 @@
   }
 }
 
+/*
+ * 픽셀 기준 마키. 이어 붙인 벌 수가 화면 폭에 따라 달라지는 곳에서 쓴다 —
+ * 벌 수가 둘이 아니면 `-50%`가 한 벌 폭과 어긋나 이음매가 튄다. 이동 거리
+ * (한 벌 폭 + 간격)는 컴포넌트가 재서 `--marquee-shift`로 넘긴다.
+ */
+@keyframes kps-marquee-shift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-1 * var(--marquee-shift, 0px)));
+  }
+}
+
 @keyframes kps-marquee-reverse {
   from {
     transform: translateX(calc(-50% - var(--marquee-gap, 1.5rem) / 2));
