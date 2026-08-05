@@ -1,9 +1,9 @@
 /**
  * 정규 클래스 상세 HTML 업로드 정제 파이프라인
- * (backlogs/01-regular-class-schedule-and-html/08-HTML정제-설계.md §2,
+ * (docs/08-decisions/01-regular-class-schedule-and-html/08-HTML정제-설계.md §2,
  *  09-CSS스코프-설계.md §3).
  *
- * `import "server-only"`을 붙이지 않는다 — 백로그 02(공개 페이지 렌더)가
+ * `import "server-only"`을 붙이지 않는다 — 결정기록 02(공개 페이지 렌더)가
  * 저장 시점뿐 아니라 **렌더 직전에도** 이 함수를 다시 호출해야 닫히는
  * 설계라서(08 §6), 서버 컴포넌트 렌더 경로에서도 자유롭게 import할 수 있어야
  * 한다.
@@ -153,7 +153,7 @@ function unescapeCssIdent(value: string): string {
     // CSS는 1~6자리 hex를 허용해서 `\ffffff`(16777215)처럼 유니코드 범위를
     // 넘는 값이 문법상 정상으로 들어온다. String.fromCodePoint는 여기서
     // RangeError를 던지는데, 그러면 정제기가 "실패 시 CSS를 버린다"가 아니라
-    // **통째로 터진다**. 백로그 02가 렌더 직전에도 이 함수를 부르므로 공개
+    // **통째로 터진다**. 결정기록 02가 렌더 직전에도 이 함수를 부르므로 공개
     // 페이지가 죽는다. CSS 명세대로 U+FFFD로 바꾼다(브라우저와 같은 동작).
     if (code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) {
       return "�";
@@ -213,7 +213,7 @@ function scopeSelector(selector: string): string {
   }
   // 이미 스코프된 셀렉터는 그대로 둔다 — **이 함수는 멱등이어야 한다.**
   //
-  // 저장 시 한 번, 렌더 직전에 한 번(백로그 02 G2) 정제하므로 같은 CSS가 두 번
+  // 저장 시 한 번, 렌더 직전에 한 번(결정기록 02 G2) 정제하므로 같은 CSS가 두 번
   // 들어온다. 접두를 매번 덧붙이면 셀렉터가 패스마다 13바이트씩 길어지고,
   // §3-6의 64KB 상한에 **두 번째 패스에서만** 걸린다. 그러면 어드민에서는
   // 저장이 성공하고 값에도 <style>이 들어 있는데 공개 페이지에서만 스타일이
@@ -238,7 +238,7 @@ function scopeCss(css: string): string {
     return scopeCssUnsafe(css);
   } catch {
     // fail closed. 파싱뿐 아니라 순회·치환 중 어디서 터져도 CSS만 버리고
-    // 본문은 살린다 — 이 함수는 백로그 02가 **렌더 직전에도** 부르므로,
+    // 본문은 살린다 — 이 함수는 결정기록 02가 **렌더 직전에도** 부르므로,
     // 여기서 예외가 새면 저장이 아니라 공개 페이지가 죽는다.
     return "";
   }
@@ -290,7 +290,7 @@ function scopeCssUnsafe(css: string): string {
 }
 
 /**
- * 정규 클래스 상세 HTML 업로드를 정제한다. 저장 시점과(백로그 02) 공개 페이지
+ * 정규 클래스 상세 HTML 업로드를 정제한다. 저장 시점과(결정기록 02) 공개 페이지
  * 렌더 직전 양쪽에서 호출된다.
  */
 const SHELL_OPEN = '<div class="course-html-shell"><div class="course-html">';
@@ -298,7 +298,7 @@ const SHELL_CLOSE = "</div></div>";
 
 /**
  * 이미 우리 셸로 감싸인 결과가 다시 들어오면 껍데기를 벗긴다. 저장 시 한 번,
- * 렌더 직전에 한 번(백로그 02 G2) 정제하므로 안 벗기면 패스마다 div가 두 겹씩
+ * 렌더 직전에 한 번(결정기록 02 G2) 정제하므로 안 벗기면 패스마다 div가 두 겹씩
  * 쌓인다. 벗겨도 안전하다 — 안쪽 내용은 어차피 아래에서 다시 전부 정제된다.
  */
 function unwrapShell(html: string): string {

@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  *
  * 라우트는 합치지 않는다 — `/new`와 `/[id]`는 하는 일이 다르고(조회 유무),
  * 그 차이는 파일 경로에서 읽히는 편이 낫다.
- * 근거: backlogs/03-regular-class-form-merge/02-현황분석.md §4
+ * 근거: docs/08-decisions/03-regular-class-form-merge/02-현황분석.md §4
  *
  * 서버 컴포넌트로 둔다. `"use client"`를 붙이면 정적인 헤더와 아이콘까지
  * 클라이언트 번들로 들어간다(폼은 이미 각자 클라이언트 컴포넌트다).

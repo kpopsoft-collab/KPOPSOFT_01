@@ -14,7 +14,7 @@ import { getPublicRegularClasses } from "@/lib/public-content";
  * 정규 교육 과정 전체 목록.
  *
  * `/education` 프로그램 카드의 `정규 교육과정 알아보기` CTA가 도착하는 곳이다
- * (백로그 02 §2.1). `/education` 안의 `edu-programs` 섹션은 정규 클래스를 교육
+ * (결정기록 02 §2.1). `/education` 안의 `edu-programs` 섹션은 정규 클래스를 교육
  * 3분류 중 하나로 "소개"만 하고, 이 페이지는 4과정을 나란히 놓고 **비교·선택**
  * 하게 한다 — 두 화면이 같은 일을 하면 하나가 곧 방치된다.
  *

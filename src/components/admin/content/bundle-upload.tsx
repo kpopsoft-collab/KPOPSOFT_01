@@ -8,12 +8,12 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { BUNDLE_BUCKET, planBundle, type BundleFile } from "@/lib/admin/course-bundle";
 
 /**
- * 과정 상세 자료 업로드 위젯 (백로그 05 §1 4단계, 백로그 06 04-구현계획 5단계).
+ * 과정 상세 자료 업로드 위젯 (결정기록 05 §1 4단계, 결정기록 06 04-구현계획 5단계).
  *
  * **zip 번들과 `.html` 한 장을 둘 다 받는다.** `.html`은 압축을 푸는 단계만
  * 건너뛰고 나머지 경로를 그대로 탄다 — 어느 쪽으로 올려도 결과는 같은 모양
  * (`education/<uuid>/index.html`)이고, 공개 페이지에는 같은 "상세 자료" 링크
- * 하나로 나온다(백로그 06 D2).
+ * 하나로 나온다(결정기록 06 D2).
  *
  * 흐름: 파일 선택 → (zip이면) 브라우저 메모리에서 해제(fflate) → `planBundle()`로 정규화·검증
  * → 통과하면 파일별로 Supabase Storage(`education/<uuid>/…`)에 올린다.
@@ -23,7 +23,7 @@ import { BUNDLE_BUCKET, planBundle, type BundleFile } from "@/lib/admin/course-b
  *
  * 하나라도 업로드가 실패하면 중단하고 에러만 보여준다. 이미 올라간 파일은
  * Storage에 고아로 남는데, DB에 경로가 기록되지 않으므로 화면에는 영향이 없다
- * (백로그 05 01-요구사항.md §6 — 알고 남기는 부채).
+ * (결정기록 05 01-요구사항.md §6 — 알고 남기는 부채).
  */
 const CONCURRENCY = 4;
 
@@ -77,12 +77,12 @@ export function BundleUpload({
        *
        * zip이면 압축을 푼 결과 그대로다. `.html` 한 장이면 **압축을 푸는
        * 단계만 건너뛰고** 나머지(검증·업로드·경로 모양)는 zip과 똑같은
-       * 경로를 탄다(백로그 06 04-구현계획 5단계).
+       * 경로를 탄다(결정기록 06 04-구현계획 5단계).
        *
        * `.html`을 여기로 보내는 이유 — 예전에는 `.html`을 서버 액션으로
        * 보내 정제한 뒤 `detail_html` 컬럼에 넣고 공개 페이지에 인라인으로
        * 그렸는데, 정제가 `<script>`와 `@keyframes`를 지워 완성된 문서
-       * 한 장이 빈 화면으로 나왔다(백로그 06 01-현황분석 §2·§3).
+       * 한 장이 빈 화면으로 나왔다(결정기록 06 01-현황분석 §2·§3).
        * Storage에 올리면 격리된 origin에서 **원본 그대로** 새 탭에 열린다.
        */
       let source: Record<string, Uint8Array>;

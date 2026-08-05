@@ -4,7 +4,7 @@ import { NewTabLink } from "@/components/ui/new-tab-link";
 import { educationSectionId, route } from "@/lib/site";
 
 /**
- * 모바일 하단 고정 CTA 바 (백로그 06 03-화면구조-결정.md D5 / 02-조사 §3-6).
+ * 모바일 하단 고정 CTA 바 (결정기록 06 03-화면구조-결정.md D5 / 02-조사 §3-6).
  *
  * 데스크톱의 sticky 요약 카드에 해당하는 모바일 대체물이다. 옆에 붙일 자리가
  * 없는 폭에서 요약 카드를 그대로 축소하지 않고 **다른 형태로 다시 짠다**

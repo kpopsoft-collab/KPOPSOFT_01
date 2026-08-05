@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  * 채워도 색끼리 부딪히지 않는다.
  *
  * ⚠️ 기간·난이도·트랙은 여기 없다 — `ProgramSummaryCard`가 갖고 있다
- * (백로그 06 03-화면구조-결정.md D5). 되돌려 여기에 다시 넣으면 같은 값이
+ * (결정기록 06 03-화면구조-결정.md D5). 되돌려 여기에 다시 넣으면 같은 값이
  * 한 화면에 두 번 나온다.
  */
 export function ProgramDetailHero({ item }: { item: RegularClassDetail }) {
@@ -73,7 +73,7 @@ export function ProgramDetailHero({ item }: { item: RegularClassDetail }) {
             일정은 히어로에서 **한 줄만** 남긴다 — 첫 화면에서 "언제 하는
             과정인가"는 스크롤 전에 보여야 하기 때문이다(02-조사 §2 Obstacles).
             기간·난이도·트랙까지 여기 늘어놓던 `dl`은 요약 카드로 옮겼다
-            (백로그 06 D5). 같은 값을 두 곳에 그리면 화면이 두 번 같은 말을
+            (결정기록 06 D5). 같은 값을 두 곳에 그리면 화면이 두 번 같은 말을
             하고, 정작 스크롤 뒤에는 아무것도 안 보인다.
           */}
           {schedule ? (

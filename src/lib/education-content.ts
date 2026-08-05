@@ -329,7 +329,7 @@ export type RegularClass = {
   level: string;
   /**
    * 원데이(하루)인지 다회차인지. 어드민 폼의 라디오 선택을 그대로 옮긴다
-   * (backlogs/01-regular-class-schedule-and-html §2.1).
+   * (docs/08-decisions/01-regular-class-schedule-and-html §2.1).
    */
   scheduleType: "oneday" | "multi";
   /**
@@ -364,12 +364,12 @@ export type RegularClass = {
 
 /**
  * 상세 페이지가 쓰는 모양. 목록 타입에 본문을 더한 것이다.
- * 본문은 slug 단건 조회에서만 채워진다(목록에는 안 실린다) — 백로그 02 G1.
+ * 본문은 slug 단건 조회에서만 채워진다(목록에는 안 실린다) — 결정기록 02 G1.
  */
 export type RegularClassDetail = RegularClass & {
   /** 정제 완료된 상세 본문. 비어 있으면 상세 페이지가 커리큘럼 기반 레이아웃을 그린다. */
   detailHtml?: string;
-  /** 상세 자료 번들(zip)의 공개 index.html 주소. 없으면 링크 블록 자체가 안 보인다(백로그 05). */
+  /** 상세 자료 번들(zip)의 공개 index.html 주소. 없으면 링크 블록 자체가 안 보인다(결정기록 05). */
   bundleUrl?: string;
 };
 
@@ -1021,7 +1021,7 @@ export const inquiryAiLevelOptions = [
 ] as const;
 
 /* ------------------------------------------------------------------ *
- * 강의 일정 표기 포맷 (backlogs/01-regular-class-schedule-and-html §2.4)
+ * 강의 일정 표기 포맷 (docs/08-decisions/01-regular-class-schedule-and-html §2.4)
  *
  * 목록·상세·어드민 미리보기가 이 한 함수만 쓰게 해서 표기가 갈라지지
  * 않게 한다. 여기 두는 이유는 `RegularClass`와 같은 파일이라 타입을

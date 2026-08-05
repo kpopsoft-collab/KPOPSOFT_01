@@ -44,7 +44,7 @@ const COMMON: FieldMap = [
 
 /**
  * `education_club_cohorts` 전용 — 그 테이블에는 `is_published` 컬럼이 없다
- * (의도적, 백로그 04 / RLS 주석 `..._p3_education_ver3.sql:299` 참고). 숨기는
+ * (의도적, 결정기록 04 / RLS 주석 `..._p3_education_ver3.sql:299` 참고). 숨기는
  * 축은 `status`(예: "ended") 하나뿐이라 여기서 `COMMON`을 안 쓴다.
  */
 const ORDER_ONLY: FieldMap = [["sortOrder", "sort_order"]];

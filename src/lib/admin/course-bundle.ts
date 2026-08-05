@@ -5,10 +5,10 @@
  * (course-bundle.test.ts), 업로드 위젯·서버 액션 양쪽에서 같이 쓸 수 있다.
  *
  * 근거 문서:
- *   backlogs/05-course-bundle-storage/03-보안판단.md §3-1(경로 거부),
+ *   docs/08-decisions/05-course-bundle-storage/03-보안판단.md §3-1(경로 거부),
  *   §3-2(파일명 인코딩), §4(확장자 허용목록), §4-1(Content-Type)
- *   backlogs/05-course-bundle-storage/04-데이터모델-DDL.md §2(버킷 정의)
- *   backlogs/05-course-bundle-storage/05-구현계획.md §3
+ *   docs/08-decisions/05-course-bundle-storage/04-데이터모델-DDL.md §2(버킷 정의)
+ *   docs/08-decisions/05-course-bundle-storage/05-구현계획.md §3
  */
 
 /**

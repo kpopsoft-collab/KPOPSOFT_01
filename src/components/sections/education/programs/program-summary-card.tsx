@@ -9,7 +9,7 @@ import {
 import { educationSectionId, route } from "@/lib/site";
 
 /**
- * 과정 요약 카드 (백로그 06 03-화면구조-결정.md D5).
+ * 과정 요약 카드 (결정기록 06 03-화면구조-결정.md D5).
  *
  * 조사에서 반복해 나온 "sticky enrollment card" — 과정의 핵심 사실과 다음
  * 행동을 **한 카드에 묶어** 스크롤 내내 붙여 둔다(02-조사 §3-4). 지금까지
@@ -62,7 +62,7 @@ export function ProgramSummaryCard({ item }: { item: RegularClassDetail }) {
           교육 문의하기
         </CtaButton>
 
-        {/* 상세 자료는 새 탭이다(백로그 05 D2). `noopener`·sr-only 안내는
+        {/* 상세 자료는 새 탭이다(결정기록 05 D2). `noopener`·sr-only 안내는
             `NewTabLink`가 갖고 있다. */}
         {item.bundleUrl ? (
           <NewTabLink href={item.bundleUrl} variant="secondary" className="w-full">
