@@ -48,7 +48,7 @@
 | 4 | [04-club-cohort-publish-mismatch](04-club-cohort-publish-mismatch/00-START-HERE.md) | **버그** — 없는 `is_published` 컬럼 때문에 클럽 기수 저장 실패 | 2026-08-03 → [../06-admin/02 §4.4](../06-admin/02-데이터모델과-RLS.md) |
 | 5 | [05-course-bundle-storage](05-course-bundle-storage/00-START-HERE.md) | 상세 자료를 zip으로 Storage에 올려 새 탭으로 연다 | 2026-08-04 → [../06-admin/07](../06-admin/07-과정-상세본문-HTML과-번들.md) |
 | 6 | [06-course-detail-page-redesign](06-course-detail-page-redesign/00-START-HERE.md) | 상세 페이지 재구성 + 업로드 HTML 인라인 폐지 | 2026-08-05 → [06-구현결과](06-course-detail-page-redesign/06-구현결과.md) · [../03-education/13](../03-education/13-공개-과정-상세페이지.md) |
-| 7 | [07-content-security-policy](07-content-security-policy/00-START-HERE.md) | CSP 도입(G6) — nonce 기반, Report-Only 적용 | 2026-08-05 → [03-구현결과](07-content-security-policy/03-구현결과.md) · [../07-dev/14](../07-dev/14-CSP-정책과-적용.md) |
+| 7 | [07-content-security-policy](07-content-security-policy/00-START-HERE.md) | CSP 도입(G6) — nonce 기반, **강제 적용** | 2026-08-06 → [04-강제전환](07-content-security-policy/04-강제전환.md) · [../07-dev/14](../07-dev/14-CSP-정책과-적용.md) |
 
 ## 뒤집힌 결정 — 앞 문서를 읽을 때 주의
 
@@ -64,14 +64,20 @@
 > **교훈 하나만 고르면** — "파일이 올라갔다"를 "화면이 나온다"의 증거로 쓰지 않는다.
 > 링크를 만들었으면 그 링크를 연다.
 
-## 남은 일 — **하나뿐이고, 검증이 아니라 결정이다**
+## 남은 일 — **없다**
 
-**CSP 강제 전환.** 정적 페이지에 nonce가 안 박혀 지금 전환하면 `/admin/login`이
-막힌다. 해결 방향 두 가지 중 어느 쪽으로 갈지 정해야 한다 —
-[../07-dev/14](../07-dev/14-CSP-정책과-적용.md) §5.
+2026-08-06에 마지막 네 건이 닫혔다.
 
-2026-08-06에 닫힌 것 — CSP 확인 체크리스트 8개, 어드민 회귀(*이름만 고쳐
-저장해도 자료가 남는가*), `ai-tools` 상세 자료 404 5건.
+| 닫힌 것 | 어디에 |
+|---|---|
+| CSP **강제 전환** (release gate G6 완결) | [7의 04](07-content-security-policy/04-강제전환.md) · [../07-dev/14](../07-dev/14-CSP-정책과-적용.md) |
+| CSP 확인 체크리스트 8개 | [../07-dev/14](../07-dev/14-CSP-정책과-적용.md) §5-1 |
+| 어드민 회귀 — *이름만 고쳐 저장해도 자료가 남는가* | [../06-admin/07](../06-admin/07-과정-상세본문-HTML과-번들.md) §3-3 |
+| `ai-tools` 상세 자료 404 5건 | [../07-dev/05](../07-dev/05-남은결정과-작업.md) |
+
+> **다만 강제 CSP에는 전제가 하나 붙어 있다** — `src/app/layout.tsx`의
+> `export const dynamic = "force-dynamic"`. 지우면 정적으로 만들어진 페이지에
+> nonce가 안 박혀 그 페이지의 스크립트가 전부 막힌다.
 
 ## 새 기능을 시작할 때
 

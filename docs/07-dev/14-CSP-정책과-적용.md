@@ -8,16 +8,22 @@
 
 ---
 
-## 1. 현재 상태 — **Report-Only** (강제 아님)
+## 1. 현재 상태 — **강제** (2026-08-06 전환)
 
 ```
-src/proxy.ts   →  Content-Security-Policy-Report-Only
+src/proxy.ts   →  Content-Security-Policy
 ```
 
-**아직 아무것도 차단하지 않는다.** 위반해도 화면은 그대로 동작하고 보고만 간다.
+**위반은 실제로 차단된다.** Report-Only(2026-08-05)로 하루 관찰해 위반 0건을
+확인하고 바꿨다.
 
-확인 체크리스트 8개는 2026-08-06에 통과했다. **강제 전환을 막는 것은 이제
-§5의 "정적 페이지에 nonce가 안 박힌다" 하나뿐이고, 이건 결정이 필요하다.**
+> ⚠️ **전제 조건이 하나 붙어 있다 — `src/app/layout.tsx`의
+> `export const dynamic = "force-dynamic"`.** 그 줄이 없으면 정적으로 만들어진
+> 페이지에 nonce가 안 박혀 **그 페이지의 스크립트가 전부 막힌다.** §5를 읽지 않고
+> 지우면 안 된다.
+
+되돌리려면 `CSP_HEADER_NAME`에 `-Report-Only`를 도로 붙인다. 한 줄이다
+(`force-dynamic`은 그때도 남겨 둔다).
 
 `docs/03-education/13`의 release gate **G6이 이 문서로 대체된다.**
 
@@ -102,36 +108,47 @@ nonce가 없는 자료 속 스크립트가 전부 막혀 **자료가 통째로 �
 문자열 안의 백슬래시가 두 개인 것도 의도다 — JS 문자열 리터럴이라 한 개로 쓰면
 `.`이 임의 문자로 풀려 `/faviconXico`까지 제외된다.
 
-## 5. 강제 전환 전에 닫아야 할 것
+## 5. ⚠️ 전 페이지가 동적 렌더링이어야 한다 — **강제 CSP의 전제 조건**
 
-`proxy.ts`의 `CSP_HEADER_NAME` 상수 하나만 `"Content-Security-Policy"`로 바꾸면
-강제로 전환된다. **그 전에 아래를 반드시 해결한다.**
+```ts
+// src/app/layout.tsx
+export const dynamic = "force-dynamic";
+```
 
-### ⚠️ 정적 렌더링 페이지에 nonce가 안 박힌다
+**이 한 줄이 §1의 강제 CSP를 떠받친다. 지우면 사이트가 조용히 깨진다.**
 
 `'strict-dynamic'`이 켜지면 `'self'`는 **무시되고** nonce 있는 스크립트만 돈다.
-그런데 정적으로 프리렌더된 페이지의 HTML에는 nonce가 없다.
+nonce는 요청마다 만들어지므로 **빌드 때 미리 만든 HTML에는 없다.** 그래서
+정적으로 프리렌더된 페이지는 스크립트가 통째로 막힌다.
 
-| 라우트 | script 수 | nonce 있는 것 |
-|---|---|---|
-| `/education/programs` (동적) | 25 | **27** ✅ |
-| **`/admin/login`** (정적) | 13 | **0** ❌ |
-| `/education/cases` (정적) | — | 0 ❌ |
-| `/_not-found` (정적) | — | 0 ❌ |
+전환 전 실측(2026-08-05)이 그 상태였다.
 
-**지금 강제로 바꾸면 관리자 로그인 화면의 스크립트가 전부 막혀 아무도 로그인할
-수 없게 된다.** 2026-08-05 실측이다.
+| 라우트 | script | nonce | |
+|---|---|---|---|
+| `/education/programs` (동적) | 25 | 25 | ✅ |
+| **`/admin/login`** (정적) | 13 | **0** | ❌ 로그인 불가 |
+| `/education/cases` (정적) | 19 | **0** | ❌ |
+| `/_not-found` (정적) | 10 | **0** | ❌ |
 
-해결 방향 두 가지 — 어느 쪽이든 결정이 필요하다.
+루트 레이아웃에 `force-dynamic`을 건 뒤 전 라우트가 `script 수 == nonce 수`가
+됐다(`/admin/login` 11/11, `/education/cases` 19/19, `/_not-found` 10/10).
 
-1. 해당 페이지를 동적 렌더링으로 바꾼다(`force-dynamic` 또는 `connection()`)
-2. `'strict-dynamic'`을 빼고 `'self'`로 번들 스크립트를 허용한다 —
-   다만 인라인 RSC 페이로드는 여전히 nonce가 필요하므로 정적 페이지는 그대로 깨진다
+### 왜 페이지 3개가 아니라 루트인가
 
-### 그 밖의 확인 체크리스트 — **2026-08-06 통과**
+**나중에 추가되는 정적 페이지가 조용히 막히기 때문이다.** 빌드 로그의 `○`
+표시를 눈으로 보지 않으면 알아챌 방법이 없고, 증상은 "그 페이지만 인터랙션이
+안 된다"라 CSP까지 거슬러 올라가기 어렵다.
 
-아래 8개는 사람이 화면에서 확인했다. 이제 강제 전환을 막는 것은 위의 nonce
-문제 **하나뿐이다.**
+잃는 것은 사실상 없다 — 정적이던 HTML 라우트는 위 셋뿐이고 나머지 40여 개는
+Supabase를 읽어서 이미 동적이었다. `icon.png`·`manifest.webmanifest` 등
+메타데이터 파일 4개는 지금도 정적이다(HTML이 아니라 무관).
+
+> 전환 근거와 버린 대안은
+> [../08-decisions/07-content-security-policy/04-강제전환.md](../08-decisions/07-content-security-policy/04-강제전환.md).
+
+## 5-1. 전환 전 확인 체크리스트 — **2026-08-06 통과**
+
+아래 8개는 사람이 화면에서 확인했다.
 
 | # | 확인 | |
 |---|---|---|
@@ -148,18 +165,14 @@ nonce가 없는 자료 속 스크립트가 전부 막혀 **자료가 통째로 �
 > 되는가*이지 *저장했을 때 기존 자료가 지워지지 않는가*가 아니다. 그쪽도
 > 같은 날 따로 통과했다 — [05-남은결정과-작업.md](05-남은결정과-작업.md).
 
-### 배포본 실측 (2026-08-06, `www.kpopsoft.com`)
+### 기계 검증 — 2026-08-06
 
-응답 헤더를 직접 재서 이 문서의 §2·§4와 맞는지 확인했다.
+사람 확인과 별개로, 배포본 응답 헤더와 프로덕션 빌드를 직접 쟀다. 11개 라우트
+전부 `script 수 == nonce 수`, 브라우저에서 CSP 위반·예외 **0건**, 하이드레이션과
+상호작용 정상, 업로드 자료 격리 유지(`self.origin === "null"`, 이미지 6/6).
 
-| 잰 것 | 결과 |
-|---|---|
-| 홈 · `/education` · `/education/programs` · 상세 · `/admin/login` | 전부 `…-Report-Only` |
-| `/course-assets/<uuid>/index.html` | `Content-Security-Policy: sandbox …` **하나만** — 전역 정책이 겹치지 않는다(§4) |
-| prod 정책에 `'unsafe-eval'` · `ws:` | **없음** — dev 추가분이 새지 않았다(§2) |
-| `POST /api/csp-report` | `204` |
-| `GET /api/csp-report` | `405` |
-| `POST` + JSON 아닌 본문 | `204` (400 아님 — §6) |
+**무엇을 어떻게 쟀는지는**
+[../08-decisions/07-content-security-policy/04-강제전환.md](../08-decisions/07-content-security-policy/04-강제전환.md) §5에 있다.
 
 ## 6. 위반 보고
 
