@@ -90,7 +90,7 @@
 
 > **2026-08-05** — 업로드 HTML을 상세 페이지 안에 그리던 경로는 폐지됐다.
 > 자료는 zip이든 `.html` 한 장이든 **새 탭**으로만 열리고, 커리큘럼은 항상 보인다.
-> 전말은 [../../backlogs/06-course-detail-page-redesign/00-START-HERE.md](../../backlogs/06-course-detail-page-redesign/00-START-HERE.md).
+> 전말은 [../08-decisions/06-course-detail-page-redesign/00-START-HERE.md](../08-decisions/06-course-detail-page-redesign/00-START-HERE.md).
 
 ## 함께 보기
 

@@ -290,7 +290,7 @@
 
 /*
  * 정규 클래스 상세 HTML 업로드 컨테인먼트
- * (backlogs/01-regular-class-schedule-and-html/09-CSS스코프-설계.md §3-5).
+ * (docs/08-decisions/01-regular-class-schedule-and-html/09-CSS스코프-설계.md §3-5).
  *
  * 업로드 CSS는 셀렉터 스코프(src/lib/admin/sanitize-html.ts)를 거치지만,
  * `position`처럼 값으로만 판단하는 규칙은 이스케이프나 `var()`로 우회될 수
@@ -321,7 +321,7 @@
 }
 
 /*
- * `.course-html` 기본 타이포 (백로그 02 §3 D1 / 04-구현계획 5단계).
+ * `.course-html` 기본 타이포 (결정기록 02 §3 D1 / 04-구현계획 5단계).
  *
  * Tailwind preflight가 margin·줄간격을 전부 지워서, 정제된 상세 HTML을
  * 스타일 없이 넣으면 <h2>가 본문과 같은 크기로 붙어 나온다. 어드민이 올린

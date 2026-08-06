@@ -33,5 +33,5 @@ export async function deleteCohort(id: string) {
   revalidatePath(PUBLIC);
 }
 
-// setCohortPublished 없음 — 기수 테이블에 is_published 컬럼이 없다(백로그 04).
+// setCohortPublished 없음 — 기수 테이블에 is_published 컬럼이 없다(결정기록 04).
 // 숨기는 축은 status(예: "ended") 하나다.

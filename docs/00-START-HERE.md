@@ -19,6 +19,7 @@
 | 05 | [05-assets](05-assets/00-START-HERE.md) | 이미지 생성 프롬프트 로그, 규격, 브랜드 패턴 | 새 이미지를 만들거나 교체할 때 |
 | 06 | [06-admin](06-admin/00-START-HERE.md) | 어드민 기획 — 데이터 모델, RLS, 화면, 구축 계획 | DB·인증·`/admin`을 건드릴 때 |
 | 07 | [07-dev](07-dev/00-START-HERE.md) | 기술 스펙, 현재 개발 상태, 날짜별 작업 로그, 인수인계 | 작업 착수 전 / 배포 전 |
+| 08 | [08-decisions](08-decisions/00-START-HERE.md) | 기능별 **왜 그렇게 정했나** — 조사 원자료, 버린 대안, **뒤집힌 결정** | 코드 주석이 가리키는 근거를 찾을 때 |
 | 99 | [99-archive](99-archive/00-START-HERE.md) | ver2 기획 2종, 초기 16섹션 기획서 (대체됨) | ver3가 "ver2 유지"라고 지정한 항목을 확인할 때 |
 
 ## 문서 우선순위 — 충돌하면 이 순서
@@ -80,7 +81,8 @@
 | 위치 | 내용 |
 |------|------|
 | [../CLAUDE.md](../CLAUDE.md) | 프로젝트 규칙·컨벤션·디자인 토큰 요약. **작업 전 필독** |
-| [../backlogs/00-START-HERE.md](../backlogs/00-START-HERE.md) | 기능 묶음별 조사·결정 기록. **완료분도 남아 있다** — 완료된 것의 기준은 `docs/`로 승격돼 있다 |
+| [08-decisions/00-START-HERE.md](08-decisions/00-START-HERE.md) | 기능별 조사·결정 원자료. **"지금 어떻게 동작하나"는 01~07이 답한다** — 어긋나면 01~07이 우선 |
+| [../backlogs/README.md](../backlogs/README.md) | **진행 중인** 작업의 조사·계획. 끝나면 08-decisions로 옮긴다 |
 | `../.claude/agents/` | 프로젝트 전용 서브에이전트 정의 |
 | `../src/lib/site.ts` | 홈 콘텐츠 **폴백 시드**. 실제 값은 Supabase에 있다 |
 | `../src/lib/education-content.ts` | 교육 콘텐츠 정적 데이터 |

@@ -47,8 +47,8 @@ type Input = Omit<
  * 예전에는 `"html"`이 따로 있었다(HTML 한 장을 정제해 `detail_html` 컬럼에
  * 넣고 공개 페이지에 인라인으로 그리는 경로). **폐지했다** — 정제가
  * `<script>`와 `@keyframes`를 지워서 완성된 문서 한 장이 빈 화면으로 나왔다
- * (백로그 06 01-현황분석 §2·§3). 지금은 `.html` 한 장도 zip과 같은 위젯으로
- * Storage에 올라가 `"bundle"` 하나로 합쳐졌다(백로그 06 D2).
+ * (결정기록 06 01-현황분석 §2·§3). 지금은 `.html` 한 장도 zip과 같은 위젯으로
+ * Storage에 올라가 `"bundle"` 하나로 합쳐졌다(결정기록 06 D2).
  */
 type DetailSource = "none" | "bundle";
 
@@ -89,7 +89,7 @@ export function RegularClassForm({
   /**
    * `detail_html`은 이 폼이 더 이상 쓰지 않는다. 그래도 **항상 "keep"으로**
    * 보낸다 — 컬럼과 동반 테이블(원본)을 아직 지우지 않기로 했기 때문이다
-   * (백로그 06 D8). 백필이 운영에서 확인되면 컬럼과 함께 이 줄도 사라진다.
+   * (결정기록 06 D8). 백필이 운영에서 확인되면 컬럼과 함께 이 줄도 사라진다.
    * 절대 "remove"로 바꾸지 않는다: 지금 지우면 되돌릴 원본이 없어진다.
    */
   const htmlIntent: HtmlIntent = { kind: "keep" };

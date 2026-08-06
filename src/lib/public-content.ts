@@ -311,11 +311,11 @@ export async function getPublicOrgTraining(): Promise<OrgTraining> {
  * 공통 헬퍼 `read()`를 쓰지 않는다 — `read()`는 "빈 결과 = 정적 폴백"으로
  * 동작하는데(다른 리더들이 이 동작에 기대고 있어 거기는 그대로 둔다),
  * 정규 클래스에 그대로 적용하면 관리자가 전 과정을 비공개로 돌린 **정상
- * 상태**(빈 배열)에서 정적 4행이 되살아난다(백로그 01 §3 6단계 / 06 §P1-5).
+ * 상태**(빈 배열)에서 정적 4행이 되살아난다(결정기록 01 §3 6단계 / 06 §P1-5).
  * 여기서는 **조회 자체가 실패했을 때만** 폴백하고, 정상적인 0행은 빈 배열을
  * 그대로 돌려준다.
  *
- * `detailHtml`은 여기서 매핑하지 않는다 — 본문은 백로그 02의 slug 단건
+ * `detailHtml`은 여기서 매핑하지 않는다 — 본문은 결정기록 02의 slug 단건
  * 조회에서 읽는다. 목록 응답에 수백 KB짜리 HTML을 함께 실어 보내지 않기
  * 위해서다.
  */
@@ -349,7 +349,7 @@ export async function getPublicRegularClasses(): Promise<RegularClass[]> {
       .from("education_regular_classes")
       // 컬럼을 명시하는 이유 — `*`로 읽으면 상세 본문(detail_html)까지 행마다
       // 딸려 온다. 이 목록은 /education이 매 요청 렌더할 때 읽히는데 본문은
-      // 거기서 쓰지도 않는다. 본문은 백로그 02의 slug 단건 조회에서만 읽는다.
+      // 거기서 쓰지도 않는다. 본문은 결정기록 02의 slug 단건 조회에서만 읽는다.
       .select(REGULAR_CLASS_PUBLIC_COLUMNS)
       .order("sort_order", { ascending: true });
     if (error || !data) return regularClasses;
@@ -385,7 +385,7 @@ export async function getPublicRegularClasses(): Promise<RegularClass[]> {
 }
 
 /**
- * 정규 클래스 상세 — slug 단건 조회 (백로그 02 release gate G1).
+ * 정규 클래스 상세 — slug 단건 조회 (결정기록 02 release gate G1).
  *
  * 목록(`getPublicRegularClasses`)은 `detail_html`을 일부러 뺀다 — 행마다
  * 수백 KB일 수 있는데 목록에서는 쓰지 않기 때문이다. 상세 페이지는 slug 하나만
@@ -424,7 +424,7 @@ export async function getPublicRegularClassBySlug(
      * 그대로 열면 페이지가 아니라 소스 코드가 보이기 때문이다. 그 라우트가
      * 올바른 Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다 —
      * 판단 근거는 `src/app/course-assets/[...path]/route.ts` 머리 주석과
-     * 백로그 06 03-화면구조-결정.md D2-정정.
+     * 결정기록 06 03-화면구조-결정.md D2-정정.
      */
     const bundleUrl = opt(r.detail_bundle_path)
       ? `${route.courseAssets}/${opt(r.detail_bundle_path)}index.html`
@@ -472,7 +472,7 @@ function fallbackRegularClassBySlug(slug: string): RegularClassDetail | null {
 
 /**
  * 상세 페이지 하단 "다른 과정" 블록이 쓰는 형제 과정 목록
- * (백로그 06 [03-화면구조-결정.md](../../backlogs/06-course-detail-page-redesign/03-화면구조-결정.md) D6).
+ * (결정기록 06 [03-화면구조-결정.md](../../docs/08-decisions/06-course-detail-page-redesign/03-화면구조-결정.md) D6).
  *
  * 목록 리더를 그대로 재사용한다 — 상세 전용 쿼리를 또 만들면 공개 컬럼이
  * 늘어날 때 여기만 빠뜨린다. 목록 리더가 이미 장애 시 정적 폴백으로

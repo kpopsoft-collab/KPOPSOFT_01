@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { FileText, X } from "lucide-react";
 
 /**
- * 상세 페이지 HTML 업로드 위젯 (백로그 01 §3 4단계).
+ * 상세 페이지 HTML 업로드 위젯 (결정기록 01 §3 4단계).
  *
  * Storage 왕복 없이 파일을 읽어 브라우저에서 바로 UTF-8 텍스트로 디코드하고,
  * 원본(raw)과 파일명을 `onChange`로 올린다. 실제 정제(sanitize)는 서버 액션에서

@@ -4,7 +4,7 @@
 > **읽는 순서** ← [00-START-HERE](00-START-HERE.md)
 >
 > **지금 어떻게 동작하는가**의 기준이다. "왜 그렇게 정했나"의 조사·결정 기록은
-> [../../backlogs/07-content-security-policy/](../../backlogs/07-content-security-policy/00-START-HERE.md).
+> [../08-decisions/07-content-security-policy/](../08-decisions/07-content-security-policy/00-START-HERE.md).
 
 ---
 

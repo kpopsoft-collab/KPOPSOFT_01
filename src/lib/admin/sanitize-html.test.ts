@@ -3,7 +3,7 @@
  *
  * `node --test`로 돌린다. 경로 별칭(`@/`)이 안 먹으므로 상대 경로로
  * import한다. 케이스는
- * backlogs/01-regular-class-schedule-and-html/08-HTML정제-설계.md §4 +
+ * docs/08-decisions/01-regular-class-schedule-and-html/08-HTML정제-설계.md §4 +
  * 09-CSS스코프-설계.md §4-1 전부.
  *
  * import에 `.ts` 확장자를 그대로 쓴다 — `node --test`가 이 파일을 직접 실행하므로
@@ -207,7 +207,7 @@ test("behavior·-moz-binding은 값이 아니라 속성이라 속성 이름으�
 test("유니코드 범위를 넘는 이스케이프에도 터지지 않는다", () => {
   // CSS는 hex 6자리를 허용해 \ffffff 같은 값이 문법상 정상으로 들어온다.
   // String.fromCodePoint가 RangeError를 던지면 정제기가 통째로 죽는다 —
-  // 백로그 02는 렌더 직전에도 이 함수를 부르므로 공개 페이지가 죽는다.
+  // 결정기록 02는 렌더 직전에도 이 함수를 부르므로 공개 페이지가 죽는다.
   for (const css of [String.raw`.x{\ffffff:red}`, String.raw`.x{p\110000osition:red}`]) {
     const out = sanitizeCourseHtml(`<style>${css}</style><p>본문</p>`);
     assert.ok(out.includes("<p>본문</p>"), "본문은 남아야 한다");

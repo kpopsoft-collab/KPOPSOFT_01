@@ -5,7 +5,7 @@
  * losslessly and the future Supabase adapter maps 1:1. Every collection shares
  * `id` / `sortOrder`(`OrderedBase`), and most also share `isPublished`
  * (`ContentBase`) — the exception is `EducationClubCohort`, whose table has no
- * `is_published` column (백로그 04, `status`가 숨김 축). Images are plain
+ * `is_published` column (결정기록 04, `status`가 숨김 축). Images are plain
  * string URLs: in mock mode that's a data: URL from the upload widget; on
  * wiring day it becomes a Supabase Storage path — the field name and screens
  * don't change.
@@ -16,7 +16,7 @@ import { eduTrackLabel } from "@/lib/education-content";
 
 /**
  * 정렬만 갖는 콘텐츠 베이스. 공개/비공개 축이 없는 타입(클럽 기수)이 쓴다 —
- * DB에 `is_published` 컬럼이 없다(백로그 04). `ContentRepo`/`SupabaseRepo` 등
+ * DB에 `is_published` 컬럼이 없다(결정기록 04). `ContentRepo`/`SupabaseRepo` 등
  * 제네릭이 실제로 요구하는 값은 `id`·`sortOrder`뿐이라 이 정도로 충분하다.
  */
 export type OrderedBase = {
@@ -245,7 +245,7 @@ export type EducationRegularClass = ContentBase & {
  * 원본은 동반 테이블에 있어 목록/수정 진입 시 `detailHtml`만으로는 원본이
  * 무엇이었는지 알 수 없다. 그래서 "새 값"이 아니라 "무엇을 할지"를 보낸다 —
  * 그래야 이름만 고쳐 저장해도 기존 HTML이 조용히 지워지지 않는다
- * (백로그 01 §3 5-1).
+ * (결정기록 01 §3 5-1).
  */
 export type HtmlIntent =
   | { kind: "keep" } // 기본값 — 동반 테이블·detail_html 둘 다 손대지 않는다
@@ -258,7 +258,7 @@ export type HtmlIntent =
  * 동작이라, 폼이 "지금 값"을 그대로 되돌려 보내는 방식이면 이름만 고쳐 저장한
  * 요청과 "번들을 비워라"는 요청을 서버가 구분할 수 없다. 그래서 "새 값"이
  * 아니라 "무엇을 할지"를 보낸다. 이것이 번들이 조용히 지워지는 것을 막는
- * 유일한 장치다(백로그 05 §5-2).
+ * 유일한 장치다(결정기록 05 §5-2).
  */
 export type BundleIntent =
   | { kind: "keep" } // 기본값 — detail_bundle_* 두 컬럼과 Storage 폴더를 손대지 않는다
@@ -289,7 +289,7 @@ export type EducationOrgTraining = {
 
 /**
  * 클럽 기수 — ContentBase가 아니라 OrderedBase다. `is_published` 컬럼이 DB에
- * 없다(의도적, 백로그 04 참고). 숨기는 축은 `status`(예: "ended") 하나다 —
+ * 없다(의도적, 결정기록 04 참고). 숨기는 축은 `status`(예: "ended") 하나다 —
  * 여기에 `isPublished`를 다시 추가하지 말 것.
  */
 export type EducationClubCohort = OrderedBase & {

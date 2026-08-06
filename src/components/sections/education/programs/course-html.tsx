@@ -1,7 +1,7 @@
 import { sanitizeCourseHtml } from "@/lib/admin/sanitize-html";
 
 /**
- * 어드민이 올린 과정 상세 HTML을 렌더한다 (백로그 02 release gate G2~G4).
+ * 어드민이 올린 과정 상세 HTML을 렌더한다 (결정기록 02 release gate G2~G4).
  *
  * `html`은 DB `detail_html` 컬럼 값이다. 정상 경로(어드민 폼 → actions.ts)를
  * 거쳤다면 이미 `sanitizeCourseHtml()`을 한 번 통과해 `.course-html-shell` >

@@ -24,7 +24,7 @@ export const route = {
   /**
    * 정규 교육 과정 목록. `/education` 프로그램 카드의 CTA가 여기로 온다.
    * DB의 공개 정규 클래스를 트랙 필터와 함께 보여주고, 카드를 누르면
-   * `/education/programs/[slug]` 상세로 간다(백로그 02).
+   * `/education/programs/[slug]` 상세로 간다(결정기록 02).
    */
   educationPrograms: "/education/programs",
   /**
@@ -41,7 +41,7 @@ export const route = {
    *
    * Supabase Storage 공개 URL을 직접 쓰지 못하는 이유 — Storage가 HTML을
    * 의도적으로 `text/plain`으로 내려서 브라우저가 소스 코드를 그대로
-   * 보여준다(백로그 06 03-화면구조-결정.md D2-정정). 이 라우트가 올바른
+   * 보여준다(결정기록 06 03-화면구조-결정.md D2-정정). 이 라우트가 올바른
    * Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다.
    */
   courseAssets: "/course-assets",

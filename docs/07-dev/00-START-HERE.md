@@ -72,6 +72,6 @@ Next.js 16 기본 Turbopack 빌드는 Codex 샌드박스의 내부 포트 바인
 - 프로젝트 규칙·컨벤션 — [../../CLAUDE.md](../../CLAUDE.md)
 - 어드민 구축 계획 — [../06-admin/05-구축-실행계획.md](../06-admin/05-구축-실행계획.md)
 - 상세 자료(zip·`.html`) 운영 기준 — [../06-admin/07-과정-상세본문-HTML과-번들.md](../06-admin/07-과정-상세본문-HTML과-번들.md)
-- 기능 묶음별 조사·결정 기록(완료분 포함) — [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
+- 기능 묶음별 조사·결정 기록(완료분 포함) — [../08-decisions/00-START-HERE.md](../08-decisions/00-START-HERE.md)
 
 ← [문서 전체 시작점](../00-START-HERE.md)

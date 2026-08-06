@@ -19,6 +19,8 @@
 | [docs/05-assets/](docs/05-assets/00-START-HERE.md) | 이미지 생성 프롬프트 로그, 규격, 브랜드 패턴 | 이미지 추가 |
 | [docs/06-admin/](docs/06-admin/00-START-HERE.md) | 어드민 — 데이터 모델, RLS, 화면, 구축 계획 | **상시** (DB/인증) |
 | [docs/07-dev/](docs/07-dev/00-START-HERE.md) | 기술 스펙, 개발 상태, 작업 로그, 인수인계 | 착수 전 / 배포 전 |
+| [docs/08-decisions/](docs/08-decisions/00-START-HERE.md) | 기능별 **왜 그렇게 정했나** — 조사 원자료, 버린 대안, 뒤집힌 결정 | 근거를 찾을 때 |
+| [backlogs/](backlogs/README.md) | **진행 중인** 기능의 조사·계획. 끝나면 `docs/08-decisions/`로 옮긴다 | 새 기능 착수 |
 | [docs/99-archive/](docs/99-archive/00-START-HERE.md) | ver2 기획 2종, 초기 16섹션 기획 (대체됨) | ver2 유지 항목 확인 |
 
 **충돌하면 이 순서** — 각 폴더의 수정 요청서(앞번호) → ver3 기획서(뒷번호) →

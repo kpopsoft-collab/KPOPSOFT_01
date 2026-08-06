@@ -35,7 +35,7 @@
 > 지금은 `.html` 한 장도 **같은 위젯으로 Storage에 올라가** zip과 똑같이
 > `<uuid>/index.html`이 된다. 커리큘럼은 자료 유무와 무관하게 **항상** 보인다.
 >
-> 전말 — [백로그 06](../../backlogs/06-course-detail-page-redesign/00-START-HERE.md).
+> 전말 — [결정기록 06](../08-decisions/06-course-detail-page-redesign/00-START-HERE.md).
 
 **이미지·CSS·서브 페이지가 딸린 자료는 반드시 zip이다.** `.html` 한 장으로
 올리면 그 파일들이 Storage에 없어서 `<img src="assets/a.png">`가 404가 된다
@@ -170,7 +170,7 @@ id가 아직 없고, 교체하면 새 폴더라 CDN 캐시 문제도 같이 사�
 **상세 단건 쿼리에만** 붙인다. 목록이 쓰지도 않는 컬럼 때문에 `/education`까지
 같이 폴백으로 떨어질 이유가 없다.
 
-닿는 파일은 [../../backlogs/00-START-HERE.md](../../backlogs/00-START-HERE.md)
+닿는 파일은 [../08-decisions/00-START-HERE.md](../08-decisions/00-START-HERE.md)
 "공통 배경" 표가 기준이다(필드 하나에 7~8곳).
 
 ---

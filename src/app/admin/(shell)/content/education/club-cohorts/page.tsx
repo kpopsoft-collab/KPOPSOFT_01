@@ -40,7 +40,7 @@ export default async function CohortListPage() {
                 <p className="truncate font-semibold text-ink">{item.label} · {clubCohortStatusLabel[item.status]}</p>
                 <p className="mt-0.5 truncate text-sm text-ink/55">{item.recruitPeriod} 모집 · {item.runPeriod}</p>
               </div>
-              {/* 공개 토글 없음 — 기수 테이블에는 is_published 컬럼이 없다(백로그 04).
+              {/* 공개 토글 없음 — 기수 테이블에는 is_published 컬럼이 없다(결정기록 04).
                   숨기는 축은 위에 표시된 모집 상태(status)뿐이다. */}
               <EditLink href={`/admin/content/education/club-cohorts/${item.id}`} />
               <DeleteButton id={item.id} action={deleteCohort} label={`'${item.label}'`} />

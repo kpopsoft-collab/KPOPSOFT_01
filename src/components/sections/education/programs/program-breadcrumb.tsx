@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { educationSectionId, route } from "@/lib/site";
 
 /**
- * 상세 페이지 breadcrumb (백로그 06 03-화면구조-결정.md D6).
+ * 상세 페이지 breadcrumb (결정기록 06 03-화면구조-결정.md D6).
  *
  * 검색으로 상세 페이지에 바로 들어온 사람에게 "여기가 어디인지"와 "위로
  * 올라가는 길"을 준다 — 지금까지 이 페이지에는 목록으로 돌아가는 링크가

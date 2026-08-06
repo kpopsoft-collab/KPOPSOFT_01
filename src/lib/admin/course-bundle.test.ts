@@ -3,7 +3,7 @@
  *
  * `node --test`로 돌린다. 경로 별칭(`@/`)이 안 먹으므로 상대 경로로
  * import한다. 케이스는
- * backlogs/05-course-bundle-storage/06-검증체크리스트.md §1 전부.
+ * docs/08-decisions/05-course-bundle-storage/06-검증체크리스트.md §1 전부.
  *
  * import에 `.ts` 확장자를 그대로 쓴다 — `node --test`가 이 파일을 직접 실행하므로
  * 특정자에 실제 확장자가 있어야 모듈을 찾는다. tsconfig의

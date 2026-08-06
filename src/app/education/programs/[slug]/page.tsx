@@ -25,12 +25,12 @@ import {
  * `education_regular_classes.slug`를 URL 세그먼트로 쓴다. 없는 slug와
  * 비공개(`is_published=false`) 과정은 `getPublicRegularClassBySlug()`가 둘 다
  * `null`로 돌려준다 — RLS가 비공개 행을 이미 걸러 주므로 여기서 다시
- * `is_published`를 검사하지 않는다(백로그 02 요구사항 §3.1).
+ * `is_published`를 검사하지 않는다(결정기록 02 요구사항 §3.1).
  *
  * `generateStaticParams`는 쓰지 않는다. 목록 페이지와 같은 이유로
  * `force-dynamic`을 둔다 — 어드민 수정이 새로고침으로 즉시 보여야 한다.
  *
- * ## 화면 구조 (백로그 06 03-화면구조-결정.md §2)
+ * ## 화면 구조 (결정기록 06 03-화면구조-결정.md §2)
  *
  * 예전에는 본문이 **셋 중 하나**였다 — 업로드 HTML을 인라인으로 그리거나,
  * 번들 링크를 놓거나, 커리큘럼을 그리거나. 그 구조를 폐지했다. 이유 두 가지:
@@ -57,7 +57,7 @@ export async function generateMetadata({
   const item = await getPublicRegularClassBySlug(slug);
   // 없는 slug에서 throw하지 않는다 — 그러면 페이지의 notFound()가 뜨기 전에
   // 렌더 자체가 에러로 죽는다. 빈 메타데이터를 돌려주고 404는 페이지 본문이
-  // 처리하게 둔다(백로그 02 요구사항 §3.3).
+  // 처리하게 둔다(결정기록 02 요구사항 §3.3).
   if (!item) return {};
 
   const title = item.seo.title || `${item.name} | KPOPSOFT Education`;
@@ -112,7 +112,7 @@ export default async function ProgramDetailPage({
         <ProgramDetailHero item={item} />
 
         {/*
-          비대칭 2단 — 본문 8칸 + 요약 카드 4칸(백로그 06 D5,
+          비대칭 2단 — 본문 8칸 + 요약 카드 4칸(결정기록 06 D5,
           docs/04-design-system/04-그리드.md의 "asymmetric 2-column layouts").
           `lg` 미만은 1단이고, 요약 카드가 `order-first`로 본문 위에 올라온다 —
           기간·난이도·일정을 커리큘럼보다 먼저 봐야 하기 때문이다.
@@ -170,7 +170,7 @@ export default async function ProgramDetailPage({
         {/*
           강사진·후기 블록은 여기 만들지 않는다 — 후기는 `EduReview.program`이
           자유 문자열이라 이 과정 것이라고 판단할 기준이 없고, 잘못 매칭하면
-          다른 과정 후기가 이 과정 것으로 오해된다(백로그 06 02-조사 §4).
+          다른 과정 후기가 이 과정 것으로 오해된다(결정기록 06 02-조사 §4).
           대신 "다른 과정"으로 이탈 대신 다음 길을 준다(D6).
         */}
         <ProgramRelated items={siblings} />
