@@ -49,6 +49,28 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+/**
+ * **CSP nonce 때문에 전 페이지를 동적 렌더링으로 고정한다. 지우면 안 된다.**
+ *
+ * `proxy.ts`가 요청마다 nonce를 만들어 CSP 헤더에 넣고, Next가 그 헤더를 파싱해
+ * 스크립트에 nonce를 붙인다. **빌드 때 미리 만든 HTML에는 그 nonce가 없다.**
+ * 정책에 `'strict-dynamic'`이 있어서 `'self'`는 무시되므로, nonce 없는 페이지는
+ * 강제 모드에서 **스크립트가 전부 막힌다**(2026-08-05 실측: `/admin/login`
+ * script 13개 중 nonce 0개).
+ *
+ * 왜 페이지별이 아니라 여기인가 — 페이지마다 붙이면 **나중에 추가되는 정적
+ * 페이지가 조용히 막힌다.** 빌드 로그를 눈으로 보지 않으면 알아챌 방법이 없고,
+ * 증상은 "그 페이지만 인터랙션이 안 된다"라 원인에 닿기 어렵다. 여기 한 줄이면
+ * 새 페이지도 자동으로 지켜진다.
+ *
+ * 잃는 것은 사실상 없다 — 2026-08-06 빌드 기준 정적이던 HTML 라우트는
+ * `/admin/login`·`/education/cases`(빈 플레이스홀더)·`/_not-found` 셋뿐이고,
+ * 나머지 40여 개는 Supabase를 읽어서 이미 동적이었다.
+ *
+ * 근거 — docs/07-dev/14-CSP-정책과-적용.md §5.
+ */
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{

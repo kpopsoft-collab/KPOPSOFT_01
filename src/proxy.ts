@@ -15,11 +15,15 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // ── CSP ──────────────────────────────────────────────────────────────────
 //
-// 지금은 Report-Only만 건다 — 강제(`Content-Security-Policy`)로 걸면 예상 못한
-// 위반이 화면을 조용히 깨뜨린다(스크립트가 막혀도 에러가 콘솔에만 남는다).
-// 위반 로그가 0건이 될 때까지 관찰한 뒤 이 상수만 "Content-Security-Policy"로
-// 바꿔서 강제 전환한다(결정기록 07-content-security-policy §5·§6).
-const CSP_HEADER_NAME = "Content-Security-Policy-Report-Only";
+// **강제다**(2026-08-06 전환). 2026-08-05~06 Report-Only 관찰에서 위반 0건을
+// 확인하고 바꿨다. 되돌리려면 이 상수만 "-Report-Only"를 붙이면 된다.
+//
+// 전환의 전제 조건이 하나 있었다 — **모든 페이지가 동적 렌더링이어야 한다.**
+// 아래 `'strict-dynamic'` 때문에 `'self'`가 무시되므로, 빌드 때 미리 만든
+// HTML(= nonce 없음)은 스크립트가 통째로 막힌다. 그래서 루트 레이아웃에
+// `export const dynamic = "force-dynamic"`를 걸어 두었다.
+// **그 줄을 지우면 여기가 같이 깨진다**(src/app/layout.tsx).
+const CSP_HEADER_NAME = "Content-Security-Policy";
 
 /**
  * nonce를 요청 헤더로도 실어 보낸다(Next.js 공식 예제와 같은 이름).
