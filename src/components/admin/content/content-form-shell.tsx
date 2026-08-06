@@ -13,9 +13,10 @@ import { cn } from "@/lib/utils";
  * 여기서 말하는 셸은 페이지 *안쪽* 프레임이다. 사이드바·톱바를 포함한 어드민
  * 전역 크롬은 `src/app/admin/(shell)/layout.tsx`의 `AdminShellLayout` 쪽이다.
  *
- * 라우트는 합치지 않는다 — `/new`와 `/[id]`는 하는 일이 다르고(조회 유무),
- * 그 차이는 파일 경로에서 읽히는 편이 낫다.
- * 근거: docs/08-decisions/03-regular-class-form-merge/02-현황분석.md §4
+ * 라우트는 합쳐져 있다 — `/new`는 별도 세그먼트 없이 `[id]`에 `id === "new"`로
+ * 들어온다. `inquiry-options` 하나만 두 화면 구조가 실제로 달라 예외로 남았다.
+ * `new`가 예약 id가 되는 제약을 포함한 설명: docs/06-admin/06-콘텐츠-폼-공용셸.md §3
+ * 근거: docs/08-decisions/08-content-form-route-merge/03-병합범위-결정.md
  *
  * 서버 컴포넌트로 둔다. `"use client"`를 붙이면 정적인 헤더와 아이콘까지
  * 클라이언트 번들로 들어간다(폼은 이미 각자 클라이언트 컴포넌트다).

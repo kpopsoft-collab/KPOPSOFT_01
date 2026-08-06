@@ -5,18 +5,7 @@ import { ContentFormShell } from "@/components/admin/content/content-form-shell"
 import { RegularClassForm } from "@/components/admin/content/education/regular-classes/regular-class-form";
 import { createRegularClass, updateRegularClass } from "../actions";
 
-/**
- * 추가·수정 화면을 한 파일에서 처리한다. `/new`는 별도 세그먼트 없이 이 동적
- * 라우트에 `id === "new"`로 들어온다.
- *
- * 그래서 **`new`는 이 컬렉션에서 쓸 수 없는 id다.** 목록의 `EditLink`가 넘기는
- * 값은 슬러그가 아니라 행 id(`mock-content.ts`는 `xxx_1` 꼴, Supabase는 uuid)라
- * 실제로 충돌할 일은 없지만, id 생성 방식을 바꿀 때는 이 제약을 같이 본다.
- *
- * 추가 화면은 조회를 하지 않는다 — `isNew`면 `getContentData()`를 아예 부르지
- * 않는다. 다만 이 파일이 동적 라우트이므로 `/new`도 정적으로 프리렌더되지는
- * 않는다(합치기 전에는 정적이었다).
- */
+/** 추가·수정 겸용 라우트 (`id === "new"`가 추가). 제약은 docs/06-admin/06 §3. */
 export default async function RegularClassFormPage({
   params,
 }: {
