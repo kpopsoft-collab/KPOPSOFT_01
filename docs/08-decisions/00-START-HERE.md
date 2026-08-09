@@ -49,7 +49,7 @@
 | 5 | [05-course-bundle-storage](05-course-bundle-storage/00-START-HERE.md) | 상세 자료를 zip으로 Storage에 올려 새 탭으로 연다 | 2026-08-04 → [../06-admin/07](../06-admin/07-과정-상세본문-HTML과-번들.md) |
 | 6 | [06-course-detail-page-redesign](06-course-detail-page-redesign/00-START-HERE.md) | 상세 페이지 재구성 + 업로드 HTML 인라인 폐지 | 2026-08-05 → [06-구현결과](06-course-detail-page-redesign/06-구현결과.md) · [../03-education/13](../03-education/13-공개-과정-상세페이지.md) |
 | 7 | [07-content-security-policy](07-content-security-policy/00-START-HERE.md) | CSP 도입(G6) — nonce 기반, **강제 적용** | 2026-08-06 → [04-강제전환](07-content-security-policy/04-강제전환.md) · [../07-dev/14](../07-dev/14-CSP-정책과-적용.md) |
-| 8 | [08-content-form-route-merge](08-content-form-route-merge/00-START-HERE.md) | 콘텐츠 폼 `new`·`[id]` 라우트 10쌍 병합 — **3의 재판정** | 2026-08-06 → [06-구현결과](08-content-form-route-merge/06-구현결과.md) · [../06-admin/06](../06-admin/06-콘텐츠-폼-공용셸.md) |
+| 8 | [08-content-form-route-merge](08-content-form-route-merge/00-START-HERE.md) | 콘텐츠 폼 `new`·`[id]` 라우트 10쌍 병합 — **3의 재판정** | 2026-08-06, 검증 08-09 → [06-구현결과](08-content-form-route-merge/06-구현결과.md) · [../06-admin/06](../06-admin/06-콘텐츠-폼-공용셸.md) |
 
 ## 뒤집힌 결정 — 앞 문서를 읽을 때 주의
 
