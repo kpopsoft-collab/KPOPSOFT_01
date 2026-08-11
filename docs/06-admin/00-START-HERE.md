@@ -19,6 +19,7 @@
 | 6 | [06-콘텐츠-폼-공용셸.md](06-콘텐츠-폼-공용셸.md) | — | **콘텐츠 폼 25개가 쓰는 `ContentFormShell`** — 새 폼 화면을 만들 때의 기준 |
 | 7 | [07-과정-상세본문-HTML과-번들.md](07-과정-상세본문-HTML과-번들.md) | — | 정규 클래스 상세 자료(zip 또는 `.html` 한 장, **둘 다 새 탭**) — Storage·`CSP: sandbox` 규칙 |
 | 8 | [08-강의-내용-등록하기.md](08-강의-내용-등록하기.md) | — | **운영자용 절차서** — 정규 클래스 등록 순서, 필드별 입력, 자료 zip/`.html` 선택 기준, 저장 후 확인 |
+| 9 | [09-문의-알림-메일.md](09-문의-알림-메일.md) | §7·§8 | **문의 알림 메일** — Cloudflare Email Service 경로, env, 응답 판정, 실패 로그 |
 
 ## 지금 어디까지 됐나
 
@@ -35,7 +36,7 @@
 | P6 — **상세 자료를 하나로 통합 + 새 탭 렌더** | 완료 (2026-08-05, **DDL 없음**) → [07 §1](07-과정-상세본문-HTML과-번들.md) · [결정기록 06](../08-decisions/06-course-detail-page-redesign/06-구현결과.md) |
 | 관리자 초대 UI | 미구현 |
 | Supabase Auth / DB / Storage | 연결됨 (`20260709131208_p2_storage_buckets.sql`) |
-| 이메일 발송 | 코드는 Resend로 구현됨(`src/lib/email.ts`). 실제 발송은 `RESEND_API_KEY` 유무에 달림 |
+| 이메일 발송 | **완료** (2026-08-11) — Cloudflare Email Service. `CLOUDFLARE_*`·`INQUIRY_NOTIFICATION_*` 4개가 있어야 나간다 → [09](09-문의-알림-메일.md) |
 
 원본 §11.8의 "DB 제외 선행 구축 모드"는 **끝난 단계**다. 지금 구조는
 Supabase 환경변수가 있으면 실제 DB를, 없으면 mock 어댑터로 폴백한다.
