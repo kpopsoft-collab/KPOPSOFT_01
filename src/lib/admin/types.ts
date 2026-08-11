@@ -55,6 +55,21 @@ export type NewInquiry = Pick<
   "type" | "subtype" | "sender" | "contact" | "message"
 >;
 
+/**
+ * 외부 발송(메일 등) 1회 시도의 결과.
+ *
+ * `ok`는 **제공자가 접수했다**는 뜻이지 수신함에 꽂혔다는 뜻이 아니다 —
+ * Cloudflare Email Sending API로 확인 가능한 범위가 접수까지다.
+ * 판정 규칙과 그 근거는 docs/08-decisions/09-inquiry-email-notification/ D7.
+ */
+export type DeliveryAttempt = {
+  ok: boolean;
+  /** 제공자가 발급한 식별자. 추적에 쓴다. */
+  externalId?: string;
+  /** 실패 사유. 로그에 그대로 찍히므로 사람이 읽을 수 있는 값으로 둔다. */
+  errorCode?: string;
+};
+
 export type InquiryStats = {
   total: number;
   new: number;
