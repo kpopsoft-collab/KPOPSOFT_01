@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getContentData } from "@/lib/admin/content-data";
@@ -14,6 +14,7 @@ const PUBLIC = "/education";
 
 export async function createCohort(input: Input) {
   await getContentData().education.clubCohorts.create(input);
+  revalidateTag("edu-club-cohorts", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
   redirect(LIST);
@@ -21,6 +22,7 @@ export async function createCohort(input: Input) {
 
 export async function updateCohort(id: string, input: Input) {
   await getContentData().education.clubCohorts.update(id, input);
+  revalidateTag("edu-club-cohorts", "max");
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
   revalidatePath(PUBLIC);
@@ -29,6 +31,7 @@ export async function updateCohort(id: string, input: Input) {
 
 export async function deleteCohort(id: string) {
   await getContentData().education.clubCohorts.remove(id);
+  revalidateTag("edu-club-cohorts", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getContentData } from "@/lib/admin/content-data";
@@ -16,6 +16,7 @@ const LIST = "/admin/content/pillars";
  */
 export async function updatePillar(id: string, input: Input) {
   await getContentData().pillars.update(id, input);
+  revalidateTag("home-pillars", "max");
   revalidatePath(LIST);
   revalidatePath("/");
   redirect(LIST);

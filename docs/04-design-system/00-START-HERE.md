@@ -46,7 +46,8 @@
 
 - 실제 화면별 카피와 구조 — [../02-home/00-START-HERE.md](../02-home/00-START-HERE.md) · [../03-education/00-START-HERE.md](../03-education/00-START-HERE.md)
 - 이미지 생성 규격과 프롬프트 — [../05-assets/00-START-HERE.md](../05-assets/00-START-HERE.md)
-- ver3가 "ver2 유지"로 지정한 디자인 항목 — [../99-archive/education-ver2/19-전체-디자인방향.md](../99-archive/education-ver2/19-전체-디자인방향.md), [20-이미지-표현원칙.md](../99-archive/education-ver2/20-이미지-표현원칙.md)
+- 카드·리스트 이미지 표현·보안·빈 상태·성능 — [10-이미지-방향.md](10-이미지-방향.md)
+- 반응형·키보드·접근성 — [12-모바일과-접근성.md](12-모바일과-접근성.md)
 - 감사 담당 서브에이전트 — `.claude/agents/design-reviewer.md`
 
 ← [문서 전체 시작점](../00-START-HERE.md)

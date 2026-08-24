@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    // 상위 디렉토리에 package-lock.json이 존재해 Turbopack이 잘못된
+    // workspace root를 감지하는 것을 방지한다. (turbopack docs §Root directory)
+    root: path.resolve(__dirname),
+  },
+  // Next.js 16의 'use cache' (cacheComponents: true)는 force-dynamic과 충돌한다.
+  // 이 프로젝트는 CSP nonce 때문에 layout.tsx에 force-dynamic이 필수라
+  // cacheComponents를 쓸 수 없다. 대신 unstable_cache로 Supabase 응답을 캐싱한다.
+  // (docs/07-dev/14-CSP-정책과-적용.md §5)
   images: {
     // Allow next/image to load public objects from Supabase Storage.
     remotePatterns: [

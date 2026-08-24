@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getContentData } from "@/lib/admin/content-data";
@@ -14,6 +14,7 @@ const PUBLIC = "/education";
 
 export async function createReview(input: Input) {
   await getContentData().education.reviews.create(input);
+  revalidateTag("edu-reviews", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
   redirect(LIST);
@@ -21,6 +22,7 @@ export async function createReview(input: Input) {
 
 export async function updateReview(id: string, input: Input) {
   await getContentData().education.reviews.update(id, input);
+  revalidateTag("edu-reviews", "max");
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
   revalidatePath(PUBLIC);
@@ -29,12 +31,14 @@ export async function updateReview(id: string, input: Input) {
 
 export async function deleteReview(id: string) {
   await getContentData().education.reviews.remove(id);
+  revalidateTag("edu-reviews", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
 }
 
 export async function setReviewPublished(id: string, next: boolean) {
   await getContentData().education.reviews.update(id, { isPublished: next });
+  revalidateTag("edu-reviews", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
 }

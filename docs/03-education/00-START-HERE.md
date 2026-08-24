@@ -26,7 +26,7 @@
 | 9 | [09-ver3-바이브데이즈-모달.md](09-ver3-바이브데이즈-모달.md) | 모달 확정 카피, 참여 3단계, 기수·모집 상태 구조 |
 | 10 | [10-ver3-지난프로그램-후기-FAQ.md](10-ver3-지난프로그램-후기-FAQ.md) | 지난 프로그램, 별점 후기, FAQ 4문항 |
 | 11 | [11-ver3-contact-footer.md](11-ver3-contact-footer.md) | CONTACT, Footer |
-| 12 | [12-ver3-상세페이지-ver2유지-admin.md](12-ver3-상세페이지-ver2유지-admin.md) | 2차 범위 상세 페이지, **유지되는 ver2 규정**, Admin |
+| 12 | [12-ver3-현행규정-admin.md](12-ver3-현행규정-admin.md) | 이미지·접근성·데이터 재사용 공통 규정, Admin |
 | 13 | [13-공개-과정-상세페이지.md](13-공개-과정-상세페이지.md) | **구현 기준.** `/education/programs` 목록·상세 — 라우트, 데이터 경로, 화면 구성(2026-08-05 재구성) |
 
 코드 주석의 `docs/03-education/ §N`은 **두 문서에 같은 번호가 있어 모호하다.**
@@ -95,9 +95,9 @@
 ## 함께 보기
 
 - 교육 IA 요약 — [../01-ia/02-교육-IA.md](../01-ia/02-교육-IA.md)
-- **ver3가 "ver2 유지"로 지정한 항목** (이미지 원칙·반응형·접근성) —
-  [12-ver3-상세페이지-ver2유지-admin.md](12-ver3-상세페이지-ver2유지-admin.md)가 가리키는
-  [../99-archive/education-ver2/00-START-HERE.md](../99-archive/education-ver2/00-START-HERE.md)
+- 이미지·반응형·접근성·데이터 재사용 공통 규칙 —
+  [12-ver3-현행규정-admin.md](12-ver3-현행규정-admin.md)과
+  [../04-design-system/00-START-HERE.md](../04-design-system/00-START-HERE.md)
 - 교육 이미지 생성 프롬프트 — [../05-assets/03-프롬프트로그-AI솔루션과-교육.md](../05-assets/03-프롬프트로그-AI솔루션과-교육.md)
 - 컨펌 대기 중인 콘텐츠 — [../07-dev/05-남은결정과-작업.md](../07-dev/05-남은결정과-작업.md)
 

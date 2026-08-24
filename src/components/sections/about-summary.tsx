@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * About Summary + Numbers (docs/99-archive/home-ver2/ §SECTION 03).
+ * About Summary + Numbers (docs/02-home/03-최종수정요청-섹션순서와-히어로.md §5–§6).
  *
  * ver2 explicitly asks for a short trust block compressed into ~50–70vh, not
  * two stacked sections — so copy and the four stats share one `Section` and

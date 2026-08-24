@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getContentData } from "@/lib/admin/content-data";
@@ -14,6 +14,7 @@ const PUBLIC = "/education";
 
 export async function createPastProgram(input: Input) {
   await getContentData().education.pastPrograms.create(input);
+  revalidateTag("edu-past-programs", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
   redirect(LIST);
@@ -21,6 +22,7 @@ export async function createPastProgram(input: Input) {
 
 export async function updatePastProgram(id: string, input: Input) {
   await getContentData().education.pastPrograms.update(id, input);
+  revalidateTag("edu-past-programs", "max");
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
   revalidatePath(PUBLIC);
@@ -29,12 +31,14 @@ export async function updatePastProgram(id: string, input: Input) {
 
 export async function deletePastProgram(id: string) {
   await getContentData().education.pastPrograms.remove(id);
+  revalidateTag("edu-past-programs", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
 }
 
 export async function setPastProgramPublished(id: string, next: boolean) {
   await getContentData().education.pastPrograms.update(id, { isPublished: next });
+  revalidateTag("edu-past-programs", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
 }

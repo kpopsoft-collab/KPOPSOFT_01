@@ -22,8 +22,8 @@ import { accentBg, programs, sectionId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * Education / Programs (docs/99-archive/01-초기-16섹션-기획서.md §6, docs/04-design-system/ §6 Program Cards,
- * §8 PROGRAMS).
+ * Education / Programs (docs/03-education/08-ver3-프로그램-정보.md,
+ * docs/04-design-system/09-섹션별-디자인원칙.md).
  *
  * Editorial list layout: eight programs stacked as full-width rows separated by
  * hairline rules. Reads top-to-bottom like a curriculum index rather than an

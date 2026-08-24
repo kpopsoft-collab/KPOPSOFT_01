@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import {
   route,
@@ -102,129 +103,174 @@ const fallbackTestimonials = seedTestimonials as unknown as PublicTestimonial[];
 const fallbackStats = seedStats as unknown as PublicStat[];
 const fallbackOptions = seedOptions as unknown as PublicInquiryOption[];
 
+// ─── 모듈 레벨 캐시 함수들 ─────────────────────────────────────────────────
+// unstable_cache(fn, key, opts)는 모듈이 처음 로드될 때 딱 한 번만 생성한다.
+// 함수 내부에서 생성하면 요청마다 새 객체가 만들어져 async_hooks Map을 채워
+// Turbopack 개발 서버가 RangeError로 크래시한다.
+const _cachedExperts = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("experts")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+      if (error || !data || data.length === 0) return fallbackExperts;
+      return data.map((r) => ({
+        name: r.name,
+        role: r.role,
+        quote: r.quote,
+        tags: r.tags ?? [],
+        accent: r.accent as Accent,
+        ...(r.image_url ? { image: r.image_url as string } : {}),
+      }));
+    } catch {
+      return fallbackExperts;
+    }
+  },
+  ["experts"],
+  { tags: ["experts"], revalidate: false },
+);
+
 export async function getPublicExperts(): Promise<PublicExpert[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("experts")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackExperts;
-    return data.map((r) => ({
-      name: r.name,
-      role: r.role,
-      quote: r.quote,
-      tags: r.tags ?? [],
-      accent: r.accent as Accent,
-      ...(r.image_url ? { image: r.image_url as string } : {}),
-    }));
-  } catch {
-    return fallbackExperts;
-  }
+  return _cachedExperts();
 }
+
+const _cachedWork = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("work_items")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+      if (error || !data || data.length === 0) return fallbackWork;
+      return data.map((r) => ({
+        client: r.client,
+        title: r.title,
+        category: r.category,
+        accent: r.accent as Accent,
+        summary: r.summary,
+        challenge: r.challenge,
+        solution: r.solution,
+        results: r.results ?? [],
+        ...(r.image_url ? { imageUrl: r.image_url as string } : {}),
+        ...(Array.isArray(r.image_urls) && r.image_urls.length > 0
+          ? { imageUrls: r.image_urls as string[] }
+          : {}),
+        // 아래 네 필드는 수정 요청서 §8~§12로 새로 생긴 컬럼이다. 컬럼이 아직
+        // 없는 DB에서도 `select *`가 그냥 undefined를 주므로 안전하게 빠진다.
+        ...(Array.isArray(r.scope) && r.scope.length > 0
+          ? { scope: r.scope as string[] }
+          : {}),
+        ...(Array.isArray(r.features) && r.features.length > 0
+          ? { features: r.features as string[] }
+          : {}),
+        ...(r.user_flow ? { flow: r.user_flow as string } : {}),
+        ...(r.external_url ? { externalUrl: r.external_url as string } : {}),
+        showOnHome: r.show_on_home !== false,
+      }));
+    } catch {
+      return fallbackWork;
+    }
+  },
+  ["work"],
+  { tags: ["work"], revalidate: false },
+);
 
 export async function getPublicWork(): Promise<PublicWork[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("work_items")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackWork;
-    return data.map((r) => ({
-      client: r.client,
-      title: r.title,
-      category: r.category,
-      accent: r.accent as Accent,
-      summary: r.summary,
-      challenge: r.challenge,
-      solution: r.solution,
-      results: r.results ?? [],
-      ...(r.image_url ? { imageUrl: r.image_url as string } : {}),
-      ...(Array.isArray(r.image_urls) && r.image_urls.length > 0
-        ? { imageUrls: r.image_urls as string[] }
-        : {}),
-      // 아래 네 필드는 수정 요청서 §8~§12로 새로 생긴 컬럼이다. 컬럼이 아직
-      // 없는 DB에서도 `select *`가 그냥 undefined를 주므로 안전하게 빠진다.
-      ...(Array.isArray(r.scope) && r.scope.length > 0
-        ? { scope: r.scope as string[] }
-        : {}),
-      ...(Array.isArray(r.features) && r.features.length > 0
-        ? { features: r.features as string[] }
-        : {}),
-      ...(r.user_flow ? { flow: r.user_flow as string } : {}),
-      ...(r.external_url ? { externalUrl: r.external_url as string } : {}),
-      showOnHome: r.show_on_home !== false,
-    }));
-  } catch {
-    return fallbackWork;
-  }
+  return _cachedWork();
 }
 
+
+
+const _cachedTestimonials = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("testimonials")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+      if (error || !data || data.length === 0) return fallbackTestimonials;
+      return data.map((r) => ({
+        quote: r.quote,
+        author: r.author,
+        program: r.program,
+        result: r.result,
+      }));
+    } catch {
+      return fallbackTestimonials;
+    }
+  },
+  ["testimonials"],
+  { tags: ["testimonials"], revalidate: false },
+);
 
 export async function getPublicTestimonials(): Promise<PublicTestimonial[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("testimonials")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackTestimonials;
-    return data.map((r) => ({
-      quote: r.quote,
-      author: r.author,
-      program: r.program,
-      result: r.result,
-    }));
-  } catch {
-    return fallbackTestimonials;
-  }
+  return _cachedTestimonials();
 }
+
+const _cachedStats = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("stats")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+      if (error || !data || data.length === 0) return fallbackStats;
+      return data.map((r) => ({
+        value: r.value,
+        suffix: r.suffix,
+        label: r.label,
+      }));
+    } catch {
+      return fallbackStats;
+    }
+  },
+  ["stats"],
+  { tags: ["stats"], revalidate: false },
+);
 
 export async function getPublicStats(): Promise<PublicStat[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("stats")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackStats;
-    return data.map((r) => ({
-      value: r.value,
-      suffix: r.suffix,
-      label: r.label,
-    }));
-  } catch {
-    return fallbackStats;
-  }
+  return _cachedStats();
 }
 
+const _cachedInquiryOptions = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("inquiry_types")
+        .select("*, inquiry_subtypes(*)")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (error || !data || data.length === 0) return fallbackOptions;
+      return data.map((t) => ({
+        type: t.label as string,
+        subtypes: ((t.inquiry_subtypes ?? []) as Record<string, unknown>[])
+          .filter((s) => s.is_active !== false)
+          .sort((a, b) => (a.sort_order as number) - (b.sort_order as number))
+          .map((s) => ({
+            label: s.label as string,
+            placeholder: (s.placeholder as string) ?? "",
+          })),
+      }));
+    } catch {
+      return fallbackOptions;
+    }
+  },
+  ["inquiry-options"],
+  { tags: ["inquiry-options"], revalidate: false },
+);
+
 export async function getPublicInquiryOptions(): Promise<PublicInquiryOption[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("inquiry_types")
-      .select("*, inquiry_subtypes(*)")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallbackOptions;
-    return data.map((t) => ({
-      type: t.label as string,
-      subtypes: ((t.inquiry_subtypes ?? []) as Record<string, unknown>[])
-        .filter((s) => s.is_active !== false)
-        .sort((a, b) => (a.sort_order as number) - (b.sort_order as number))
-        .map((s) => ({
-          label: s.label as string,
-          placeholder: (s.placeholder as string) ?? "",
-        })),
-    }));
-  } catch {
-    return fallbackOptions;
-  }
+  return _cachedInquiryOptions();
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -262,47 +308,77 @@ function toImage(url: unknown, alt: unknown, caption: unknown): EduImage | undef
 
 /**
  * 조회 한 번을 감싸는 공통 틀. 에러·빈 결과면 폴백을 돌려준다.
- * 세 군데에서 같은 try/catch를 반복하지 않기 위한 것이지 다른 동작은 없다.
+ *
+ * **모듈 레벨 메모이제이션**: unstable_cache(fn, key, opts)를 매 호출마다 새로
+ * 생성하면 Node.js async_hooks Map이 빠르게 채워져 Turbopack 개발 서버가
+ * `RangeError: Map maximum size exceeded`로 크래시한다. 태그별로 캐시 함수를
+ * 한 번만 만들어 재사용한다.
  */
+// 태그 → unstable_cache 래퍼 함수. 모듈이 로드될 때 빈 Map으로 시작하고,
+// 각 태그의 첫 번째 read() 호출 시 한 번 생성된 뒤 재사용된다.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _readCache = new Map<string, () => Promise<any>>();
+
 async function read<T>(
   table: string,
   map: (rows: Row[]) => T,
   fallback: T,
+  tag: string,
 ): Promise<T> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from(table)
-      .select("*")
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return fallback;
-    return map(data as Row[]);
-  } catch {
-    return fallback;
+  if (!_readCache.has(tag)) {
+    _readCache.set(
+      tag,
+      unstable_cache(
+        async () => {
+          try {
+            const db = createSupabasePublicClient();
+            const { data, error } = await db
+              .from(table)
+              .select("*")
+              .order("sort_order", { ascending: true });
+            if (error || !data || data.length === 0) return fallback;
+            return map(data as Row[]);
+          } catch {
+            return fallback;
+          }
+        },
+        [tag],
+        { tags: [tag], revalidate: false },
+      ),
+    );
   }
+  return _readCache.get(tag)!() as Promise<T>;
 }
 
 /** 01. 조직·기업 맞춤 교육 — 싱글턴 행. */
+const _cachedOrgTraining = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("education_org_training")
+        .select("*")
+        .maybeSingle();
+      if (error || !data) return orgTraining;
+      return {
+        title: str(data.title),
+        description: str(data.description),
+        minParticipants: str(data.min_participants),
+        image:
+          toImage(data.image_url, data.image_alt, data.image_caption) ??
+          orgTraining.image,
+        cta: { label: str(data.cta_label) },
+      };
+    } catch {
+      return orgTraining;
+    }
+  },
+  ["edu-org-training"],
+  { tags: ["edu-org-training"], revalidate: false },
+);
+
 export async function getPublicOrgTraining(): Promise<OrgTraining> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_org_training")
-      .select("*")
-      .maybeSingle();
-    if (error || !data) return orgTraining;
-    return {
-      title: str(data.title),
-      description: str(data.description),
-      minParticipants: str(data.min_participants),
-      image:
-        toImage(data.image_url, data.image_alt, data.image_caption) ??
-        orgTraining.image,
-      cta: { label: str(data.cta_label) },
-    };
-  } catch {
-    return orgTraining;
-  }
+  return _cachedOrgTraining();
 }
 
 /**
@@ -342,46 +418,54 @@ const REGULAR_CLASS_PUBLIC_COLUMNS = [
   "sort_order",
 ].join(",");
 
+const _cachedRegularClasses = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("education_regular_classes")
+        // 컬럼을 명시하는 이유 — `*`로 읽으면 상세 본문(detail_html)까지 행마다
+        // 딸려 온다. 이 목록은 /education이 매 요청 렌더할 때 읽히는데 본문은
+        // 거기서 쓰지도 않는다. 본문은 결정기록 02의 slug 단건 조회에서만 읽는다.
+        .select(REGULAR_CLASS_PUBLIC_COLUMNS)
+        .order("sort_order", { ascending: true });
+      if (error || !data) return regularClasses;
+      // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입을 추론하지
+      // 못하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
+      // unknown을 한 번 거쳐 좁힌다(supabase-content.ts의 list()와 같은 사정).
+      return (data as unknown as Row[]).map((r) => ({
+        slug: str(r.slug),
+        index: str(r.index_label),
+        name: str(r.name),
+        subtitle: str(r.subtitle),
+        description: str(r.description),
+        duration: str(r.duration),
+        level: str(r.level),
+        // 컬럼이 비어 있으면(마이그레이션 직후 등) "multi"를 기본값으로 삼는다
+        // — 기존 4과정도 D4에 따라 multi로 시작한다.
+        scheduleType: (str(r.schedule_type) ||
+          "multi") as RegularClass["scheduleType"],
+        ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
+        ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
+        tracks: strArray(r.tracks) as RegularClass["tracks"],
+        accent: str(r.accent) as Accent,
+        ...(toImage(r.image_url, r.image_alt, r.image_caption)
+          ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
+          : {}),
+        curriculum: strArray(r.curriculum),
+        detailHref: str(r.detail_href),
+        seo: { title: str(r.seo_title), description: str(r.seo_description) },
+      }));
+    } catch {
+      return regularClasses;
+    }
+  },
+  ["edu-regular-classes"],
+  { tags: ["edu-regular-classes"], revalidate: false },
+);
+
 export async function getPublicRegularClasses(): Promise<RegularClass[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_regular_classes")
-      // 컬럼을 명시하는 이유 — `*`로 읽으면 상세 본문(detail_html)까지 행마다
-      // 딸려 온다. 이 목록은 /education이 매 요청 렌더할 때 읽히는데 본문은
-      // 거기서 쓰지도 않는다. 본문은 결정기록 02의 slug 단건 조회에서만 읽는다.
-      .select(REGULAR_CLASS_PUBLIC_COLUMNS)
-      .order("sort_order", { ascending: true });
-    if (error || !data) return regularClasses;
-    // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입을 추론하지
-    // 못하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
-    // unknown을 한 번 거쳐 좁힌다(supabase-content.ts의 list()와 같은 사정).
-    return (data as unknown as Row[]).map((r) => ({
-      slug: str(r.slug),
-      index: str(r.index_label),
-      name: str(r.name),
-      subtitle: str(r.subtitle),
-      description: str(r.description),
-      duration: str(r.duration),
-      level: str(r.level),
-      // 컬럼이 비어 있으면(마이그레이션 직후 등) "multi"를 기본값으로 삼는다
-      // — 기존 4과정도 D4에 따라 multi로 시작한다.
-      scheduleType: (str(r.schedule_type) ||
-        "multi") as RegularClass["scheduleType"],
-      ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
-      ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
-      tracks: strArray(r.tracks) as RegularClass["tracks"],
-      accent: str(r.accent) as Accent,
-      ...(toImage(r.image_url, r.image_alt, r.image_caption)
-        ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
-        : {}),
-      curriculum: strArray(r.curriculum),
-      detailHref: str(r.detail_href),
-      seo: { title: str(r.seo_title), description: str(r.seo_description) },
-    }));
-  } catch {
-    return regularClasses;
-  }
+  return _cachedRegularClasses();
 }
 
 /**
@@ -393,69 +477,87 @@ export async function getPublicRegularClasses(): Promise<RegularClass[]> {
  *
  * 없거나 비공개면 null — 호출부가 notFound()를 부른다.
  */
+// slug 파라미터가 있어 모듈 레벨 단일 함수로 올릴 수 없다. slug별로 캐시 함수를
+// 한 번 생성해 Map에 저장하고 재사용한다 — 요청마다 새 unstable_cache를 만드는
+// 기존 방식이 async_hooks Map을 채워 Turbopack 서버를 크래시시키던 것을 막는다.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _regularClassBySlugCache = new Map<string, () => Promise<any>>();
+
 export async function getPublicRegularClassBySlug(
   slug: string,
 ): Promise<RegularClassDetail | null> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_regular_classes")
-      // 목록과 같은 컬럼 목록에 상세 전용 두 개만 더한다. 상수를 재사용해
-      // 조합해야 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
-      // 번들 경로를 공통 상수에 넣지 않는 이유는 detail_html과 같다 — 목록이
-      // 쓰지도 않는 컬럼 때문에 /education까지 같이 깨질 이유가 없다.
-      .select(`${REGULAR_CLASS_PUBLIC_COLUMNS},detail_html,detail_bundle_path`)
-      .eq("slug", slug)
-      .maybeSingle();
-    // 조회는 됐는데 행이 없다 = 관리자가 지웠거나 비공개다(RLS). 이건 진짜 404다.
-    if (!error && !data) return null;
-    // 조회 자체가 실패했다 = 장애다. 목록은 이때 정적 4행으로 폴백하므로
-    // 여기서 404를 내면 목록에는 있는 카드가 전부 깨진 링크가 된다(03-데이터흐름 §3).
-    if (error) return fallbackRegularClassBySlug(slug);
-    // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입 추론을
-    // 포기하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
-    // getPublicRegularClasses()와 같은 방식으로 unknown을 거쳐 좁힌다.
-    const r = data as unknown as Row;
-    /*
-     * 번들 폴더 경로만 저장돼 있고 URL은 여기서 조립한다.
-     *
-     * **Storage 공개 URL이 아니라 우리 라우트(`/course-assets/...`)를 가리킨다.**
-     * Supabase Storage가 HTML을 의도적으로 `text/plain`으로 내려서, 공개 URL을
-     * 그대로 열면 페이지가 아니라 소스 코드가 보이기 때문이다. 그 라우트가
-     * 올바른 Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다 —
-     * 판단 근거는 `src/app/course-assets/[...path]/route.ts` 머리 주석과
-     * 결정기록 06 03-화면구조-결정.md D2-정정.
-     */
-    const bundleUrl = opt(r.detail_bundle_path)
-      ? `${route.courseAssets}/${opt(r.detail_bundle_path)}index.html`
-      : undefined;
-    return {
-      slug: str(r.slug),
-      index: str(r.index_label),
-      name: str(r.name),
-      subtitle: str(r.subtitle),
-      description: str(r.description),
-      duration: str(r.duration),
-      level: str(r.level),
-      scheduleType: (str(r.schedule_type) ||
-        "multi") as RegularClass["scheduleType"],
-      ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
-      ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
-      tracks: strArray(r.tracks) as RegularClass["tracks"],
-      accent: str(r.accent) as Accent,
-      ...(toImage(r.image_url, r.image_alt, r.image_caption)
-        ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
-        : {}),
-      curriculum: strArray(r.curriculum),
-      detailHref: str(r.detail_href),
-      seo: { title: str(r.seo_title), description: str(r.seo_description) },
-      ...(opt(r.detail_html) ? { detailHtml: opt(r.detail_html) } : {}),
-      ...(bundleUrl ? { bundleUrl } : {}),
-    };
-  } catch {
-    // createSupabasePublicClient()가 env 없이 던지는 경우 등 — 장애로 본다.
-    return fallbackRegularClassBySlug(slug);
+  if (!_regularClassBySlugCache.has(slug)) {
+    _regularClassBySlugCache.set(
+      slug,
+      unstable_cache(
+        async () => {
+          try {
+            const db = createSupabasePublicClient();
+            const { data, error } = await db
+              .from("education_regular_classes")
+              // 목록과 같은 컬럼 목록에 상세 전용 두 개만 더한다. 상수를 재사용해
+              // 조합해야 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
+              // 번들 경로를 공통 상수에 넣지 않는 이유는 detail_html과 같다 — 목록이
+              // 쓰지도 않는 컬럼 때문에 /education까지 같이 깨질 이유가 없다.
+              .select(`${REGULAR_CLASS_PUBLIC_COLUMNS},detail_html,detail_bundle_path`)
+              .eq("slug", slug)
+              .maybeSingle();
+            // 조회는 됐는데 행이 없다 = 관리자가 지웠거나 비공개다(RLS). 이건 진짜 404다.
+            if (!error && !data) return null;
+            // 조회 자체가 실패했다 = 장애다. 목록은 이때 정적 4행으로 폴백하므로
+            // 여기서 404를 내면 목록에는 있는 카드가 전부 깨진 링크가 된다(03-데이터흐름 §3).
+            if (error) return fallbackRegularClassBySlug(slug);
+            // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입 추론을
+            // 포기하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
+            // getPublicRegularClasses()와 같은 방식으로 unknown을 거쳐 좁힌다.
+            const r = data as unknown as Row;
+            /*
+             * 번들 폴더 경로만 저장돼 있고 URL은 여기서 조립한다.
+             *
+             * **Storage 공개 URL이 아니라 우리 라우트(`/course-assets/...`)를 가리킨다.**
+             * Supabase Storage가 HTML을 의도적으로 `text/plain`으로 내려서, 공개 URL을
+             * 그대로 열면 페이지가 아니라 소스 코드가 보이기 때문이다. 그 라우트가
+             * 올바른 Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다 —
+             * 판단 근거는 `src/app/course-assets/[...path]/route.ts` 머리 주석과
+             * 결정기록 06 03-화면구조-결정.md D2-정정.
+             */
+            const bundleUrl = opt(r.detail_bundle_path)
+              ? `${route.courseAssets}/${opt(r.detail_bundle_path)}index.html`
+              : undefined;
+            return {
+              slug: str(r.slug),
+              index: str(r.index_label),
+              name: str(r.name),
+              subtitle: str(r.subtitle),
+              description: str(r.description),
+              duration: str(r.duration),
+              level: str(r.level),
+              scheduleType: (str(r.schedule_type) ||
+                "multi") as RegularClass["scheduleType"],
+              ...(opt(r.start_date) ? { startDate: opt(r.start_date) } : {}),
+              ...(opt(r.end_date) ? { endDate: opt(r.end_date) } : {}),
+              tracks: strArray(r.tracks) as RegularClass["tracks"],
+              accent: str(r.accent) as Accent,
+              ...(toImage(r.image_url, r.image_alt, r.image_caption)
+                ? { image: toImage(r.image_url, r.image_alt, r.image_caption) }
+                : {}),
+              curriculum: strArray(r.curriculum),
+              detailHref: str(r.detail_href),
+              seo: { title: str(r.seo_title), description: str(r.seo_description) },
+              ...(opt(r.detail_html) ? { detailHtml: opt(r.detail_html) } : {}),
+              ...(bundleUrl ? { bundleUrl } : {}),
+            };
+          } catch {
+            // createSupabasePublicClient()가 env 없이 던지는 경우 등 — 장애로 본다.
+            return fallbackRegularClassBySlug(slug);
+          }
+        },
+        ["edu-regular-classes", slug],
+        { tags: ["edu-regular-classes", `edu-regular-class-${slug}`], revalidate: false },
+      ),
+    );
   }
+  return _regularClassBySlugCache.get(slug)!() as Promise<RegularClassDetail | null>;
 }
 
 /**
@@ -516,6 +618,7 @@ export async function getPublicClubCohorts(): Promise<ClubCohort[]> {
         },
       })),
     clubCohorts,
+    "edu-club-cohorts",
   );
 }
 
@@ -536,6 +639,7 @@ export async function getPublicClubTiers(): Promise<ClubTier[]> {
         },
       })),
     clubTiers,
+    "edu-club-tiers",
   );
 }
 
@@ -544,52 +648,60 @@ export async function getPublicClubTiers(): Promise<ClubTier[]> {
  * 카드 배지 숫자가 대표 1장 + 갤러리 길이로 계산되므로 두 번 조회해서라도
  * 한 덩어리로 돌려준다(컴포넌트가 다시 조회하지 않게).
  */
-export async function getPublicPastPrograms(): Promise<PastProgram[]> {
-  try {
-    const db = createSupabasePublicClient();
-    const { data, error } = await db
-      .from("education_past_programs")
-      .select("*")
-      .eq("is_published", true)
-      .order("sort_order", { ascending: true });
-    if (error || !data || data.length === 0) return pastPrograms;
+const _cachedPastPrograms = unstable_cache(
+  async () => {
+    try {
+      const db = createSupabasePublicClient();
+      const { data, error } = await db
+        .from("education_past_programs")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+      if (error || !data || data.length === 0) return pastPrograms;
 
-    const { data: images } = await db
-      .from("education_past_program_images")
-      .select("*")
-      .order("sort_order", { ascending: true });
+      const { data: images } = await db
+        .from("education_past_program_images")
+        .select("*")
+        .order("sort_order", { ascending: true });
 
-    const galleryByProgram = new Map<string, EduImage[]>();
-    for (const image of (images ?? []) as Row[]) {
-      const list = galleryByProgram.get(str(image.program_id)) ?? [];
-      const mapped = toImage(image.image_url, image.alt, image.caption);
-      if (mapped) list.push(mapped);
-      galleryByProgram.set(str(image.program_id), list);
+      const galleryByProgram = new Map<string, EduImage[]>();
+      for (const image of (images ?? []) as Row[]) {
+        const list = galleryByProgram.get(str(image.program_id)) ?? [];
+        const mapped = toImage(image.image_url, image.alt, image.caption);
+        if (mapped) list.push(mapped);
+        galleryByProgram.set(str(image.program_id), list);
+      }
+
+      return (data as Row[]).map((r) => {
+        const gallery = galleryByProgram.get(str(r.id)) ?? [];
+        const cover = toImage(r.cover_image_url, r.cover_image_alt, r.cover_image_caption);
+        return {
+          slug: str(r.slug),
+          title: str(r.title),
+          category: str(r.category) as PastProgram["category"],
+          period: str(r.period),
+          audience: str(r.audience),
+          duration: str(r.duration),
+          summary: str(r.summary),
+          outcome: str(r.outcome),
+          accent: str(r.accent) as Accent,
+          coverImage: {
+            ...(cover ?? { src: "", alt: "" }),
+            ...(r.cover_unoptimized ? { unoptimized: true } : {}),
+          },
+          ...(gallery.length > 0 ? { galleryImages: gallery } : {}),
+        };
+      });
+    } catch {
+      return pastPrograms;
     }
+  },
+  ["edu-past-programs"],
+  { tags: ["edu-past-programs"], revalidate: false },
+);
 
-    return (data as Row[]).map((r) => {
-      const gallery = galleryByProgram.get(str(r.id)) ?? [];
-      const cover = toImage(r.cover_image_url, r.cover_image_alt, r.cover_image_caption);
-      return {
-        slug: str(r.slug),
-        title: str(r.title),
-        category: str(r.category) as PastProgram["category"],
-        period: str(r.period),
-        audience: str(r.audience),
-        duration: str(r.duration),
-        summary: str(r.summary),
-        outcome: str(r.outcome),
-        accent: str(r.accent) as Accent,
-        coverImage: {
-          ...(cover ?? { src: "", alt: "" }),
-          ...(r.cover_unoptimized ? { unoptimized: true } : {}),
-        },
-        ...(gallery.length > 0 ? { galleryImages: gallery } : {}),
-      };
-    });
-  } catch {
-    return pastPrograms;
-  }
+export async function getPublicPastPrograms(): Promise<PastProgram[]> {
+  return _cachedPastPrograms();
 }
 
 /** 후기 — 평균 별점은 저장하지 않고 목록에서 계산한다. */
@@ -607,6 +719,7 @@ export async function getPublicEducationReviews(): Promise<EduReview[]> {
         accent: str(r.accent) as Accent,
       })),
     eduReviews,
+    "edu-reviews",
   );
 }
 
@@ -621,6 +734,7 @@ export async function getPublicEducationFaqs(): Promise<FaqItem[]> {
         answer: str(r.answer),
       })),
     eduFaqs,
+    "edu-faqs",
   );
 }
 
@@ -630,6 +744,7 @@ export async function getPublicEducationStats(): Promise<EduStat[]> {
     "education_stats",
     (rows) => rows.map((r) => ({ value: str(r.value), label: str(r.label) })),
     eduStats,
+    "edu-stats",
   );
 }
 
@@ -707,6 +822,7 @@ export async function getPublicPillars(): Promise<PublicPillar[]> {
         accent: str(r.accent) as Accent,
       })),
     fallbackPillars,
+    "home-pillars",
   );
 }
 
@@ -726,5 +842,6 @@ export async function getPublicPillarExamples(): Promise<PublicPillarExample[]> 
         accent: str(r.accent) as Accent,
       })),
     fallbackPillarExamples,
+    "home-pillar-examples",
   );
 }

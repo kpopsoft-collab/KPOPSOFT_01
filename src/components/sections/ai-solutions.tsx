@@ -57,8 +57,8 @@ const steps: {
 ];
 
 /**
- * AI Solutions (docs/99-archive/01-초기-16섹션-기획서.md §6 "02 AI SOLUTIONS", docs/04-design-system/ §8
- * "AI PROTOTYPE LAB").
+ * AI Solutions (docs/02-home/04-최종수정요청-핵심사업과-프로젝트개요.md,
+ * docs/04-design-system/09-섹션별-디자인원칙.md).
  *
  * Two visual rhythms in one section: an editorial intro (heading + lead +
  * 주요 분야 tags, paired with an orbiting Star composition — the shape the

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getContentData } from "@/lib/admin/content-data";
@@ -38,6 +38,7 @@ const LIST = "/admin/content/education/regular-classes";
 const PUBLIC_PATHS = ["/education", "/education/programs"];
 
 function revalidatePublic(slug?: string) {
+  revalidateTag("edu-regular-classes", "max");
   for (const p of PUBLIC_PATHS) revalidatePath(p);
   if (slug) revalidatePath(`/education/programs/${slug}`);
 }
@@ -120,6 +121,7 @@ export async function createRegularClass(input: Input) {
   });
   await syncHtmlSource(created.id, htmlIntent);
 
+  revalidateTag("edu-regular-classes", "max");
   revalidatePath(LIST);
   revalidatePublic(rest.slug);
   redirect(LIST);
@@ -147,6 +149,7 @@ export async function updateRegularClass(id: string, input: Input) {
   await syncHtmlSource(id, htmlIntent);
   if (bundle && previous) await discardBundleFolder(previous.detailBundlePath, bundle.path);
 
+  revalidateTag("edu-regular-classes", "max");
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
   revalidatePublic(rest.slug);
@@ -161,12 +164,14 @@ export async function deleteRegularClass(id: string) {
   await getContentData().education.regularClasses.remove(id);
   if (previous) await discardBundleFolder(previous.detailBundlePath, "");
 
+  revalidateTag("edu-regular-classes", "max");
   revalidatePath(LIST);
   revalidatePublic();
 }
 
 export async function setRegularClassPublished(id: string, next: boolean) {
   await getContentData().education.regularClasses.update(id, { isPublished: next });
+  revalidateTag("edu-regular-classes", "max");
   revalidatePath(LIST);
   revalidatePublic();
 }

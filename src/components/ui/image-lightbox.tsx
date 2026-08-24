@@ -2,7 +2,7 @@
 
 /**
  * Image lightbox — click-to-zoom modal for gallery-style images
- * (docs/99-archive/education-ver2/ §10 "이미지 확대").
+ * (docs/04-design-system/12-모바일과-접근성.md의 모달 접근성 기준).
  *
  * Built directly on the same `@base-ui/react/dialog` primitive `Sheet` wraps
  * (src/components/ui/sheet.tsx), just centered instead of docked to an edge.
