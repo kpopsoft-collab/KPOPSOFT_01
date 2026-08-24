@@ -21,11 +21,10 @@
 | [docs/07-dev/](docs/07-dev/00-START-HERE.md) | 기술 스펙, 개발 상태, 작업 로그, 인수인계 | 착수 전 / 배포 전 |
 | [docs/08-decisions/](docs/08-decisions/00-START-HERE.md) | 기능별 **왜 그렇게 정했나** — 조사 원자료, 버린 대안, 뒤집힌 결정 | 근거를 찾을 때 |
 | [backlogs/](backlogs/README.md) | **진행 중인** 기능의 조사·계획. 끝나면 `docs/08-decisions/`로 옮긴다 | 새 기능 착수 |
-| [docs/99-archive/](docs/99-archive/00-START-HERE.md) | ver2 기획 2종, 초기 16섹션 기획 (대체됨) | ver2 유지 항목 확인 |
 
 **충돌하면 이 순서** — 각 폴더의 수정 요청서(앞번호) → ver3 기획서(뒷번호) →
-`01-ia` 요약 → `99-archive`의 ver2. ver3가 "ver2 유지"로 지정한 항목
-(디자인 방향·이미지 원칙·반응형·접근성)만 여전히 아카이브를 참조한다.
+`01-ia` 요약. 공통 디자인·이미지·반응형·접근성 규칙은
+`04-design-system`, 콘텐츠 운영 규칙은 `06-admin`을 따른다.
 
 문서를 고쳐 200줄을 넘기면 주제 경계에서 쪼개고, 해당 폴더의 `00-START-HERE.md`
 목록과 앞뒤 문서의 이전/다음 링크를 같이 고친다.
@@ -63,8 +62,18 @@
 
 기능 개발/수정은 `/dev <작업 내용>` 커맨드로 시작한다. 상세 동작은 [.claude/commands/dev.md](.claude/commands/dev.md) 참고. 이 프로젝트 전용 서브에이전트는 [.claude/agents/](.claude/agents/)에 정의되어 있다.
 
+## 스킬
+
+이 프로젝트에 적용된 프로젝트 스코프 스킬 (`.claude/skills/<name>/SKILL.md`).
+
+| 스킬 | 트리거 | 무엇을 하나 |
+|------|--------|------------|
+| `karpathy-guidelines` | 코드 작성·리뷰·리팩토링 시 자동 | 코드 작업 시 과잉 구현·불필요한 수정·암묵적 가정을 줄이기 위한 행동 지침 |
+
+전체 카탈로그(개인 스킬 `deploy` 포함)는 [docs/07-dev/09-클로드코드-스킬과-에이전트.md](docs/07-dev/09-클로드코드-스킬과-에이전트.md).
+
 ## MCP
 
 - `playwright` — 반응형/E2E 검증 (프로젝트 스코프, `.mcp.json`)
 - `context7` — Next.js/Supabase/Shadcn 최신 문서 조회 (프로젝트 스코프, `.mcp.json`)
-- Supabase 프로젝트가 생성되면 `claude mcp add supabase -s project -e SUPABASE_ACCESS_TOKEN=<token> -- npx -y @supabase/mcp-server-supabase@latest --project-ref=<ref>` 로 Supabase MCP를 추가한다 (토큰 필요, 아직 미설정).
+- `supabase` — DB·마이그레이션·로그·advisor (`.mcp.json`, `SUPABASE_ACCESS_TOKEN` 환경 변수)

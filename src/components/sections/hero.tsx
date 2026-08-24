@@ -4,7 +4,8 @@ import { Arch, Capsule, Circle, Ring, Star, Wave } from "@/components/shapes";
 import { consultCta, sectionId, site } from "@/lib/site";
 
 /**
- * Hero (docs/99-archive/home-ver2/ §SECTION 02/§3, docs/04-design-system/ §7).
+ * Hero (docs/02-home/03-최종수정요청-섹션순서와-히어로.md §4,
+ * docs/04-design-system/08-히어로-디자인.md).
  * An editorial poster: a large asymmetric headline block on the left, a
  * cropped/layered cluster of brand shapes on the right. On mobile the shapes
  * recompose below the copy rather than shrinking the desktop layout

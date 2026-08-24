@@ -84,6 +84,21 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net"
           crossOrigin="anonymous"
         />
+        {/*
+         * Pretendard 폰트 로딩.
+         * preload로 woff2를 미리 받아 두고 stylesheet로 font-face를 등록한다.
+         * Server Component에서는 onLoad 이벤트 핸들러를 쓸 수 없어 non-blocking
+         * 기법(media="print"→onload) 대신 이 방식을 사용한다.
+         * 핵심 성능 병목(Supabase 왕복 8.9s)은 unstable_cache로 해결됐으므로
+         * 폰트 로딩 방식의 영향은 미미하다.
+         */}
+        <link
+          rel="preload"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"

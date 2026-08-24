@@ -65,3 +65,6 @@ next-env.d.ts
 scripts/.work-content-backup.json
 # 1회성 백필의 되돌리기 백업 — 정제본 HTML이 통째로 들어 있다. 커밋하지 않는다.
 scripts/.detail-html-backfill-backup.json
+
+# Supabase CLI 로컬 상태·버전 캐시
+/supabase/.temp/

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getInquiryOptionsData } from "@/lib/admin/inquiry-options";
@@ -11,6 +11,7 @@ const LIST = "/admin/content/inquiry-options";
 
 export async function createType(input: { label: string }) {
   await getInquiryOptionsData().createType(input);
+  revalidateTag("inquiry-options", "max");
   revalidatePath(LIST);
   redirect(LIST);
 }
@@ -20,6 +21,7 @@ export async function updateType(
   input: { label: string; isActive: boolean },
 ) {
   await getInquiryOptionsData().updateType(id, input);
+  revalidateTag("inquiry-options", "max");
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
   redirect(LIST);
@@ -27,11 +29,13 @@ export async function updateType(
 
 export async function setTypeActive(id: string, next: boolean) {
   await getInquiryOptionsData().updateType(id, { isActive: next });
+  revalidateTag("inquiry-options", "max");
   revalidatePath(LIST);
 }
 
 export async function deleteType(id: string) {
   await getInquiryOptionsData().deleteType(id);
+  revalidateTag("inquiry-options", "max");
   revalidatePath(LIST);
 }
 

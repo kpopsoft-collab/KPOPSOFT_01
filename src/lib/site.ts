@@ -1,7 +1,7 @@
 /**
  * Central static content + config for the KPOPSOFT site.
- * Sourced from docs/99-archive/01-초기-16섹션-기획서.md and docs/04-design-system/. No DB yet — all copy lives here
- * so sections stay presentational and content is edited in one place.
+ * Static fallback content based on docs/02-home/, docs/03-education/, and docs/04-design-system/.
+ * Supabase is the live content source; these values keep public sections usable when a query fails or has no rows.
  * Numbers/names/quotes marked "더미" are placeholders to replace with real data.
  */
 
@@ -76,7 +76,7 @@ export const sectionId = {
   whatWeDo: "what-we-do",
 } as const;
 
-/** Education 페이지 전용 앵커 (docs/99-archive/education-ver2/ §5). */
+/** Education 페이지 전용 앵커 (docs/03-education/00-START-HERE.md). */
 export const educationSectionId = {
   hero: "top",
   programs: "programs",
@@ -85,7 +85,7 @@ export const educationSectionId = {
 } as const;
 
 /**
- * Header navigation (docs/99-archive/home-ver2/ §SECTION 01).
+ * Header navigation (docs/02-home/00-START-HERE.md).
  *
  * 홈 앵커는 반드시 루트 기준 절대경로(`/#work`)로 둔다 — `/education` 같은
  * 다른 라우트에서 눌러도 홈으로 이동한 뒤 스크롤되어야 하기 때문이다.
@@ -162,7 +162,8 @@ export const consultCta = {
 } as const;
 
 /**
- * 문의 폼 유형 + 세부 유형 (docs/99-archive/01-초기-16섹션-기획서.md §15, docs/06-admin/02-데이터모델과-RLS.md §4.2).
+ * 문의 폼 유형 + 세부 유형 (docs/01-ia/04-홈-contact-DB-마이그레이션.md,
+ * docs/06-admin/02-데이터모델과-RLS.md §4.2).
  *
  * 어드민 CMS 이관 대상 — 지금은 정적 시드이자 단일 소스. 폼(final-cta)은 이 배열만 읽는다.
  * 세부 유형 값이 교육 프로그램/AI 주요 분야와 겹치더라도, "문의 라우팅용 선택지"로서
@@ -262,14 +263,14 @@ export const inquiryOptions = [
 
 export type InquiryType = (typeof inquiryOptions)[number]["type"];
 
-/** Business overview (docs/99-archive/01-초기-16섹션-기획서.md §6). */
+/** Business overview (docs/02-home/04-최종수정요청-핵심사업과-프로젝트개요.md). */
 export const businesses = [
   {
     index: "01",
     title: "SOFTWARE",
     accent: "blue",
     summary: "웹·앱과 내부 운영 도구가 필요하다면.",
-    /** docs/99-archive/home-ver2/ §SECTION 05 "Software" 목록 그대로. */
+    /** docs/02-home/04-최종수정요청-핵심사업과-프로젝트개요.md 기준. */
     items: [
       "웹 서비스",
       "모바일 앱",
@@ -310,7 +311,7 @@ export const businesses = [
 ] as const;
 
 /**
- * What We Do 사례 (docs/99-archive/home-ver2/ §SECTION 05).
+ * What We Do 사례 (docs/02-home/04-최종수정요청-핵심사업과-프로젝트개요.md).
  *
  * Software / AI Solutions 카드가 "결과물 타입" 탭으로 큰 대표 화면 1개를
  * 노출하고, 클릭하면 Sheet 모달에서 사례 스토리를 보여주기 위한 소스다.

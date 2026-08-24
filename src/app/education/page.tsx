@@ -30,7 +30,7 @@ const title = "KPOPSOFT Education | AI 활용·Vibe Coding·기업 맞춤형 교
 const description =
   "AI 업무 활용, Vibe Coding, 웹·앱 제작, 업무 자동화와 기업 맞춤형 교육을 제공합니다. 실제 업무와 아이디어를 중심으로 직접 만들고 적용하는 KPOPSOFT의 실무형 교육 프로그램입니다.";
 
-/** docs/99-archive/education-ver2/ §32. 루트 layout의 title 템플릿
+/** docs/03-education/12-ver3-현행규정-admin.md §4. 루트 layout의 title 템플릿
  *  (`%s | KPOPSOFT`)이 붙지 않도록 absolute로 지정한다. */
 export const metadata: Metadata = {
   title: { absolute: title },

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getContentData } from "@/lib/admin/content-data";
@@ -14,6 +14,7 @@ const PUBLIC = "/education";
 
 export async function createEduStat(input: Input) {
   await getContentData().education.stats.create(input);
+  revalidateTag("edu-stats", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
   redirect(LIST);
@@ -21,6 +22,7 @@ export async function createEduStat(input: Input) {
 
 export async function updateEduStat(id: string, input: Input) {
   await getContentData().education.stats.update(id, input);
+  revalidateTag("edu-stats", "max");
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
   revalidatePath(PUBLIC);
@@ -29,12 +31,14 @@ export async function updateEduStat(id: string, input: Input) {
 
 export async function deleteEduStat(id: string) {
   await getContentData().education.stats.remove(id);
+  revalidateTag("edu-stats", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
 }
 
 export async function setEduStatPublished(id: string, next: boolean) {
   await getContentData().education.stats.update(id, { isPublished: next });
+  revalidateTag("edu-stats", "max");
   revalidatePath(LIST);
   revalidatePath(PUBLIC);
 }

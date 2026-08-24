@@ -5,7 +5,7 @@ import { Circle, Star, Wave } from "@/components/shapes";
 import { route, sectionId } from "@/lib/site";
 
 /**
- * Education Banner (docs/99-archive/home-ver2/ §SECTION 06).
+ * Education Banner (deprecated home section; see docs/02-home/00-START-HERE.md).
  *
  * 교육 상세 콘텐츠(프로그램 목록·강사진·후기·FAQ 등)는 `/education`으로 완전히
  * 이동했다 — 홈에는 짧은 배너 하나만 남긴다. Mint는 브랜드 심볼 체계에서

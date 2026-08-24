@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getContentData } from "@/lib/admin/content-data";
@@ -12,6 +12,7 @@ const LIST = "/admin/content/pillar-examples";
 
 export async function createPillarExample(input: Input) {
   await getContentData().pillarExamples.create(input);
+  revalidateTag("home-pillar-examples", "max");
   revalidatePath(LIST);
   revalidatePath("/");
   redirect(LIST);
@@ -19,6 +20,7 @@ export async function createPillarExample(input: Input) {
 
 export async function updatePillarExample(id: string, input: Input) {
   await getContentData().pillarExamples.update(id, input);
+  revalidateTag("home-pillar-examples", "max");
   revalidatePath(LIST);
   revalidatePath(`${LIST}/${id}`);
   revalidatePath("/");
@@ -27,12 +29,14 @@ export async function updatePillarExample(id: string, input: Input) {
 
 export async function deletePillarExample(id: string) {
   await getContentData().pillarExamples.remove(id);
+  revalidateTag("home-pillar-examples", "max");
   revalidatePath(LIST);
   revalidatePath("/");
 }
 
 export async function setPillarExamplePublished(id: string, next: boolean) {
   await getContentData().pillarExamples.update(id, { isPublished: next });
+  revalidateTag("home-pillar-examples", "max");
   revalidatePath(LIST);
   revalidatePath("/");
 }
