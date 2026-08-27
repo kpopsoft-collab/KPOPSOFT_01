@@ -84,7 +84,7 @@ function ModalContent({
               render={
                 <Button
                   variant="ghost"
-                  className="mt-4 mr-4 bg-ivory/80 backdrop-blur-sm"
+                  className="mt-4 mr-4 size-11 bg-ivory/80 backdrop-blur-sm"
                   size="icon-sm"
                 />
               }

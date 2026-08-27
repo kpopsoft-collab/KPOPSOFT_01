@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS 실행 스크립트 */
 /**
  * 포트폴리오(work_items) 실제 사례 콘텐츠 반영 스크립트.
  *

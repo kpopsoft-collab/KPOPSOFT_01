@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight, Check } from "lucide-react";
 
 import {
@@ -55,13 +56,18 @@ export function VibedaysModal({
   // 들어온 경우 모달을 자동으로 연다. 해시로 도착한 뒤에도 뒤로가기가 정상
   // 동작하도록 히스토리는 건드리지 않는다.
   useEffect(() => {
-    if (window.location.hash === VIBEDAYS_HASH) setOpen(true);
-
-    const onHashChange = () => {
+    const openFromHash = () => {
       if (window.location.hash === VIBEDAYS_HASH) setOpen(true);
     };
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
+
+    // 첫 렌더가 끝난 뒤 URL 해시와 모달 상태를 동기화한다. effect 본문에서
+    // 즉시 상태를 바꾸면 불필요한 연쇄 렌더가 생긴다.
+    const frame = window.requestAnimationFrame(openFromHash);
+    window.addEventListener("hashchange", openFromHash);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", openFromHash);
+    };
   }, []);
 
   return (
@@ -288,7 +294,7 @@ function CohortBlock({ cohort }: { cohort: ClubCohort }) {
       {cohort.show.cta && (
         <div className="flex flex-col gap-2">
           {isOpen && !cohort.ctaDisabled ? (
-            <a
+            <Link
               href="/#contact"
               className="group inline-flex h-13 items-center justify-center gap-2 rounded-full bg-brand-blue px-7 text-[0.95rem] font-semibold text-white transition-all outline-none hover:bg-brand-navy focus-visible:ring-3 focus-visible:ring-brand-blue/40 focus-visible:ring-offset-2 focus-visible:ring-offset-ivory"
             >
@@ -297,7 +303,7 @@ function CohortBlock({ cohort }: { cohort: ClubCohort }) {
                 className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 aria-hidden
               />
-            </a>
+            </Link>
           ) : (
             <button
               type="button"

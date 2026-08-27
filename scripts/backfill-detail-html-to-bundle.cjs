@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS 실행 스크립트 */
 /**
  * `detail_html`(인라인 렌더용 정제본)로 남아 있는 과정 상세 자료를
  * Storage 번들(`education/<uuid>/index.html`)로 옮긴다. **1회성 백필.**

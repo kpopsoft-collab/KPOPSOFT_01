@@ -135,10 +135,7 @@ export function Header() {
    * 위치를 볼드로 표시하기 위함. 홈이 아니면 관찰하지 않고 활성도 비운다.
    */
   useEffect(() => {
-    if (pathname !== route.home) {
-      setActiveAnchor(null);
-      return;
-    }
+    if (pathname !== route.home) return;
     const sections = anchorIds
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
