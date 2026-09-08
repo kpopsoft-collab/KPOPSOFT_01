@@ -99,6 +99,39 @@ const fallbackExperts = seedExperts as PublicExpert[];
 const fallbackWork = (seedWork as unknown as Omit<PublicWork, "showOnHome">[]).map(
   (w) => ({ ...w, showOnHome: true }),
 ) as PublicWork[];
+
+/**
+ * DB가 복구되기 전에도 공개해야 하는 실제 운영 서비스. 기존 DB 행을 우선하되,
+ * URL이나 제목이 이미 있으면 시드를 다시 붙이지 않아 관리자 등록 후에도
+ * 중복 카드가 생기지 않는다.
+ */
+const bundledWorkHosts = new Set(["kpopstudy.com", "dahaejob.com"]);
+
+function workHost(url?: string) {
+  if (!url) return "";
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+const bundledWork = fallbackWork.filter((item) =>
+  bundledWorkHosts.has(workHost(item.externalUrl)),
+);
+
+function withBundledWork(items: PublicWork[]) {
+  const hosts = new Set(items.map((item) => workHost(item.externalUrl)).filter(Boolean));
+  const titles = new Set(items.map((item) => item.title));
+
+  return [
+    ...items,
+    ...bundledWork.filter(
+      (item) => !hosts.has(workHost(item.externalUrl)) && !titles.has(item.title),
+    ),
+  ];
+}
+
 const fallbackTestimonials = seedTestimonials as unknown as PublicTestimonial[];
 const fallbackStats = seedStats as unknown as PublicStat[];
 const fallbackOptions = seedOptions as unknown as PublicInquiryOption[];
@@ -147,7 +180,7 @@ const _cachedWork = unstable_cache(
         .eq("is_published", true)
         .order("sort_order", { ascending: true });
       if (error || !data || data.length === 0) return fallbackWork;
-      return data.map((r) => ({
+      const items = data.map((r) => ({
         client: r.client,
         title: r.title,
         category: r.category,
@@ -172,11 +205,12 @@ const _cachedWork = unstable_cache(
         ...(r.external_url ? { externalUrl: r.external_url as string } : {}),
         showOnHome: r.show_on_home !== false,
       }));
+      return withBundledWork(items);
     } catch {
       return fallbackWork;
     }
   },
-  ["work"],
+  ["work-v2"],
   { tags: ["work"], revalidate: false },
 );
 
