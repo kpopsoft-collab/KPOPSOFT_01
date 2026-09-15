@@ -1,5 +1,5 @@
 -- P5: 정규 클래스 상세 번들(다중 파일) — 컬럼 + education 버킷 MIME 확장
--- 근거: backlogs/05-course-bundle-storage/03-보안판단.md, 04-데이터모델-DDL.md
+-- 근거: docs/08-결정기록/05-과정묶음-저장/03-보안판단.md, 04-데이터모델-스키마.md
 --
 -- 번들은 **기존 education 버킷**에 올린다. 새 버킷을 만들지 않는다 —
 -- public=true와 정책 4건(read anon/authenticated, write는 is_admin())이

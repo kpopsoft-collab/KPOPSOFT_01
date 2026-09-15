@@ -14,7 +14,7 @@
  *      상세 본문이 통째로 사라진 화면이 나갑니다.
  * ────────────────────────────────────────────────────────────────────
  *
- * 왜 옮기나 — docs/08-decisions/06-course-detail-page-redesign/03-화면구조-결정.md D1·D2·D7.
+ * 왜 옮기나 — docs/08-결정기록/06-과정상세페이지-재설계/03-화면구조-결정.md D1·D2·D7.
  * 정제기가 `<script>`·`@keyframes`를 지우므로 완성된 문서 한 장을 페이지 안에
  * 인라인으로 그리면 빈 화면이 된다(실측 29,435px 중 대부분이 빈 기둥이었다).
  * Storage에 올리면 격리된 origin에서 원본 그대로 새 탭에 열린다.
@@ -96,7 +96,7 @@ async function main() {
       raw,
       fileName: (src && src.file_name) || "index.html",
       // 폴더 키는 클래스 id가 아니라 업로드마다 새 UUID다
-      // (docs/06-admin/07 §3-4). 백필도 같은 규칙을 따른다.
+      // (docs/06-관리자/07 §3-4). 백필도 같은 규칙을 따른다.
       bundlePath: `${crypto.randomUUID()}/`,
       skip: raw.length === 0,
     });
@@ -169,7 +169,7 @@ async function main() {
       .eq("id", p.id);
 
     if (dbErr) {
-      // 삭제 순서 규칙(docs/06-admin/07 §3-4)의 백필판 — DB가 실패했으면
+      // 삭제 순서 규칙(docs/06-관리자/07 §3-4)의 백필판 — DB가 실패했으면
       // 방금 올린 폴더를 지운다. 남겨 두면 아무도 가리키지 않는 고아가 된다.
       console.log(`DB 실패: ${dbErr.message} — 올린 파일을 정리합니다`);
       await db.storage.from(BUCKET).remove([`${p.bundlePath}index.html`]);

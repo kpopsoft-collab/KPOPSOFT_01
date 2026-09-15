@@ -1,5 +1,5 @@
 /**
- * Expertise tag (docs/04-design-system/ §Expertise Tags).
+ * Expertise tag (docs/04-디자인-시스템/ §Expertise Tags).
  * 13–15px, padding 8×12, 1px ink border, fully rounded, transparent surface.
  */
 import { cn } from "@/lib/utils";

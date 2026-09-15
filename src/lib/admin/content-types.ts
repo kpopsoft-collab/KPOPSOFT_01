@@ -1,5 +1,5 @@
 /**
- * Admin CMS content types (docs/06-admin/ §4.2).
+ * Admin CMS content types (docs/06-관리자/ §4.2).
  *
  * Shapes mirror the real content in src/lib/site.ts so the mock store seeds
  * losslessly and the future Supabase adapter maps 1:1. Every collection shares
@@ -121,7 +121,7 @@ export const ACCENTS: readonly Accent[] = [
 
 
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/03-education/ — 3분류 체계)
+// Education (docs/03-교육/ — 3분류 체계)
 //
 // ver2의 평면 프로그램·결과물·사례·VIBEDAYS 역할·이미지 갤러리·페이지 설정
 // 타입은 지웠다. 그 스키마는 DB에 만들어진 적이 없고, ver3에서 프로그램이
@@ -183,7 +183,7 @@ export const clubCohortStatusLabel: Record<ClubCohortStatus, string> = {
 /**
  * 정규 클래스 일정 유형 — 원데이는 하루짜리라 종료일 개념이 없고, 다회차는
  * 시작·종료 구간을 가진다. DB의 `education_schedule_type` 도메인과 값이
- * 같아야 한다(10-마이그레이션-DDL.md).
+ * 같아야 한다(10-마이그레이션-스키마.md).
  */
 export type EducationScheduleType = "oneday" | "multi";
 

@@ -1,5 +1,5 @@
 /**
- * 포트폴리오 3분류 필터 (docs/02-home/ §SECTION 05).
+ * 포트폴리오 3분류 필터 (docs/02-홈/ §SECTION 05).
  *
  * Work 레코드에는 아직 3분류 컬럼이 없다 — 지금 있는 건 `category`라는 자유
  * 문자열("Internal Tools · AI Automation" 같은)뿐이고, 컬럼 추가는 DB/Admin

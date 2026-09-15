@@ -3,7 +3,7 @@
  *
  * `node --test`로 돌린다. 경로 별칭(`@/`)이 안 먹으므로 상대 경로로
  * import한다. 케이스는
- * docs/08-decisions/05-course-bundle-storage/06-검증체크리스트.md §1 전부.
+ * docs/08-결정기록/05-과정묶음-저장/06-검증체크리스트.md §1 전부.
  *
  * import에 `.ts` 확장자를 그대로 쓴다 — `node --test`가 이 파일을 직접 실행하므로
  * 특정자에 실제 확장자가 있어야 모듈을 찾는다. tsconfig의
@@ -239,7 +239,7 @@ test("MAX_TOTAL_BYTES / MAX_FILES 상수값이 05 §3과 같다", () => {
 // ---- 06 §1: EXT_MIME ↔ 버킷 allowed_mime_types -------------------------------
 
 /**
- * 출처: 04-데이터모델-DDL.md §2 / 마이그레이션
+ * 출처: 04-데이터모델-스키마.md §2 / 마이그레이션
  * `supabase/migrations/20260804090000_course_bundle_storage.sql`의
  * `allowed_mime_types`와 **같은 집합**이어야 한다.
  * 한쪽만 고치면 업로드가 원인 모를 오류로 실패한다(03 §4-1).

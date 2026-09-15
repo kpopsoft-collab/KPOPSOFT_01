@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Company Numbers (docs/02-home/03-최종수정요청-섹션순서와-히어로.md §5,
- * docs/04-design-system/11-모션시스템.md).
+ * Company Numbers (docs/02-홈/03-최종수정요청-섹션순서와-히어로.md §5,
+ * docs/04-디자인-시스템/11-모션시스템.md).
  *
  * Four stats laid out as a flat, editorial data row — large numerals carry
  * the accent color (60/25/15 budget: neutral ivory background, accent on

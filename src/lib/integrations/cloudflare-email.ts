@@ -4,7 +4,7 @@ import "server-only";
  * Cloudflare Email Sending 어댑터 (KPO-23 승인 설계 §7).
  *
  * `origin/codex/kpopsoft-maxonomy-concept-wind`의 같은 이름 파일에서 이식하되
- * **응답 판정을 고쳤다.** 경위 — docs/08-decisions/09-inquiry-email-notification/ D7.
+ * **응답 판정을 고쳤다.** 경위 — docs/08-결정기록/09-문의-이메일-알림/ D7.
  *
  * Env (전부 있어야 발송한다):
  *   CLOUDFLARE_API_TOKEN        — `Email Sending: Edit` 최소 권한

@@ -1,5 +1,5 @@
 /**
- * Admin data-access seam (docs/06-admin/ §11.8).
+ * Admin data-access seam (docs/06-관리자/ §11.8).
  *
  * Every admin screen and server action talks to this interface — never to
  * Supabase directly. Today `getAdminData()` returns the in-memory mock; on

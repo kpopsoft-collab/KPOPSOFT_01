@@ -1,6 +1,6 @@
 /**
  * In-memory mock inquiries — stand-in for the DB until Supabase is wired
- * (docs/06-admin/ §11.8). Module-level array persists across requests within
+ * (docs/06-관리자/ §11.8). Module-level array persists across requests within
  * a running dev server, so status/memo edits stick during a session.
  *
  * Values mirror the real form options in src/lib/site.ts (`inquiryOptions`).

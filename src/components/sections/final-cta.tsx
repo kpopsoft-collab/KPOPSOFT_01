@@ -242,8 +242,8 @@ function SubtypeField({
 }
 
 /**
- * Final CTA (docs/02-home/07-최종수정요청-프로세스-문의-푸터.md §15,
- * docs/04-design-system/09-섹션별-디자인원칙.md).
+ * Final CTA (docs/02-홈/07-최종수정요청-프로세스-문의-푸터.md §15,
+ * docs/04-디자인-시스템/09-섹션별-디자인원칙.md).
  *
  * Where the Hero splits headline-left / shapes-right, and B2bEducation boxes
  * its message inside a dark rounded panel, this is the site's last editorial

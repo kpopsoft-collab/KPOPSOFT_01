@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * Admin auth Server Actions (docs/06-admin/ §6). Real Supabase Auth, but the
+ * Admin auth Server Actions (docs/06-관리자/ §6). Real Supabase Auth, but the
  * ADMIN_DEV_BYPASS flag still short-circuits so screens work before a first
  * admin exists — mirrors getAdminSession() in auth.ts.
  */

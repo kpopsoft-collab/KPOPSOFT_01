@@ -1,5 +1,5 @@
 /**
- * KPOPSOFT reusable shape system (docs/04-design-system/ §5).
+ * KPOPSOFT reusable shape system (docs/04-디자인-시스템/ §5).
  *
  * Flat geometric primitives — no gradients, no shadows. Color is driven by
  * `currentColor`, so set it with a text utility, e.g.:

@@ -3,8 +3,8 @@
  *
  * `node --test`로 돌린다. 경로 별칭(`@/`)이 안 먹으므로 상대 경로로
  * import한다. 케이스는
- * docs/08-decisions/01-regular-class-schedule-and-html/08-HTML정제-설계.md §4 +
- * 09-CSS스코프-설계.md §4-1 전부.
+ * docs/08-결정기록/01-정규수업-일정과-마크업/08-마크업-정제-설계.md §4 +
+ * 09-스타일-범위-설계.md §4-1 전부.
  *
  * import에 `.ts` 확장자를 그대로 쓴다 — `node --test`가 이 파일을 직접 실행하므로
  * 특정자에 실제 확장자가 있어야 모듈을 찾는다. tsconfig의

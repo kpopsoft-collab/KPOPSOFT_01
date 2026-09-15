@@ -55,7 +55,7 @@ export default async function EducationProgramsPage() {
         <Section>
           <div className="max-w-2xl">
             <Eyebrow dotClassName="bg-brand-blue">PROGRAMS</Eyebrow>
-            {/* 확정 카피(docs/03-education/08-ver3-프로그램-정보.md §5.2)를
+            {/* 확정 카피(docs/03-교육/08-버전3-프로그램-정보.md §5.2)를
                 그대로 쓴다 — 새로 짓지 않는다. */}
             <h1 className="text-section mt-6 text-ink">
               정규 교육 과정

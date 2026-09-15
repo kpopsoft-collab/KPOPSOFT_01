@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="1440" viewBox="0 0 2560 1440" role="img" aria-labelledby="title desc">
+  <title id="title">KPOPSOFT YouTube channel banner</title>
+  <desc id="desc">KPOPSOFT — 아이디어를 작동하는 기술로. SOFTWARE · AI SOLUTIONS · EDUCATION</desc>
+
+  <rect width="2560" height="1440" fill="#F6F1EA"/>
+
+  <!-- Connection and making: cropped safely outside the central 1544×423 area. -->
+  <circle cx="-18" cy="-20" r="290" fill="#315BDB"/>
+  <circle cx="360" cy="96" r="78" fill="#F04B32"/>
+  <rect x="520" y="52" width="320" height="96" rx="48" fill="#72A3E8"/>
+  <circle cx="915" cy="100" r="52" fill="#FFC85C"/>
+  <path d="M0 222A154 154 0 0 1 154 376H0Z" fill="#FFC85C"/>
+  <path d="M154 222H316A162 162 0 0 1 154 384Z" fill="#63C7B2"/>
+
+  <circle cx="86" cy="510" r="104" fill="#315BDB"/>
+  <rect x="86" y="500" width="304" height="20" fill="#292522"/>
+  <circle cx="390" cy="510" r="46" fill="#F04B32"/>
+
+  <path d="M0 790A112 112 0 0 1 224 790V1088H0Z" fill="#63C7B2"/>
+  <path d="M244 864A116 116 0 0 1 476 864V1088H244Z" fill="#F04B32"/>
+  <circle cx="0" cy="1190" r="148" fill="#FFC85C"/>
+  <circle cx="235" cy="1198" r="50" fill="#292522"/>
+  <circle cx="370" cy="1198" r="52" fill="#72A3E8"/>
+  <rect x="460" y="1146" width="248" height="104" rx="52" fill="#315BDB"/>
+  <path d="M-44 1340C85 1220 208 1220 337 1340C466 1460 589 1460 718 1340C794 1269 869 1240 944 1254V1440H-44Z" fill="#63C7B2"/>
+  <path d="M-10 1400C99 1299 208 1299 317 1400C426 1501 535 1501 644 1400C733 1318 822 1302 910 1354V1440H-10Z" fill="#F6F1EA"/>
+
+  <!-- Discovery and growth. -->
+  <path d="M1870 28C1883 101 1919 137 1992 150C1919 163 1883 199 1870 272C1857 199 1821 163 1748 150C1821 137 1857 101 1870 28Z" fill="#FFC85C"/>
+  <path d="M2100 106C2178 106 2218 168 2298 168C2378 168 2418 76 2498 76C2524 76 2546 82 2560 90V188C2544 179 2523 174 2498 174C2418 174 2378 266 2298 266C2218 266 2178 204 2100 204Z" fill="#63C7B2"/>
+  <circle cx="2352" cy="366" r="58" fill="#72A3E8"/>
+  <circle cx="2490" cy="366" r="58" fill="#292522"/>
+
+  <path d="M2386 536A118 118 0 0 1 2622 536V1088H2386Z" fill="#F04B32"/>
+  <path d="M2224 720A104 104 0 0 1 2432 720V1088H2224Z" fill="#315BDB"/>
+  <path d="M2070 886A82 82 0 0 1 2234 886V1088H2070Z" fill="#63C7B2"/>
+  <path d="M1922 1018A70 70 0 0 1 2062 1018V1088H1922Z" fill="#72A3E8"/>
+
+  <circle cx="1754" cy="1274" r="58" fill="#FFC85C"/>
+  <rect x="1842" y="1216" width="270" height="116" rx="58" fill="#63C7B2"/>
+  <rect x="2140" y="1216" width="226" height="116" rx="58" fill="#F04B32"/>
+  <circle cx="2570" cy="1430" r="230" fill="#315BDB"/>
+
+  <!-- Official lockup and exact channel copy, all within x=508–2052 and y=509–932. -->
+  <image id="wordmark" href="kpopsoft-wordmark.svg" x="640" y="566" width="610" height="54"/>
+  <text id="tagline" x="640" y="758" fill="#292522" font-family="Pretendard Variable, Pretendard, SUIT, Apple SD Gothic Neo, sans-serif" font-size="80" font-weight="760" letter-spacing="-3.2">아이디어를 작동하는 기술로.</text>
+  <text id="services" x="640" y="852" fill="#292522" font-family="Geist, Inter, Pretendard, sans-serif" font-size="26" font-weight="600" letter-spacing="5.6">SOFTWARE · AI SOLUTIONS · EDUCATION</text>
+</svg>

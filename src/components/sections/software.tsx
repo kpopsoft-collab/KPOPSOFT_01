@@ -23,8 +23,8 @@ function inquiryHref(inquiry: {
 }
 
 /**
- * Software (docs/02-home/04-최종수정요청-핵심사업과-프로젝트개요.md).
- * docs/04-design-system/09-섹션별-디자인원칙.md calls this out explicitly as a
+ * Software (docs/02-홈/04-최종수정요청-핵심사업과-프로젝트개요.md).
+ * docs/04-디자인-시스템/09-섹션별-디자인원칙.md calls this out explicitly as a
  * "large case-study oriented layout" — the opposite instruction from a
  * plain 5-up equal card grid, and deliberately a different rhythm from
  * BusinessOverview's 7/5/12 article grid.

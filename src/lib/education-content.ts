@@ -1,5 +1,5 @@
 /**
- * Education 페이지 콘텐츠 (docs/03-education/).
+ * Education 페이지 콘텐츠 (docs/03-교육/).
  *
  * ver3에서 프로그램 구조가 평면 6개 → **3분류 체계**로 바뀌었다.
  *   01. 조직·기업 맞춤 교육
@@ -329,7 +329,7 @@ export type RegularClass = {
   level: string;
   /**
    * 원데이(하루)인지 다회차인지. 어드민 폼의 라디오 선택을 그대로 옮긴다
-   * (docs/08-decisions/01-regular-class-schedule-and-html §2.1).
+   * (docs/08-결정기록/01-정규수업-일정과-마크업 §2.1).
    */
   scheduleType: "oneday" | "multi";
   /**
@@ -1021,7 +1021,7 @@ export const inquiryAiLevelOptions = [
 ] as const;
 
 /* ------------------------------------------------------------------ *
- * 강의 일정 표기 포맷 (docs/08-decisions/01-regular-class-schedule-and-html §2.4)
+ * 강의 일정 표기 포맷 (docs/08-결정기록/01-정규수업-일정과-마크업 §2.4)
  *
  * 목록·상세·어드민 미리보기가 이 한 함수만 쓰게 해서 표기가 갈라지지
  * 않게 한다. 여기 두는 이유는 `RegularClass`와 같은 파일이라 타입을

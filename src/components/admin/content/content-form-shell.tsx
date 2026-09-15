@@ -15,14 +15,14 @@ import { cn } from "@/lib/utils";
  *
  * 라우트는 합쳐져 있다 — `/new`는 별도 세그먼트 없이 `[id]`에 `id === "new"`로
  * 들어온다. `inquiry-options` 하나만 두 화면 구조가 실제로 달라 예외로 남았다.
- * `new`가 예약 id가 되는 제약을 포함한 설명: docs/06-admin/06-콘텐츠-폼-공용셸.md §3
- * 근거: docs/08-decisions/08-content-form-route-merge/03-병합범위-결정.md
+ * `new`가 예약 id가 되는 제약을 포함한 설명: docs/06-관리자/06-콘텐츠-폼-공용셸.md §3
+ * 근거: docs/08-결정기록/08-콘텐츠-입력폼-경로통합/03-병합범위-결정.md
  *
  * 서버 컴포넌트로 둔다. `"use client"`를 붙이면 정적인 헤더와 아이콘까지
  * 클라이언트 번들로 들어간다(폼은 이미 각자 클라이언트 컴포넌트다).
  *
  * 뒤로가기 링크의 `min-h-11 w-fit`은 탭 타겟 44px 규칙이다
- * (docs/04-design-system/). 글자 높이만으로는 모바일에서 누르기 어렵다.
+ * (docs/04-디자인-시스템/). 글자 높이만으로는 모바일에서 누르기 어렵다.
  */
 export function ContentFormShell({
   backHref,

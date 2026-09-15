@@ -8,7 +8,7 @@ import { NextResponse, type NextRequest } from "next/server";
  *    제외 — 아래 `config.matcher` 주석 참고).
  * 2. **Supabase 세션 갱신 + 미인증 리다이렉트** — `/admin/*`에서만 돈다.
  *    전체 경로에서 매 요청 세션을 갱신하면 공개 페이지에 불필요한 Supabase
- *    왕복이 붙는다(결정기록 07-content-security-policy §2).
+ *    왕복이 붙는다(결정기록 07-콘텐츠-보안정책 §2).
  *
  * Do not insert logic between `createServerClient` and `getUser()`.
  */
@@ -175,7 +175,7 @@ export const config = {
   //   sandbox`를 응답에 싣는다(src/app/course-assets/[...path]/route.ts).
   //   여기서 전역 nonce CSP까지 겹으로 걸리면 브라우저가 두 정책을
   //   **교집합**으로 적용해서, nonce가 없는 업로드 자료 속 스크립트가 전부
-  //   막혀 자료가 안 뜬다(결정기록 07-content-security-policy §6).
+  //   막혀 자료가 안 뜬다(결정기록 07-콘텐츠-보안정책 §6).
   // - `_next/static`, `_next/image` : 빌드 산출물·이미지 최적화 응답이다.
   //   HTML이 아니라 CSP를 걸 이유가 없고, 정적 자산마다 proxy를 태우면
   //   캐시 효율만 떨어진다.

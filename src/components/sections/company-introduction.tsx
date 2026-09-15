@@ -4,8 +4,8 @@ import { Arch, Circle, Star, Wave } from "@/components/shapes";
 import { sectionId } from "@/lib/site";
 
 /**
- * Company Introduction (docs/02-home/03-최종수정요청-섹션순서와-히어로.md §6,
- * docs/04-design-system/09-섹션별-디자인원칙.md).
+ * Company Introduction (docs/02-홈/03-최종수정요청-섹션순서와-히어로.md §6,
+ * docs/04-디자인-시스템/09-섹션별-디자인원칙.md).
  *
  * "Use large text and small supporting paragraphs" — the headline runs wide
  * and dominant across the top, paragraphs sit small in a narrow right-hand

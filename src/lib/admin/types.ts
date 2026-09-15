@@ -1,6 +1,6 @@
 /**
  * Admin domain types — the shared contract for the admin build.
- * See docs/06-admin/ §4 (data model) / §11.8 (DB-excluded seam mode).
+ * See docs/06-관리자/ §4 (data model) / §11.8 (DB-excluded seam mode).
  * These shapes are DB-agnostic on purpose: the mock adapter and the future
  * Supabase adapter both satisfy them, so screens never change on wiring day.
  */
@@ -60,7 +60,7 @@ export type NewInquiry = Pick<
  *
  * `ok`는 **제공자가 접수했다**는 뜻이지 수신함에 꽂혔다는 뜻이 아니다 —
  * Cloudflare Email Sending API로 확인 가능한 범위가 접수까지다.
- * 판정 규칙과 그 근거는 docs/08-decisions/09-inquiry-email-notification/ D7.
+ * 판정 규칙과 그 근거는 docs/08-결정기록/09-문의-이메일-알림/ D7.
  */
 export type DeliveryAttempt = {
   ok: boolean;

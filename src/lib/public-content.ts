@@ -38,7 +38,7 @@ import {
 } from "@/lib/education-content";
 
 /**
- * Public-site content readers (docs/06-admin/ §11.8). Each reads published /
+ * Public-site content readers (docs/06-관리자/ §11.8). Each reads published /
  * active rows through the anon public client and maps them back to the exact
  * src/lib/site.ts shape the sections already consume. On empty result or any
  * error they fall back to the site.ts seed, so the landing page never breaks —
@@ -64,7 +64,7 @@ export type PublicWork = {
   showOnHome: boolean;
   /**
    * 갤러리 이미지. 여러 장이면 카드에 도트 페이지네이션이 붙는다
-   * (docs/02-home/ §SECTION 05).
+   * (docs/02-홈/ §SECTION 05).
    * 비어 있으면 `imageUrl` 한 장만 쓴다.
    */
   imageUrls?: string[];
@@ -308,7 +308,7 @@ export async function getPublicInquiryOptions(): Promise<PublicInquiryOption[]> 
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Education (docs/03-education/) — public readers.
+// Education (docs/03-교육/) — public readers.
 //
 // 위 섹션들이 site.ts 시드로 폴백하듯, 교육은 `education-content.ts`의 정적
 // 데이터로 폴백한다. DB가 비었거나(마이그레이션 직후) 조회가 실패해도
@@ -608,7 +608,7 @@ function fallbackRegularClassBySlug(slug: string): RegularClassDetail | null {
 
 /**
  * 상세 페이지 하단 "다른 과정" 블록이 쓰는 형제 과정 목록
- * (결정기록 06 [03-화면구조-결정.md](../../docs/08-decisions/06-course-detail-page-redesign/03-화면구조-결정.md) D6).
+ * (결정기록 06 [03-화면구조-결정.md](../../docs/08-결정기록/06-과정상세페이지-재설계/03-화면구조-결정.md) D6).
  *
  * 목록 리더를 그대로 재사용한다 — 상세 전용 쿼리를 또 만들면 공개 컬럼이
  * 늘어날 때 여기만 빠뜨린다. 목록 리더가 이미 장애 시 정적 폴백으로

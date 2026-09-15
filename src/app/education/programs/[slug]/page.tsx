@@ -113,7 +113,7 @@ export default async function ProgramDetailPage({
 
         {/*
           비대칭 2단 — 본문 8칸 + 요약 카드 4칸(결정기록 06 D5,
-          docs/04-design-system/04-그리드.md의 "asymmetric 2-column layouts").
+          docs/04-디자인-시스템/04-그리드.md의 "asymmetric 2-column layouts").
           `lg` 미만은 1단이고, 요약 카드가 `order-first`로 본문 위에 올라온다 —
           기간·난이도·일정을 커리큘럼보다 먼저 봐야 하기 때문이다.
         */}

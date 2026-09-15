@@ -8,7 +8,7 @@ import { getPublicRegularClasses } from "@/lib/public-content";
  * **왜 이 파일이 필요한가**
  * 기존에 sitemap 파일이 없어 Google Search Console이 /sitemap.xml 요청 시
  * Next.js의 기본 HTML 404 페이지를 받았다. GSC는 이를 "Sitemap이 HTML입니다"
- * 오류로 보고했다 (docs/07-dev/15-sitemap-구축.md 참고).
+ * 오류로 보고했다 (docs/07-개발/15-사이트맵-구축.md 참고).
  *
  * **force-dynamic을 붙이지 않는 이유**
  * sitemap.ts는 layout.tsx·page.tsx와 달리 CSP nonce가 필요 없다.

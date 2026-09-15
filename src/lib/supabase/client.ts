@@ -2,7 +2,7 @@ import { createBrowserClient } from "@supabase/ssr";
 
 /**
  * Browser (client-component) Supabase client — anon key, cookie-based session.
- * Safe to expose; RLS enforces access (docs/06-admin/ §5).
+ * Safe to expose; RLS enforces access (docs/06-관리자/ §5).
  */
 export function createSupabaseBrowserClient() {
   return createBrowserClient(

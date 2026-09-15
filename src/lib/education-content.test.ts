@@ -3,7 +3,7 @@
  *
  * `node --test`로 돌린다. 경로 별칭(`@/`)이 안 먹으므로 상대 경로로
  * import한다. 케이스는
- * docs/08-decisions/01-regular-class-schedule-and-html/01-요구사항.md §2.4 표 4종 +
+ * docs/08-결정기록/01-정규수업-일정과-마크업/01-요구사항.md §2.4 표 4종 +
  * 연도 경계 + 윤년 + 시작=종료 + 종료일만 + 잘못된 ISO +
  * oneday인데 endDate 있음.
  *

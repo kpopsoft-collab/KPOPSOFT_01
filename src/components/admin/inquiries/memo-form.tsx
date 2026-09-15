@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Internal memo editor for the inquiry detail page (docs/06-admin/ §6 —
+ * Internal memo editor for the inquiry detail page (docs/06-관리자/ §6 —
  * "내부 메모 textarea(저장)"). Explicit save button rather than autosave so the
  * admin gets a clear confirmation moment.
  */

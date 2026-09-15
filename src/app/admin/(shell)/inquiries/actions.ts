@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * Inquiry write actions (docs/06-admin/ §6, §11.8).
+ * Inquiry write actions (docs/06-관리자/ §6, §11.8).
  *
  * Talk only to the `getAdminData()` seam — today that's the in-memory mock,
  * later the Supabase adapter. Both revalidate the list + detail routes so the

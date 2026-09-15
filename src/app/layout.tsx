@@ -67,7 +67,7 @@ export const viewport: Viewport = {
  * `/admin/login`·`/education/cases`(빈 플레이스홀더)·`/_not-found` 셋뿐이고,
  * 나머지 40여 개는 Supabase를 읽어서 이미 동적이었다.
  *
- * 근거 — docs/07-dev/14-CSP-정책과-적용.md §5.
+ * 근거 — docs/07-개발/14-콘텐츠-보안정책과-적용.md §5.
  */
 export const dynamic = "force-dynamic";
 

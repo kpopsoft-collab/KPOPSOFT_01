@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/sheet";
 
 /**
- * Minimal horizontal navigation (docs/04-design-system/ §Navigation).
+ * Minimal horizontal navigation (docs/04-디자인-시스템/ §Navigation).
  * Lockup left, links right, small rounded CTA — no big pill container.
  * Ivory background, gains a hairline border once scrolled.
  *

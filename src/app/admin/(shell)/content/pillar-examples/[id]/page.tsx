@@ -5,7 +5,7 @@ import { ContentFormShell } from "@/components/admin/content/content-form-shell"
 import { PillarExampleForm } from "@/components/admin/content/pillars/pillar-example-form";
 import { createPillarExample, updatePillarExample } from "../actions";
 
-/** 추가·수정 겸용 라우트 (`id === "new"`가 추가). 제약은 docs/06-admin/06 §3. */
+/** 추가·수정 겸용 라우트 (`id === "new"`가 추가). 제약은 docs/06-관리자/06 §3. */
 export default async function PillarExampleFormPage({
   params,
 }: {

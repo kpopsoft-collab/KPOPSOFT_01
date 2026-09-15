@@ -3,7 +3,7 @@
  *
  * `origin/codex/kpopsoft-maxonomy-concept-wind`에서 이식했다. 그 브랜치는
  * Neon 스택이지만 이 파일은 `Inquiry` 타입만 참조해서 그대로 옮겨진다.
- * 경위와 근거 — docs/08-decisions/09-inquiry-email-notification/.
+ * 경위와 근거 — docs/08-결정기록/09-문의-이메일-알림/.
  *
  * 설계 §7이 요구한 것: 제목에 유형·신청자, HTML과 텍스트 대체본을 **둘 다**,
  * 유효한 이메일 연락처일 때만 `replyTo`.
