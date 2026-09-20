@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { AppLaunchSpotlight } from "@/components/sections/app-launch-spotlight";
 import { Hero } from "@/components/sections/hero";
 import { StatsBar } from "@/components/sections/stats-bar";
 import { OurIdentity } from "@/components/sections/our-identity";
@@ -25,7 +26,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Home. 최종 순서는 `docs/02-홈/03-최종수정요청-섹션순서와-히어로.md` §2를 따른다:
- * Header → Hero → 주요 성과 수치 → **OUR IDENTITY** → 핵심 사업 영역 →
+ * Header → 앱 출시 소식 → Hero → 주요 성과 수치 → **OUR IDENTITY** → 핵심 사업 영역 →
  * 주요 프로젝트 → **WHY KPOPSOFT** → 프로젝트 진행 방식 → 문의 → Footer.
  *
  * 굵게 표시한 둘이 이번에 새로 추가된 섹션이다. 나머지 순서는 ver3 그대로다.
@@ -72,6 +73,7 @@ export default async function Home() {
     <>
       <Header />
       <main id={sectionId.hero} className="flex-1">
+        <AppLaunchSpotlight />
         <Hero />
         <StatsBar stats={stats} />
         <OurIdentity />
