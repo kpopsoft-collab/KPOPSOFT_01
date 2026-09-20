@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AppLaunchSpotlight } from "@/components/sections/app-launch-spotlight";
+import { DahaeLaunchSpotlight } from "@/components/sections/dahae-launch-spotlight";
 import { Hero } from "@/components/sections/hero";
 import { StatsBar } from "@/components/sections/stats-bar";
 import { OurIdentity } from "@/components/sections/our-identity";
@@ -28,6 +29,9 @@ export const dynamic = "force-dynamic";
  * Home. 최종 순서는 `docs/02-홈/03-최종수정요청-섹션순서와-히어로.md` §2를 따른다:
  * Header → 앱 출시 소식 → Hero → 주요 성과 수치 → **OUR IDENTITY** → 핵심 사업 영역 →
  * 주요 프로젝트 → **WHY KPOPSOFT** → 프로젝트 진행 방식 → 문의 → Footer.
+ *
+ * 앱 출시 소식 자리에는 현재 밴드가 둘이다 — 팝터디(iOS)와 다해잡(iOS·Android).
+ * 최신 소식이 위로 간다. 소식이 지나면 이 두 줄을 지우는 것으로 내린다.
  *
  * 굵게 표시한 둘이 이번에 새로 추가된 섹션이다. 나머지 순서는 ver3 그대로다.
  *  - OUR IDENTITY — 이름에 담긴 의미를 밝혀 K-POP 콘텐츠 제작사로 오해되는
@@ -74,6 +78,7 @@ export default async function Home() {
       <Header />
       <main id={sectionId.hero} className="flex-1">
         <AppLaunchSpotlight />
+        <DahaeLaunchSpotlight />
         <Hero />
         <StatsBar stats={stats} />
         <OurIdentity />

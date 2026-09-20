@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { Circle, Star } from "@/components/shapes";
+import { LaunchPoster } from "@/components/ui/launch-poster";
 import { NewTabLink } from "@/components/ui/new-tab-link";
 
 const APP_STORE_URL = "https://apps.apple.com/app/id6808075877";
@@ -163,26 +164,14 @@ export function AppLaunchSpotlight() {
           <ul className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4 lg:gap-5">
             {featurePosters.map((poster) => (
               <li key={poster.src}>
-                <figure className="h-full rounded-2xl border border-ink/15 bg-white p-2.5">
-                  <Image
-                    src={poster.src}
-                    alt={poster.alt}
-                    width={1024}
-                    height={1024}
-                    sizes="(min-width: 768px) 21vw, 44vw"
-                    className="aspect-square w-full rounded-xl object-cover"
-                  />
-                  <figcaption className="px-1.5 pt-3 pb-1">
-                    <p
-                      className={`text-xs font-bold tracking-wider ${poster.labelClass}`}
-                    >
-                      {poster.label}
-                    </p>
-                    <p className="mt-1 text-sm leading-snug font-semibold text-ink">
-                      {poster.caption}
-                    </p>
-                  </figcaption>
-                </figure>
+                <LaunchPoster
+                  src={poster.src}
+                  alt={poster.alt}
+                  label={poster.label}
+                  labelClassName={poster.labelClass}
+                  caption={poster.caption}
+                  sizes="(min-width: 768px) 21vw, 44vw"
+                />
               </li>
             ))}
           </ul>

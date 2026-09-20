@@ -34,6 +34,11 @@ const newTabLinkVariants = cva(
         primary: "bg-brand-blue text-white hover:bg-brand-navy",
         secondary:
           "border-[1.25px] border-ink/70 text-ink hover:bg-ink hover:text-ivory",
+        // 어두운 밴드 위의 짝 — `CtaButton`의 `ivory` 변형과 같은 색 규칙이다.
+        // primary/secondary는 잉크색 배경 위에서 테두리도 글자도 묻힌다.
+        ivory: "bg-ivory text-ink hover:bg-white",
+        ivoryOutline:
+          "border-[1.25px] border-ivory/70 text-ivory hover:bg-ivory hover:text-ink",
       },
       size: {
         // CtaButton과 같은 높이 — 나란히 놓았을 때 어긋나지 않게 한다.
