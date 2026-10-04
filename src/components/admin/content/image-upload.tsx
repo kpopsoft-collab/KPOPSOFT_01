@@ -3,18 +3,21 @@
 import { useRef, useState } from "react";
 import { ImagePlus, X } from "lucide-react";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { upload } from "@vercel/blob/client";
+
 import { cn } from "@/lib/utils";
 
 /**
  * Image upload widget (docs §4.2, §8 — 강사/Work/Insights 커버, 공통 재사용).
  *
- * Uploads the chosen file to the given Supabase Storage `bucket` (client-side,
- * via the admin's session — RLS allows admin writes) and reports the resulting
- * public URL via `onChange`. A hidden input named `name` submits that URL with
+ * Uploads the chosen file straight to Vercel Blob under `<bucket>/<uuid>.<ext>`
+ * (client-side; `/api/admin/blob-upload` checks the admin session and issues a
+ * scoped token) and reports the resulting public URL via `onChange`. A hidden input named `name` submits that URL with
  * the form's server action. Format/size are validated before upload.
  */
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
+/** 토큰 발급 라우트 — 관리자 확인·경로/형식 제한을 거기서 건다. */
+const BLOB_UPLOAD_URL = "/api/admin/blob-upload";
 const MAX_BYTES = 5 * 1024 * 1024;
 const EXT: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -31,7 +34,7 @@ export function ImageUpload({
 }: {
   value?: string;
   onChange: (url: string | undefined) => void;
-  /** Supabase Storage bucket: "experts" | "work" | "insights". */
+  /** Blob 경로의 첫 세그먼트(옛 Supabase 버킷): "experts" | "work" | "education". */
   bucket: string;
   name?: string;
   label?: string;
@@ -54,19 +57,15 @@ export function ImageUpload({
 
     setUploading(true);
     try {
-      const supabase = createSupabaseBrowserClient();
-      const path = `${crypto.randomUUID()}.${EXT[file.type] ?? "jpg"}`;
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (uploadError) {
-        setError("업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-        return;
-      }
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      onChange(data.publicUrl);
+      const path = `${bucket}/${crypto.randomUUID()}.${EXT[file.type] ?? "jpg"}`;
+      const blob = await upload(path, file, {
+        access: "public",
+        handleUploadUrl: BLOB_UPLOAD_URL,
+        contentType: file.type,
+      });
+      onChange(blob.url);
     } catch {
-      setError("업로드 중 오류가 발생했습니다.");
+      setError("업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setUploading(false);
     }

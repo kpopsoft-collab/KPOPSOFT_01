@@ -242,17 +242,14 @@ const data: ContentData = {
 };
 
 /**
- * Single accessor. Uses Supabase-backed repos when the project is configured,
+ * Single accessor. Uses Prisma(Neon)-backed repos when DATABASE_URL is set,
  * else the in-memory mock so the app still runs without a DB.
  */
 export function getContentData(): ContentData {
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  if (process.env.DATABASE_URL) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require("./supabase-content") as typeof import("./supabase-content"))
-      .supabaseContentData;
+    return (require("./prisma-content") as typeof import("./prisma-content"))
+      .prismaContentData;
   }
   return data;
 }

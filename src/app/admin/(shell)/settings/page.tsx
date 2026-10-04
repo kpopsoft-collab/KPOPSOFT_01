@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { PasswordForm } from "@/components/admin/settings/password-form";
 
 /**
- * Admin account settings (docs/06-관리자/ §6). Currently: account email +
+ * Admin account settings (docs/06-관리자/ §6). Currently: account username +
  * password change. Guarded by the shell layout's requireAdmin().
  */
 export default async function AdminSettingsPage() {
@@ -20,7 +20,7 @@ export default async function AdminSettingsPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-bold text-ink/50">계정</h2>
         <div className="max-w-md rounded-3xl border border-ink/10 bg-white p-6 sm:p-7">
-          <p className="text-eyebrow text-ink/45">이메일</p>
+          <p className="text-eyebrow text-ink/45">아이디</p>
           <p className="mt-1 text-base font-semibold text-ink">
             {session.email}
           </p>

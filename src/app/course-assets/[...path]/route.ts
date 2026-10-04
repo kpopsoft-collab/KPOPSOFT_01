@@ -1,4 +1,6 @@
-import { createSupabasePublicClient } from "@/lib/supabase/public";
+import { get } from "@vercel/blob";
+
+import { getDb } from "@/lib/db";
 import {
   BUNDLE_BUCKET,
   BUNDLE_PATH_RE,
@@ -10,7 +12,11 @@ import {
  * 과정 상세 자료를 **원본 그대로 되돌려 주는** 라우트
  * (결정기록 06 [03-화면구조-결정.md] D2-정정).
  *
- * `/course-assets/<uuid>/index.html` → Storage `education/<uuid>/index.html`
+ * `/course-assets/<uuid>/index.html` → Vercel Blob `education/<uuid>/index.html`
+ *
+ * (2026-10 Supabase Storage → Vercel Blob 이전. 아래 판단 근거는 Supabase
+ * 시절 기록이지만 결론 — 우리 라우트가 Content-Type과 sandbox를 정한다 — 은
+ * 저장소와 무관하게 그대로 유효하다.)
  *
  * ## 왜 Storage 공개 URL을 직접 안 쓰나
  *
@@ -74,30 +80,32 @@ export async function GET(
   const mime = EXT_MIME[extensionOf(rest)];
   if (!mime) return new Response("Not found", { status: 404 });
 
-  const db = createSupabasePublicClient();
-
   // ③ 이 폴더가 **공개된 과정에 실제로 붙어 있는** 번들인지 확인한다.
-  //    RLS가 비공개 행을 이미 걸러 주므로, 비공개로 돌린 과정의 자료는
-  //    여기서도 같이 닫힌다 — 상세 페이지만 404가 되고 자료는 계속 열리는
-  //    엇갈림이 생기지 않는다.
-  const { data: owner, error } = await db
-    .from("education_regular_classes")
-    .select("slug")
-    .eq("detail_bundle_path", folder)
-    .maybeSingle();
-  if (error || !owner) return new Response("Not found", { status: 404 });
+  //    비공개로 돌린 과정의 자료는 여기서도 같이 닫힌다 — 상세 페이지만
+  //    404가 되고 자료는 계속 열리는 엇갈림이 생기지 않는다.
+  //    (Supabase 시절에는 RLS가 하던 필터라 where에 직접 건다.)
+  let owner: { slug: string } | null;
+  try {
+    owner = await getDb().educationRegularClass.findFirst({
+      where: { detailBundlePath: folder, isPublished: true },
+      select: { slug: true },
+    });
+  } catch {
+    return new Response("Service unavailable", { status: 502 });
+  }
+  if (!owner) return new Response("Not found", { status: 404 });
 
-  // ④ Storage에서 그대로 가져온다. Content-Type만 우리가 다시 정한다.
-  const src = db.storage.from(BUNDLE_BUCKET).getPublicUrl(`${folder}${rest}`)
-    .data.publicUrl;
-  const upstream = await fetch(src, { cache: "no-store" });
-  if (!upstream.ok) {
-    // Storage는 없는 객체에 404가 아니라 400을 주기도 한다. 방문자 입장에서
-    // 둘 다 "그 파일이 없다"이므로 4xx는 전부 404로 접는다 — 502로 내보내면
-    // 자료 안의 깨진 이미지 하나가 **우리 서버 장애**처럼 보인다.
-    // 5xx만 그대로 장애로 넘긴다.
-    const status = upstream.status >= 500 ? 502 : 404;
-    return new Response("Not found", { status });
+  // ④ Blob에서 그대로 가져온다. Content-Type만 우리가 다시 정한다.
+  //    없는 파일은 null — 자료 안의 깨진 이미지 하나가 우리 서버 장애(5xx)처럼
+  //    보이지 않게 404로 접는다. Blob 자체 장애만 502로 넘긴다.
+  let upstream: Awaited<ReturnType<typeof get>>;
+  try {
+    upstream = await get(`${BUNDLE_BUCKET}/${folder}${rest}`, { access: "public" });
+  } catch {
+    return new Response("Bad gateway", { status: 502 });
+  }
+  if (!upstream || upstream.statusCode !== 200) {
+    return new Response("Not found", { status: 404 });
   }
 
   const headers = new Headers({
@@ -119,5 +127,5 @@ export async function GET(
     );
   }
 
-  return new Response(upstream.body, { status: 200, headers });
+  return new Response(upstream.stream, { status: 200, headers });
 }

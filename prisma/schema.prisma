@@ -1,0 +1,409 @@
+// KPOPSOFT DB 스키마 (Neon Postgres + Prisma 7)
+//
+// supabase/migrations/*.sql 을 1:1로 옮겼다. 테이블·컬럼 이름은 그대로 두고
+// (@@map / @map) 필드만 camelCase로 쓴다 — 도메인 타입(src/lib/admin/*-types.ts)의
+// 필드 이름과 같게 맞춰 매핑 코드를 줄이기 위해서다.
+//
+// Supabase 시절의 RLS는 없다. 접근 제어는 앱 데이터 계층이 맡는다
+// (src/lib/admin/prisma-*.ts 의 assertAdmin, public-content.ts 의 공개 필터).
+// Prisma가 표현하지 못하는 CHECK 제약은 prisma/migrations/ 의 SQL에 직접 넣었다.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── 관리자 ───────────────────────────────────────────────────────────────
+// Supabase Auth를 대체한다. 비밀번호는 scrypt 해시(src/lib/admin/password.ts).
+model AdminUser {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("admin_users")
+}
+
+// ── 문의 ─────────────────────────────────────────────────────────────────
+model Inquiry {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type      String
+  subtype   String
+  sender    String   @default("")
+  contact   String   @default("")
+  message   String
+  status    String   @default("new") // CHECK: new | in_progress | done
+  memo      String   @default("")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status], map: "inquiries_status_idx")
+  @@index([createdAt(sort: Desc)], map: "inquiries_created_at_idx")
+  @@map("inquiries")
+}
+
+model InquiryType {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label     String
+  sortOrder Int              @default(0) @map("sort_order")
+  isActive  Boolean          @default(true) @map("is_active")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  subtypes  InquirySubtype[]
+
+  @@map("inquiry_types")
+}
+
+model InquirySubtype {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  typeId      String      @map("type_id") @db.Uuid
+  label       String
+  placeholder String      @default("")
+  sortOrder   Int         @default(0) @map("sort_order")
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  type        InquiryType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@index([typeId], map: "inquiry_subtypes_type_id_idx")
+  @@map("inquiry_subtypes")
+}
+
+// ── 홈 콘텐츠 ────────────────────────────────────────────────────────────
+// accent 컬럼은 전부 CHECK: blue | red | yellow | coral | mint | sky | navy
+model WorkItem {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sortOrder   Int      @default(0) @map("sort_order")
+  isPublished Boolean  @default(true) @map("is_published")
+  client      String   @default("")
+  title       String   @default("")
+  category    String   @default("")
+  accent      String   @default("blue")
+  summary     String   @default("")
+  challenge   String   @default("")
+  solution    String   @default("")
+  results     String[] @default([])
+  imageUrl    String?  @map("image_url")
+  imageUrls   String[] @default([]) @map("image_urls")
+  scope       String[] @default([])
+  features    String[] @default([])
+  userFlow    String   @default("") @map("user_flow")
+  externalUrl String   @default("") @map("external_url")
+  showOnHome  Boolean  @default(true) @map("show_on_home")
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  layoutType  String   @default("grid") @map("layout_type") // CHECK: featured | grid | horizontal
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("work_items")
+}
+
+model Insight {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sortOrder      Int      @default(0) @map("sort_order")
+  isPublished    Boolean  @default(true) @map("is_published")
+  tag            String   @default("")
+  title          String   @default("")
+  date           String   @default("")
+  accent         String   @default("blue")
+  excerpt        String   @default("")
+  body           String[] @default([])
+  slug           String   @unique
+  imageUrl       String?  @map("image_url")
+  inquiryType    String?  @map("inquiry_type")
+  inquirySubtype String?  @map("inquiry_subtype")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("insights")
+}
+
+model Testimonial {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sortOrder       Int                      @default(0) @map("sort_order")
+  isPublished     Boolean                  @default(true) @map("is_published")
+  quote           String                   @default("")
+  author          String                   @default("")
+  program         String                   @default("")
+  result          String                   @default("")
+  company         String                   @default("")
+  role            String                   @default("")
+  imageUrl        String?                  @map("image_url")
+  showOnEducation Boolean                  @default(false) @map("show_on_education")
+  programId       String?                  @map("program_id") @db.Uuid
+  caseId          String?                  @map("case_id") @db.Uuid
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  regularClass    EducationRegularClass?   @relation(fields: [programId], references: [id], onDelete: SetNull)
+  pastProgram     EducationPastProgram?    @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  @@index([programId], map: "testimonials_program_idx")
+  @@index([caseId], map: "testimonials_case_idx")
+  @@map("testimonials")
+}
+
+model Expert {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sortOrder   Int      @default(0) @map("sort_order")
+  isPublished Boolean  @default(true) @map("is_published")
+  name        String   @default("")
+  role        String   @default("")
+  quote       String   @default("")
+  tags        String[] @default([])
+  accent      String   @default("blue")
+  imageUrl    String?  @map("image_url")
+  bio         String   @default("")
+  career      String[] @default([])
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("experts")
+}
+
+model Stat {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sortOrder   Int      @default(0) @map("sort_order")
+  isPublished Boolean  @default(true) @map("is_published")
+  value       Int      @default(0)
+  suffix      String   @default("")
+  label       String   @default("")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("stats")
+}
+
+// key CHECK: software | ai | education
+model HomePillar {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String   @unique
+  title       String   @default("")
+  description String   @default("")
+  tags        String[] @default([])
+  imageUrl    String?  @map("image_url")
+  imageAlt    String   @default("") @map("image_alt")
+  accent      String   @default("blue")
+  isPublished Boolean  @default(true) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("home_pillars")
+}
+
+model HomePillarExample {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pillarKey   String   @map("pillar_key")
+  key         String   @unique
+  name        String   @default("")
+  client      String   @default("")
+  headline    String   @default("")
+  description String   @default("")
+  highlights  String[] @default([])
+  imageUrl    String?  @map("image_url")
+  imageAlt    String   @default("") @map("image_alt")
+  accent      String   @default("blue")
+  isPublished Boolean  @default(true) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([pillarKey, sortOrder], map: "home_pillar_examples_pillar_order_idx")
+  @@map("home_pillar_examples")
+}
+
+// ── 교육 ─────────────────────────────────────────────────────────────────
+model EducationOrgTraining {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  singleton       Boolean  @unique @default(true) // CHECK (singleton) — 두 번째 행 방지
+  title           String   @default("")
+  description     String   @default("")
+  minParticipants String   @default("") @map("min_participants")
+  imageUrl        String?  @map("image_url")
+  imageAlt        String   @default("") @map("image_alt")
+  imageCaption    String   @default("") @map("image_caption")
+  ctaLabel        String   @default("") @map("cta_label")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("education_org_training")
+}
+
+model EducationRegularClass {
+  id               String                           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug             String                           @unique
+  indexLabel       String                           @default("") @map("index_label")
+  name             String                           @default("")
+  subtitle         String                           @default("")
+  description      String                           @default("")
+  duration         String                           @default("")
+  level            String                           @default("")
+  tracks           String[]                         @default([]) // 원소 CHECK: beginner | practical
+  accent           String                           @default("blue")
+  imageUrl         String?                          @map("image_url")
+  imageAlt         String                           @default("") @map("image_alt")
+  imageCaption     String                           @default("") @map("image_caption")
+  curriculum       String[]                         @default([])
+  detailHref       String                           @default("") @map("detail_href")
+  seoTitle         String                           @default("") @map("seo_title")
+  seoDescription   String                           @default("") @map("seo_description")
+  isPublished      Boolean                          @default(true) @map("is_published")
+  sortOrder        Int                              @default(0) @map("sort_order")
+  scheduleType     String                           @default("multi") @map("schedule_type") // CHECK: oneday | multi
+  startDate        DateTime?                        @map("start_date") @db.Date
+  endDate          DateTime?                        @map("end_date") @db.Date
+  detailHtml       String                           @default("") @map("detail_html")
+  detailBundlePath String                           @default("") @map("detail_bundle_path")
+  detailBundleName String                           @default("") @map("detail_bundle_name")
+  createdAt        DateTime                         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime                         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  htmlSource       EducationRegularClassHtmlSource?
+  testimonials     Testimonial[]
+
+  @@index([isPublished, sortOrder], map: "education_regular_classes_published_order_idx")
+  @@map("education_regular_classes")
+}
+
+// 업로드 원본(정제 전). 관리자 전용 — 공개 리더는 이 테이블을 읽지 않는다.
+model EducationRegularClassHtmlSource {
+  classId      String                @id @map("class_id") @db.Uuid
+  raw          String                @default("") // CHECK octet_length(raw) <= 5MB
+  fileName     String                @default("") @map("file_name")
+  updatedAt    DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  regularClass EducationRegularClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@map("education_regular_class_html_sources")
+}
+
+model EducationClubCohort {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label         String   @default("")
+  status        String   @default("upcoming") // CHECK: upcoming | open | closed | ended
+  recruitPeriod String   @default("") @map("recruit_period")
+  runPeriod     String   @default("") @map("run_period")
+  price         String   @default("")
+  listPrice     String   @default("") @map("list_price")
+  capacity      String   @default("")
+  note          String   @default("")
+  ctaDisabled   Boolean  @default(false) @map("cta_disabled")
+  showPrice     Boolean  @default(true) @map("show_price")
+  showCapacity  Boolean  @default(false) @map("show_capacity")
+  showSchedule  Boolean  @default(true) @map("show_schedule")
+  showCta       Boolean  @default(true) @map("show_cta")
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([sortOrder], map: "education_club_cohorts_order_idx")
+  @@map("education_club_cohorts")
+}
+
+model EducationClubTier {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String   @default("")
+  role            String   @default("")
+  points          String[] @default([])
+  accent          String   @default("blue")
+  characterSrc    String   @default("") @map("character_src")
+  characterWidth  Int      @default(0) @map("character_width")
+  characterHeight Int      @default(0) @map("character_height")
+  isPublished     Boolean  @default(true) @map("is_published")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([isPublished, sortOrder], map: "education_club_tiers_published_order_idx")
+  @@map("education_club_tiers")
+}
+
+model EducationPastProgram {
+  id                String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug              String                      @unique
+  title             String                      @default("")
+  category          String                      @default("regular") // CHECK: org | regular | club
+  period            String                      @default("")
+  audience          String                      @default("")
+  duration          String                      @default("")
+  summary           String                      @default("")
+  outcome           String                      @default("")
+  accent            String                      @default("blue")
+  coverImageUrl     String?                     @map("cover_image_url")
+  coverImageAlt     String                      @default("") @map("cover_image_alt")
+  coverImageCaption String                      @default("") @map("cover_image_caption")
+  coverUnoptimized  Boolean                     @default(false) @map("cover_unoptimized")
+  isPublished       Boolean                     @default(true) @map("is_published")
+  sortOrder         Int                         @default(0) @map("sort_order")
+  createdAt         DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  images            EducationPastProgramImage[]
+  testimonials      Testimonial[]
+
+  @@index([isPublished, sortOrder], map: "education_past_programs_published_order_idx")
+  @@map("education_past_programs")
+}
+
+model EducationPastProgramImage {
+  id        String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  programId String               @map("program_id") @db.Uuid
+  imageUrl  String               @default("") @map("image_url")
+  alt       String               @default("")
+  caption   String               @default("")
+  sortOrder Int                  @default(0) @map("sort_order")
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  program   EducationPastProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@index([programId, sortOrder], map: "education_past_program_images_program_idx")
+  @@map("education_past_program_images")
+}
+
+model EducationReview {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String   @unique
+  rating      Int      @default(5) // CHECK 1..5
+  body        String   @default("")
+  author      String   @default("")
+  program     String   @default("")
+  dateLabel   String   @default("") @map("date_label")
+  accent      String   @default("blue")
+  isPublished Boolean  @default(true) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([isPublished, sortOrder], map: "education_reviews_published_order_idx")
+  @@map("education_reviews")
+}
+
+model EducationFaq {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String   @unique
+  question    String   @default("")
+  answer      String   @default("")
+  isPublished Boolean  @default(true) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([isPublished, sortOrder], map: "education_faqs_published_order_idx")
+  @@map("education_faqs")
+}
+
+model EducationStat {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String   @unique
+  value       String   @default("")
+  label       String   @default("")
+  isPublished Boolean  @default(true) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([isPublished, sortOrder], map: "education_stats_published_order_idx")
+  @@map("education_stats")
+}

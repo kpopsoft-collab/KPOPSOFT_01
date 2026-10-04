@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 import { AlertTriangle, FileArchive, X } from "lucide-react";
 import { unzipSync } from "fflate";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { upload } from "@vercel/blob/client";
+
 import { BUNDLE_BUCKET, planBundle, type BundleFile } from "@/lib/admin/course-bundle";
 
 /**
@@ -16,7 +17,8 @@ import { BUNDLE_BUCKET, planBundle, type BundleFile } from "@/lib/admin/course-b
  * 하나로 나온다(결정기록 06 D2).
  *
  * 흐름: 파일 선택 → (zip이면) 브라우저 메모리에서 해제(fflate) → `planBundle()`로 정규화·검증
- * → 통과하면 파일별로 Supabase Storage(`education/<uuid>/…`)에 올린다.
+ * → 통과하면 파일별로 Vercel Blob(`education/<uuid>/…`)에 올린다
+ * (`/api/admin/blob-upload`가 관리자 확인 후 파일마다 단기 토큰을 준다).
  * 과정 이미지와 같은 버킷이지만 이미지는 루트에 `<uuid>.<ext>`로 있어 겹치지 않는다.
  * 서버 왕복 없이 클라이언트에서 완결되므로, 저장(다른 필드와 함께 서버 액션)은
  * 별도로 눌러야 한다 — 이 위젯은 "올리기"만 하고 "반영"은 하지 않는다.
@@ -114,7 +116,6 @@ export function BundleUpload({
       const total = plan.files.length;
       setProgress({ done: 0, total });
 
-      const supabase = createSupabaseBrowserClient();
       const bundlePath = `${crypto.randomUUID()}/`;
 
       let done = 0;
@@ -133,18 +134,13 @@ export function BundleUpload({
         // 던지는 예외도 여기서 삼켜 failedAt으로 바꾼다 — 밖으로 새면 Promise.all이
         // 즉시 reject되고 남은 워커들이 뒤에서 계속 돌며 진행 표시를 되살린다.
         try {
-          const { error: uploadError } = await supabase.storage
-            .from(BUNDLE_BUCKET)
-            .upload(`${bundlePath}${f.to}`, blob, {
-              contentType: f.mime,
-              upsert: false,
-              // 번들 폴더는 업로드마다 새 UUID라 내용이 절대 바뀌지 않는다 — 길게 캐시해도 안전하다.
-              cacheControl: "31536000",
-            });
-          if (uploadError) {
-            failedWhy = uploadError.message;
-            failedAt = f.to;
-          }
+          // 캐시 기간(1년)은 토큰 발급 라우트가 정한다 — 번들 폴더는 업로드마다
+          // 새 UUID라 내용이 절대 바뀌지 않는다.
+          await upload(`${BUNDLE_BUCKET}/${bundlePath}${f.to}`, blob, {
+            access: "public",
+            handleUploadUrl: "/api/admin/blob-upload",
+            contentType: f.mime,
+          });
         } catch (e) {
           failedWhy = e instanceof Error ? e.message : String(e);
           failedAt = f.to;
@@ -170,7 +166,7 @@ export function BundleUpload({
       if (failedAt) {
         setError(
           `업로드 실패 — ${failedAt}: ${failedWhy || "알 수 없는 오류"}` +
-            " · 버킷 정책(관리자 로그인)과 허용 형식을 먼저 확인해 주세요.",
+            " · 관리자 로그인과 허용 형식을 먼저 확인해 주세요.",
         );
         return;
       }

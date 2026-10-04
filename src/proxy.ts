@@ -1,16 +1,15 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/admin/session";
 
 /**
  * Next.js 16 proxy (formerly `middleware.ts`). 두 가지 책임을 순서대로 처리한다.
  *
  * 1. **nonce 기반 CSP** — 전체 경로에 붙는다(단 `/course-assets`와 정적 자산은
  *    제외 — 아래 `config.matcher` 주석 참고).
- * 2. **Supabase 세션 갱신 + 미인증 리다이렉트** — `/admin/*`에서만 돈다.
- *    전체 경로에서 매 요청 세션을 갱신하면 공개 페이지에 불필요한 Supabase
- *    왕복이 붙는다(결정기록 07-콘텐츠-보안정책 §2).
- *
- * Do not insert logic between `createServerClient` and `getUser()`.
+ * 2. **관리자 세션 확인 + 미인증 리다이렉트** — `/admin/*`에서만 돈다.
+ *    서명 쿠키(src/lib/admin/session.ts)의 서명·만료만 본다 — DB 왕복 없음.
+ *    (2026-10 Supabase Auth → 자체 인증 전환, 결정기록 10-DB-Neon-Prisma-전환)
  */
 
 // ── CSP ──────────────────────────────────────────────────────────────────
@@ -49,26 +48,18 @@ const STYLE_FONT_CDN = "https://cdn.jsdelivr.net";
 const ADMIN_PATH_PREFIX = "/admin";
 
 /**
- * `NEXT_PUBLIC_SUPABASE_URL`에서 origin만 뽑는다. 도메인을 하드코딩하면
- * 프로젝트를 옮겼을 때 여기만 안 고쳐져 조용히 깨진다.
- *
- * **던지지 않는다.** 이 함수는 이제 `/admin`뿐 아니라 **모든 요청**에서
- * 불린다 — env가 비거나 모양이 깨졌을 때 throw하면 proxy가 죽어서
- * **사이트 전체가 500**이 된다. 공개 페이지는 Supabase가 죽어도 정적
- * 폴백으로 버티도록 만들어 뒀는데(`public-content.ts`), CSP 때문에 그
- * 설계가 무너지면 안 된다. 값이 없으면 해당 출처만 빼고 정책을 만든다 —
- * Report-Only 단계에서는 위반 보고가 늘 뿐이고, 강제 단계에서도 화면이
- * 안 뜨는 것보다 이미지가 안 뜨는 편이 낫다.
+ * Vercel Blob 공개 파일 호스트(`<store>.public.blob.vercel-storage.com`).
+ * 업로드 이미지(전문가·작업 등)가 여기서 바로 뜬다. 스토어를 바꿔도
+ * 깨지지 않게 와일드카드로 둔다.
  */
-function supabaseOrigin(): string | null {
-  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!raw) return null;
-  try {
-    return new URL(raw).origin;
-  } catch {
-    return null;
-  }
-}
+const BLOB_PUBLIC_HOST = "https://*.public.blob.vercel-storage.com";
+
+/**
+ * 어드민 클라이언트 직접 업로드(`@vercel/blob/client`의 `upload()`)가 PUT하는
+ * API. `@vercel/blob`의 기본값(`VERCEL_BLOB_API_URL` 미설정 시)이다.
+ * 함수 본문 한도(4.5MB) 때문에 업로드는 서버를 거치지 않는다.
+ */
+const BLOB_API_URL = "https://vercel.com/api/blob/";
 
 function createNonce(): string {
   return Buffer.from(crypto.randomUUID()).toString("base64");
@@ -78,14 +69,12 @@ function createNonce(): string {
  * 웹소켓)를 더한다 — prod에는 절대 넣지 않는다(조사결과 §5). */
 function buildCsp(nonce: string): string {
   const isDev = process.env.NODE_ENV === "development";
-  const supabase = supabaseOrigin();
 
   const scriptSrc = ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'"];
   if (isDev) scriptSrc.push("'unsafe-eval'");
 
-  // supabase가 null이면(=env 없음) 그 출처만 빠진다. 위 supabaseOrigin() 주석 참고.
-  const imgSrc = ["'self'", supabase].filter(Boolean);
-  const connectSrc = ["'self'", supabase].filter(Boolean);
+  const imgSrc = ["'self'", BLOB_PUBLIC_HOST];
+  const connectSrc = ["'self'", BLOB_API_URL];
   // https dev나 프록시 뒤에서는 HMR이 wss로 붙는다(정책초안 §1 "개발 모드 추가분").
   if (isDev) connectSrc.push("ws:", "wss:");
 
@@ -120,47 +109,25 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
   if (pathname.startsWith(ADMIN_PATH_PREFIX)) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
-            );
-            // 여기서 response를 다시 만들 때 `request`를 통째로 넘기면 위에서
-            // 붙인 x-nonce 헤더가 빠진다. 갱신된 Cookie만 사본으로 옮겨 와
-            // 같은 requestHeaders를 계속 쓴다.
-            requestHeaders.set("cookie", request.headers.get("cookie") ?? "");
-            response = NextResponse.next({
-              request: { headers: requestHeaders },
-            });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
-            );
-          },
-        },
-      },
-    );
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
     const isLogin = pathname.startsWith("/admin/login");
 
-    // Mirror the auth seam's DEV bypass: while it's on, don't gate /admin so the
-    // shell stays reachable before login/first-admin exist (src/lib/admin/auth.ts).
-    const devBypass = process.env.ADMIN_DEV_BYPASS !== "false";
+    // auth.ts의 isAdminDevBypass()와 같은 판정 — production에서는 항상 OFF.
+    // (auth.ts는 next/headers·Prisma를 끌고 와서 proxy에서 import하지 않는다.)
+    const devBypass =
+      process.env.ADMIN_DEV_BYPASS !== "false" &&
+      process.env.NODE_ENV !== "production";
 
-    if (!devBypass && !user && !isLogin) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/login";
-      response = NextResponse.redirect(url);
+    if (!devBypass && !isLogin) {
+      // 서명·만료만 본다(빠른 리다이렉트용). 계정 존재 확인은
+      // getAdminSession()이 DB에서 한다(session.ts 주석).
+      const session = await verifyAdminSession(
+        request.cookies.get(ADMIN_SESSION_COOKIE)?.value,
+      );
+      if (!session) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/login";
+        response = NextResponse.redirect(url);
+      }
     }
   }
 

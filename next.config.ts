@@ -9,15 +9,15 @@ const nextConfig: NextConfig = {
   },
   // Next.js 16의 'use cache' (cacheComponents: true)는 force-dynamic과 충돌한다.
   // 이 프로젝트는 CSP nonce 때문에 layout.tsx에 force-dynamic이 필수라
-  // cacheComponents를 쓸 수 없다. 대신 unstable_cache로 Supabase 응답을 캐싱한다.
+  // cacheComponents를 쓸 수 없다. 대신 unstable_cache로 DB 응답을 캐싱한다.
   // (docs/07-개발/14-콘텐츠-보안정책과-적용.md §5)
   images: {
-    // Allow next/image to load public objects from Supabase Storage.
+    // next/image가 Vercel Blob 공개 파일을 불러올 수 있게 한다
+    // (2026-10 Supabase Storage → Vercel Blob 전환).
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "oxkxkqfwliobkyyexjtk.supabase.co",
-        pathname: "/storage/v1/object/public/**",
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
   },

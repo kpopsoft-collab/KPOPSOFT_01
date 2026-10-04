@@ -148,17 +148,14 @@ class MockInquiryOptions implements InquiryOptionsData {
 const data = new MockInquiryOptions();
 
 /**
- * Single accessor. Uses the Supabase-backed impl when the project is
- * configured, else the in-memory mock so the app still runs without a DB.
+ * Single accessor. Uses the Prisma(Neon)-backed impl when DATABASE_URL is set,
+ * else the in-memory mock so the app still runs without a DB.
  */
 export function getInquiryOptionsData(): InquiryOptionsData {
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  if (process.env.DATABASE_URL) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("./supabase-inquiry-options") as typeof import("./supabase-inquiry-options");
-    return mod.supabaseInquiryOptions;
+    const mod = require("./prisma-inquiry-options") as typeof import("./prisma-inquiry-options");
+    return mod.prismaInquiryOptions;
   }
   return data;
 }

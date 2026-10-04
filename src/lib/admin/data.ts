@@ -2,9 +2,9 @@
  * Admin data-access seam (docs/06-관리자/ §11.8).
  *
  * Every admin screen and server action talks to this interface — never to
- * Supabase directly. Today `getAdminData()` returns the in-memory mock; on
- * wiring day we add a Supabase implementation and swap the one line in
- * `getAdminData()`. The interface stays frozen, so no screen changes.
+ * the DB directly. `getAdminData()` returns the Prisma(Neon) implementation
+ * when DATABASE_URL is set, else the in-memory mock. The interface stays
+ * frozen, so no screen changes.
  */
 
 import { mockInquiries } from "./mock-data";
@@ -98,19 +98,16 @@ class MockAdminData implements AdminDataSource {
 const mock = new MockAdminData();
 
 /**
- * Single accessor. Uses the Supabase adapter when the project is configured
- * (env present), else falls back to the in-memory mock — so the app still runs
- * without a DB. The Supabase module is imported lazily to keep `server-only`
- * out of any accidental client path.
+ * Single accessor. Uses the Prisma(Neon) adapter when DATABASE_URL is set,
+ * else falls back to the in-memory mock — so the app still runs without a DB.
+ * The Prisma module is imported lazily to keep `server-only` out of any
+ * accidental client path.
  */
 export function getAdminData(): AdminDataSource {
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  if (process.env.DATABASE_URL) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require("./supabase-data") as typeof import("./supabase-data"))
-      .supabaseAdminData;
+    return (require("./prisma-data") as typeof import("./prisma-data"))
+      .prismaAdminData;
   }
   return mock;
 }

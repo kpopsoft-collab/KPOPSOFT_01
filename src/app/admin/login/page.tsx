@@ -7,7 +7,7 @@
  * through `requireAdmin()` (that would redirect back here in a loop). It only
  * inherits the root app layout.
  *
- * Submits to the `signInAdmin` Server Action (real Supabase Auth). While
+ * Submits to the `signInAdmin` Server Action (admin_users + signed cookie). While
  * ADMIN_DEV_BYPASS is on, that action just redirects to `/admin`.
  */
 
@@ -67,18 +67,19 @@ export default function AdminLoginPage() {
         >
           <div className="flex flex-col gap-4">
             <label
-              htmlFor="admin-email"
+              htmlFor="admin-username"
               className="flex flex-col gap-2 text-sm font-semibold text-ink/70"
             >
-              이메일
+              아이디
               <input
-                id="admin-email"
-                name="email"
-                type="email"
+                id="admin-username"
+                name="username"
+                type="text"
                 autoComplete="username"
+                autoCapitalize="none"
                 required
                 className="h-12 rounded-2xl border border-ink/15 bg-ivory/60 px-4 text-base font-medium text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-brand-blue focus:bg-white"
-                placeholder="admin@kpopsoft.io"
+                placeholder="admin"
               />
             </label>
 

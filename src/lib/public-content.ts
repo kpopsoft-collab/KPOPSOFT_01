@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { createSupabasePublicClient } from "@/lib/supabase/public";
+import { getDb } from "@/lib/db";
 import {
   route,
   type Accent,
@@ -136,6 +136,70 @@ const fallbackTestimonials = seedTestimonials as unknown as PublicTestimonial[];
 const fallbackStats = seedStats as unknown as PublicStat[];
 const fallbackOptions = seedOptions as unknown as PublicInquiryOption[];
 
+// ─── DB 접근 (Prisma / Neon) ───────────────────────────────────────────────
+// Supabase 시절 이 파일은 anon 클라이언트 + RLS에 공개 필터를 맡겼다
+// (`is_published = true`, `is_active = true`). Prisma에는 RLS가 없으므로
+// **공개 조건을 각 조회의 where에 직접 건다.** 빠뜨리면 비공개 행이 사이트에 나온다.
+//
+// 아래 매퍼들은 원래 snake_case 컬럼 이름(r.image_url 등)으로 짜여 있다.
+// Prisma 결과(camelCase)를 snake_case 행으로 되돌려 매퍼를 그대로 쓴다.
+
+type DbRow = Record<string, unknown>;
+
+/** 여러 모델을 같은 방식으로 읽기 위한 최소 델리게이트 모양. */
+type ReadDelegate = {
+  findMany(args: object): Promise<DbRow[]>;
+  findFirst(args: object): Promise<DbRow | null>;
+};
+
+type PublicModel =
+  | "expert"
+  | "workItem"
+  | "testimonial"
+  | "stat"
+  | "educationOrgTraining"
+  | "educationRegularClass"
+  | "educationClubCohort"
+  | "educationClubTier"
+  | "educationPastProgram"
+  | "educationPastProgramImage"
+  | "educationReview"
+  | "educationFaq"
+  | "educationStat"
+  | "homePillar"
+  | "homePillarExample";
+
+function model(name: PublicModel): ReadDelegate {
+  return getDb()[name] as unknown as ReadDelegate;
+}
+
+/** date 컬럼(@db.Date) — 매퍼가 "YYYY-MM-DD" 문자열을 기대한다. */
+const DATE_ONLY_KEYS = new Set(["startDate", "endDate"]);
+
+function toSnakeRow(row: DbRow): DbRow {
+  const out: DbRow = {};
+  for (const [key, value] of Object.entries(row)) {
+    const snakeKey = key.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
+    out[snakeKey] =
+      value instanceof Date
+        ? DATE_ONLY_KEYS.has(key)
+          ? value.toISOString().slice(0, 10)
+          : value.toISOString()
+        : value;
+  }
+  return out;
+}
+
+async function findRows(
+  name: PublicModel,
+  args: { where?: object; select?: object } = {},
+): Promise<DbRow[]> {
+  const rows = await model(name).findMany({ ...args, orderBy: { sortOrder: "asc" } });
+  return rows.map(toSnakeRow);
+}
+
+const PUBLISHED = { where: { isPublished: true } };
+
 // ─── 모듈 레벨 캐시 함수들 ─────────────────────────────────────────────────
 // unstable_cache(fn, key, opts)는 모듈이 처음 로드될 때 딱 한 번만 생성한다.
 // 함수 내부에서 생성하면 요청마다 새 객체가 만들어져 async_hooks Map을 채워
@@ -143,18 +207,13 @@ const fallbackOptions = seedOptions as unknown as PublicInquiryOption[];
 const _cachedExperts = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("experts")
-        .select("*")
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true });
-      if (error || !data || data.length === 0) return fallbackExperts;
+      const data = await findRows("expert", PUBLISHED);
+      if (data.length === 0) return fallbackExperts;
       return data.map((r) => ({
-        name: r.name,
-        role: r.role,
-        quote: r.quote,
-        tags: r.tags ?? [],
+        name: r.name as string,
+        role: r.role as string,
+        quote: r.quote as string,
+        tags: (r.tags as string[] | null) ?? [],
         accent: r.accent as Accent,
         ...(r.image_url ? { image: r.image_url as string } : {}),
       }));
@@ -173,22 +232,17 @@ export async function getPublicExperts(): Promise<PublicExpert[]> {
 const _cachedWork = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("work_items")
-        .select("*")
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true });
-      if (error || !data || data.length === 0) return fallbackWork;
+      const data = await findRows("workItem", PUBLISHED);
+      if (data.length === 0) return fallbackWork;
       const items = data.map((r) => ({
-        client: r.client,
-        title: r.title,
-        category: r.category,
+        client: r.client as string,
+        title: r.title as string,
+        category: r.category as string,
         accent: r.accent as Accent,
-        summary: r.summary,
-        challenge: r.challenge,
-        solution: r.solution,
-        results: r.results ?? [],
+        summary: r.summary as string,
+        challenge: r.challenge as string,
+        solution: r.solution as string,
+        results: (r.results as string[] | null) ?? [],
         ...(r.image_url ? { imageUrl: r.image_url as string } : {}),
         ...(Array.isArray(r.image_urls) && r.image_urls.length > 0
           ? { imageUrls: r.image_urls as string[] }
@@ -223,18 +277,13 @@ export async function getPublicWork(): Promise<PublicWork[]> {
 const _cachedTestimonials = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("testimonials")
-        .select("*")
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true });
-      if (error || !data || data.length === 0) return fallbackTestimonials;
+      const data = await findRows("testimonial", PUBLISHED);
+      if (data.length === 0) return fallbackTestimonials;
       return data.map((r) => ({
-        quote: r.quote,
-        author: r.author,
-        program: r.program,
-        result: r.result,
+        quote: r.quote as string,
+        author: r.author as string,
+        program: r.program as string,
+        result: r.result as string,
       }));
     } catch {
       return fallbackTestimonials;
@@ -251,17 +300,12 @@ export async function getPublicTestimonials(): Promise<PublicTestimonial[]> {
 const _cachedStats = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("stats")
-        .select("*")
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true });
-      if (error || !data || data.length === 0) return fallbackStats;
+      const data = await findRows("stat", PUBLISHED);
+      if (data.length === 0) return fallbackStats;
       return data.map((r) => ({
-        value: r.value,
-        suffix: r.suffix,
-        label: r.label,
+        value: r.value as number,
+        suffix: r.suffix as string,
+        label: r.label as string,
       }));
     } catch {
       return fallbackStats;
@@ -278,22 +322,20 @@ export async function getPublicStats(): Promise<PublicStat[]> {
 const _cachedInquiryOptions = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("inquiry_types")
-        .select("*, inquiry_subtypes(*)")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true });
-      if (error || !data || data.length === 0) return fallbackOptions;
+      const data = await getDb().inquiryType.findMany({
+        where: { isActive: true },
+        include: {
+          subtypes: { where: { isActive: true }, orderBy: { sortOrder: "asc" } },
+        },
+        orderBy: { sortOrder: "asc" },
+      });
+      if (data.length === 0) return fallbackOptions;
       return data.map((t) => ({
-        type: t.label as string,
-        subtypes: ((t.inquiry_subtypes ?? []) as Record<string, unknown>[])
-          .filter((s) => s.is_active !== false)
-          .sort((a, b) => (a.sort_order as number) - (b.sort_order as number))
-          .map((s) => ({
-            label: s.label as string,
-            placeholder: (s.placeholder as string) ?? "",
-          })),
+        type: t.label,
+        subtypes: t.subtypes.map((s) => ({
+          label: s.label,
+          placeholder: s.placeholder ?? "",
+        })),
       }));
     } catch {
       return fallbackOptions;
@@ -354,10 +396,12 @@ function toImage(url: unknown, alt: unknown, caption: unknown): EduImage | undef
 const _readCache = new Map<string, () => Promise<any>>();
 
 async function read<T>(
-  table: string,
+  name: PublicModel,
   map: (rows: Row[]) => T,
   fallback: T,
   tag: string,
+  /** RLS가 하던 공개 필터. is_published가 없는 테이블(클럽 기수)만 false. */
+  publishedOnly = true,
 ): Promise<T> {
   if (!_readCache.has(tag)) {
     _readCache.set(
@@ -365,13 +409,9 @@ async function read<T>(
       unstable_cache(
         async () => {
           try {
-            const db = createSupabasePublicClient();
-            const { data, error } = await db
-              .from(table)
-              .select("*")
-              .order("sort_order", { ascending: true });
-            if (error || !data || data.length === 0) return fallback;
-            return map(data as Row[]);
+            const data = await findRows(name, publishedOnly ? PUBLISHED : {});
+            if (data.length === 0) return fallback;
+            return map(data);
           } catch {
             return fallback;
           }
@@ -388,12 +428,9 @@ async function read<T>(
 const _cachedOrgTraining = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("education_org_training")
-        .select("*")
-        .maybeSingle();
-      if (error || !data) return orgTraining;
+      const found = await model("educationOrgTraining").findFirst({});
+      if (!found) return orgTraining;
+      const data = toSnakeRow(found);
       return {
         title: str(data.title),
         description: str(data.description),
@@ -429,45 +466,40 @@ export async function getPublicOrgTraining(): Promise<OrgTraining> {
  * 조회에서 읽는다. 목록 응답에 수백 KB짜리 HTML을 함께 실어 보내지 않기
  * 위해서다.
  */
-const REGULAR_CLASS_PUBLIC_COLUMNS = [
-  "slug",
-  "index_label",
-  "name",
-  "subtitle",
-  "description",
-  "duration",
-  "level",
-  "schedule_type",
-  "start_date",
-  "end_date",
-  "tracks",
-  "accent",
-  "image_url",
-  "image_alt",
-  "image_caption",
-  "curriculum",
-  "detail_href",
-  "seo_title",
-  "seo_description",
-  "sort_order",
-].join(",");
+const REGULAR_CLASS_PUBLIC_COLUMNS = {
+  slug: true,
+  indexLabel: true,
+  name: true,
+  subtitle: true,
+  description: true,
+  duration: true,
+  level: true,
+  scheduleType: true,
+  startDate: true,
+  endDate: true,
+  tracks: true,
+  accent: true,
+  imageUrl: true,
+  imageAlt: true,
+  imageCaption: true,
+  curriculum: true,
+  detailHref: true,
+  seoTitle: true,
+  seoDescription: true,
+  sortOrder: true,
+} as const;
 
 const _cachedRegularClasses = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("education_regular_classes")
-        // 컬럼을 명시하는 이유 — `*`로 읽으면 상세 본문(detail_html)까지 행마다
-        // 딸려 온다. 이 목록은 /education이 매 요청 렌더할 때 읽히는데 본문은
-        // 거기서 쓰지도 않는다. 본문은 결정기록 02의 slug 단건 조회에서만 읽는다.
-        .select(REGULAR_CLASS_PUBLIC_COLUMNS)
-        .order("sort_order", { ascending: true });
-      if (error || !data) return regularClasses;
-      // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입을 추론하지
-      // 못하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
-      // unknown을 한 번 거쳐 좁힌다(supabase-content.ts의 list()와 같은 사정).
-      return (data as unknown as Row[]).map((r) => ({
+      // 컬럼을 명시하는 이유 — 전체로 읽으면 상세 본문(detail_html)까지 행마다
+      // 딸려 온다. 이 목록은 /education이 매 요청 렌더할 때 읽히는데 본문은
+      // 거기서 쓰지도 않는다. 본문은 결정기록 02의 slug 단건 조회에서만 읽는다.
+      const data = await findRows("educationRegularClass", {
+        where: { isPublished: true },
+        select: REGULAR_CLASS_PUBLIC_COLUMNS,
+      });
+      return data.map((r) => ({
         slug: str(r.slug),
         index: str(r.index_label),
         name: str(r.name),
@@ -526,31 +558,27 @@ export async function getPublicRegularClassBySlug(
       unstable_cache(
         async () => {
           try {
-            const db = createSupabasePublicClient();
-            const { data, error } = await db
-              .from("education_regular_classes")
-              // 목록과 같은 컬럼 목록에 상세 전용 두 개만 더한다. 상수를 재사용해
-              // 조합해야 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
-              // 번들 경로를 공통 상수에 넣지 않는 이유는 detail_html과 같다 — 목록이
-              // 쓰지도 않는 컬럼 때문에 /education까지 같이 깨질 이유가 없다.
-              .select(`${REGULAR_CLASS_PUBLIC_COLUMNS},detail_html,detail_bundle_path`)
-              .eq("slug", slug)
-              .maybeSingle();
-            // 조회는 됐는데 행이 없다 = 관리자가 지웠거나 비공개다(RLS). 이건 진짜 404다.
-            if (!error && !data) return null;
-            // 조회 자체가 실패했다 = 장애다. 목록은 이때 정적 4행으로 폴백하므로
-            // 여기서 404를 내면 목록에는 있는 카드가 전부 깨진 링크가 된다(03-데이터흐름 §3).
-            if (error) return fallbackRegularClassBySlug(slug);
-            // supabase-js는 select()에 리터럴이 아닌 string이 오면 컬럼 타입 추론을
-            // 포기하고 GenericStringError로 떨어뜨린다. 런타임 모양은 평범한 행이라
-            // getPublicRegularClasses()와 같은 방식으로 unknown을 거쳐 좁힌다.
-            const r = data as unknown as Row;
+            // 목록과 같은 컬럼 목록에 상세 전용 두 개만 더한다. 상수를 재사용해
+            // 조합해야 목록에 컬럼이 늘어날 때 상세만 빠뜨리는 실수를 막을 수 있다.
+            // 번들 경로를 공통 상수에 넣지 않는 이유는 detail_html과 같다 — 목록이
+            // 쓰지도 않는 컬럼 때문에 /education까지 같이 깨질 이유가 없다.
+            //
+            // 조회가 던지면(=장애) 아래 catch가 정적 폴백을 준다. 목록이 장애 때
+            // 정적 4행으로 폴백하므로 여기서 404를 내면 카드가 전부 깨진 링크가
+            // 된다(03-데이터흐름 §3).
+            const found = await model("educationRegularClass").findFirst({
+              where: { slug, isPublished: true },
+              select: { ...REGULAR_CLASS_PUBLIC_COLUMNS, detailHtml: true, detailBundlePath: true },
+            });
+            // 조회는 됐는데 행이 없다 = 관리자가 지웠거나 비공개다. 이건 진짜 404다.
+            if (!found) return null;
+            const r = toSnakeRow(found);
             /*
              * 번들 폴더 경로만 저장돼 있고 URL은 여기서 조립한다.
              *
-             * **Storage 공개 URL이 아니라 우리 라우트(`/course-assets/...`)를 가리킨다.**
-             * Supabase Storage가 HTML을 의도적으로 `text/plain`으로 내려서, 공개 URL을
-             * 그대로 열면 페이지가 아니라 소스 코드가 보이기 때문이다. 그 라우트가
+             * **Blob 공개 URL이 아니라 우리 라우트(`/course-assets/...`)를 가리킨다.**
+             * 업로드 자료를 그대로 열면 Content-Type·격리를 우리가 정할 수 없다
+             * (Supabase Storage 시절에는 HTML이 `text/plain`으로 내려왔다). 그 라우트가
              * 올바른 Content-Type과 `CSP: sandbox`를 붙여 다시 내보낸다 —
              * 판단 근거는 `src/app/course-assets/[...path]/route.ts` 머리 주석과
              * 결정기록 06 03-화면구조-결정.md D2-정정.
@@ -582,7 +610,7 @@ export async function getPublicRegularClassBySlug(
               ...(bundleUrl ? { bundleUrl } : {}),
             };
           } catch {
-            // createSupabasePublicClient()가 env 없이 던지는 경우 등 — 장애로 본다.
+            // getDb()가 env 없이 던지는 경우 등 — 장애로 본다.
             return fallbackRegularClassBySlug(slug);
           }
         },
@@ -631,7 +659,7 @@ export async function getPublicRegularClassSiblings(
 /** 03. 커뮤니티 클럽 — 기수. */
 export async function getPublicClubCohorts(): Promise<ClubCohort[]> {
   return read(
-    "education_club_cohorts",
+    "educationClubCohort",
     (rows) =>
       rows.map((r) => ({
         id: str(r.id),
@@ -653,13 +681,14 @@ export async function getPublicClubCohorts(): Promise<ClubCohort[]> {
       })),
     clubCohorts,
     "edu-club-cohorts",
+    false,
   );
 }
 
 /** 03. 커뮤니티 클럽 — 참여 유형. */
 export async function getPublicClubTiers(): Promise<ClubTier[]> {
   return read(
-    "education_club_tiers",
+    "educationClubTier",
     (rows) =>
       rows.map((r) => ({
         name: str(r.name),
@@ -685,18 +714,10 @@ export async function getPublicClubTiers(): Promise<ClubTier[]> {
 const _cachedPastPrograms = unstable_cache(
   async () => {
     try {
-      const db = createSupabasePublicClient();
-      const { data, error } = await db
-        .from("education_past_programs")
-        .select("*")
-        .eq("is_published", true)
-        .order("sort_order", { ascending: true });
-      if (error || !data || data.length === 0) return pastPrograms;
+      const data = await findRows("educationPastProgram", PUBLISHED);
+      if (data.length === 0) return pastPrograms;
 
-      const { data: images } = await db
-        .from("education_past_program_images")
-        .select("*")
-        .order("sort_order", { ascending: true });
+      const images = await findRows("educationPastProgramImage");
 
       const galleryByProgram = new Map<string, EduImage[]>();
       for (const image of (images ?? []) as Row[]) {
@@ -706,7 +727,7 @@ const _cachedPastPrograms = unstable_cache(
         galleryByProgram.set(str(image.program_id), list);
       }
 
-      return (data as Row[]).map((r) => {
+      return data.map((r) => {
         const gallery = galleryByProgram.get(str(r.id)) ?? [];
         const cover = toImage(r.cover_image_url, r.cover_image_alt, r.cover_image_caption);
         return {
@@ -741,7 +762,7 @@ export async function getPublicPastPrograms(): Promise<PastProgram[]> {
 /** 후기 — 평균 별점은 저장하지 않고 목록에서 계산한다. */
 export async function getPublicEducationReviews(): Promise<EduReview[]> {
   return read(
-    "education_reviews",
+    "educationReview",
     (rows) =>
       rows.map((r) => ({
         id: str(r.key),
@@ -760,7 +781,7 @@ export async function getPublicEducationReviews(): Promise<EduReview[]> {
 /** FAQ — ver3에서 개인/기업 구분이 없어져 단일 목록이다. */
 export async function getPublicEducationFaqs(): Promise<FaqItem[]> {
   return read(
-    "education_faqs",
+    "educationFaq",
     (rows) =>
       rows.map((r) => ({
         id: str(r.key),
@@ -775,7 +796,7 @@ export async function getPublicEducationFaqs(): Promise<FaqItem[]> {
 /** 교육 성과 수치 — 홈의 stats와 다른 항목이라 테이블도 다르다. */
 export async function getPublicEducationStats(): Promise<EduStat[]> {
   return read(
-    "education_stats",
+    "educationStat",
     (rows) => rows.map((r) => ({ value: str(r.value), label: str(r.label) })),
     eduStats,
     "edu-stats",
@@ -844,7 +865,7 @@ const fallbackPillarExamples: PublicPillarExample[] = [
 
 export async function getPublicPillars(): Promise<PublicPillar[]> {
   return read(
-    "home_pillars",
+    "homePillar",
     (rows) =>
       rows.map((r) => ({
         key: str(r.key) as PillarKey,
@@ -862,7 +883,7 @@ export async function getPublicPillars(): Promise<PublicPillar[]> {
 
 export async function getPublicPillarExamples(): Promise<PublicPillarExample[]> {
   return read(
-    "home_pillar_examples",
+    "homePillarExample",
     (rows) =>
       rows.map((r) => ({
         pillarKey: str(r.pillar_key) as PillarKey,
